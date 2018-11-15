@@ -12,11 +12,18 @@ export default class Table implements SQLike {
   private tails: string[];
   public $: Dollar;
 
-  constructor(name: string) {
+  constructor(
+    name: string,
+    projections: string[] = [],
+    wheres: string[] = [],
+    tails: string[] = [],
+  ) {
     this.name = name;
-    this.projections = [];
-    this.wheres = [];
-    this.tails = [];
+    this.projections = projections;
+    this.wheres = wheres;
+    this.tails = tails;
+
+    // TODO: Avoid re-creating this proxy for every construction:
     this.$ = new Proxy(
       {},
       {
@@ -30,24 +37,29 @@ export default class Table implements SQLike {
     );
   }
 
-  where(thing: SQLike): this {
-    this.wheres.push(thing.toSQL());
-    return this;
+  private cloneWith({
+    name = this.name,
+    projections = [...this.projections],
+    wheres = [...this.wheres],
+    tails = [...this.tails],
+  }): Table {
+    return new Table(name, projections, wheres, tails);
   }
 
-  project(thing: SQLike): this {
-    this.projections.push(thing.toSQL());
-    return this;
+  where(thing: SQLike): Table {
+    return this.cloneWith({ wheres: [...this.wheres, thing.toSQL()] });
   }
 
-  take(amount: number): this {
-    this.tails.push(`LIMIT ${amount}`);
-    return this;
+  project(thing: SQLike): Table {
+    return this.cloneWith({ projections: [...this.projections, thing.toSQL()] });
   }
 
-  skip(amount: number): this {
-    this.tails.push(`OFFSET ${amount}`);
-    return this;
+  take(amount: number): Table {
+    return this.cloneWith({ tails: [...this.tails, `LIMIT ${amount}`] });
+  }
+
+  skip(amount: number): Table {
+    return this.cloneWith({ tails: [...this.tails, `OFFSET ${amount}`] });
   }
 
   toSQL(): string {

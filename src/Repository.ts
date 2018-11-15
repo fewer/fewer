@@ -1,12 +1,17 @@
+import { Table } from './queryBuilder';
+
 type Subset<T, V> = { [P in keyof T & V]: T[P] };
 
 type WhereType<T> = { [P in keyof T]?: T[P] | T[P][] };
 
 class Repository<RepoType, SelectionSet = RepoType> {
   private tableName: string;
+  private queryTable: Table;
   private internalSlot: symbol;
+
   constructor(tableName: string) {
     this.tableName = tableName;
+    this.queryTable = new Table(tableName);
     this.internalSlot = Symbol(tableName);
   }
 
