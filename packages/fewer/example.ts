@@ -5,13 +5,18 @@ interface IUser {
   lastName: string;
 }
 
-const users = createRepository<IUser>('users');
+const Users = createRepository<IUser>('users');
 
-const jordan = users.create({ firstName: 'jordan' });
-const emily = users.from({ firstName: 'emily' });
-
-users.where({ firstName: 'emily', lastName: ['foo', 'bar'] });
+const jordan = Users.create({ firstName: 'jordan' });
+const emily = Users.from({ firstName: 'emily' });
 
 async function foo() {
-  const user = await users.pluck('firstName');
+  const user = await Users.find(123).pluck('firstName');
+  user.firstName;
+
+  const users = await Users.where({ firstName: 'emily', lastName: ['foo', 'bar'] });
+
+  users.forEach(user => {
+    user.firstName;
+  });
 }

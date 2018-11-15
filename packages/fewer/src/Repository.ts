@@ -4,7 +4,12 @@ type Subset<T, V> = { [P in keyof T & V]: T[P] };
 
 type WhereType<T> = { [P in keyof T]?: T[P] | T[P][] };
 
-class Repository<RepoType, SelectionSet = RepoType> {
+enum QueryType {
+  SINGLE,
+  MULTIPLE,
+}
+
+class Repository<RepoType, SelectionSet = RepoType, QT = QueryType.MULTIPLE> {
   private tableName: string;
   private queryTable: Table;
   private internalSlot: symbol;
@@ -33,12 +38,20 @@ class Repository<RepoType, SelectionSet = RepoType> {
 
   pluck<Key extends keyof RepoType>(
     ...args: Key[]
-  ): Repository<RepoType, Subset<RepoType, Key>> {
+  ): Repository<RepoType, Subset<RepoType, Key>, QT> {
     return new Repository(this.tableName);
   }
 
-  where(wheres: WhereType<RepoType>): Repository<RepoType, SelectionSet> {
+  where(
+    wheres: WhereType<RepoType>,
+  ): Repository<RepoType, SelectionSet, QueryType.MULTIPLE> {
     return new Repository(this.tableName);
+  }
+
+  find(
+    id: string | number,
+  ): Repository<RepoType, SelectionSet, QueryType.SINGLE> {
+    return {} as any;
   }
 
   //
@@ -46,7 +59,12 @@ class Repository<RepoType, SelectionSet = RepoType> {
   //
 
   // TODO: Implement lazy promise evaluation here:
-  then(success: (value: SelectionSet) => void, error?: (error: Error) => void) {
+  then(
+    success: (
+      value: QT extends QueryType.SINGLE ? SelectionSet : SelectionSet[],
+    ) => void,
+    error?: (error: Error) => void,
+  ) {
     // @ts-ignore
     return {};
   }
