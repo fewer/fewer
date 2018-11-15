@@ -1,11 +1,11 @@
 import Query from './Query';
-import { Arelable } from './types';
+import { SQLike } from './types';
 
 interface Dollar {
   [key: string]: Query;
 }
 
-export default class Table implements Arelable {
+export default class Table implements SQLike {
   private name: string;
   private projections: string[];
   private wheres: string[];
@@ -24,18 +24,18 @@ export default class Table implements Arelable {
           if (typeof prop !== 'string') {
             throw new RangeError('You may only use string names.');
           }
-          return new Query(name, prop);
+          return new Query(`${name}.${prop}`);
         },
       },
     );
   }
 
-  where(thing: Arelable): this {
+  where(thing: SQLike): this {
     this.wheres.push(thing.toSQL());
     return this;
   }
 
-  project(thing: Arelable): this {
+  project(thing: SQLike): this {
     this.projections.push(thing.toSQL());
     return this;
   }

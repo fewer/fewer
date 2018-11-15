@@ -1,15 +1,14 @@
 {
-  "name": "heel",
-  "version": "1.0.0",
+  "name": "fewer",
+  "version": "0.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
-    "jest": "jest",
-    "test": "ts-node-dev --respawn --transpileOnly ./src/arel/Table.ts"
+    "jest": "jest"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Jordan Gensler <jordangens@gmail.com>",
+  "license": "MIT",
   "devDependencies": {
     "@types/jest": "^23.3.9",
     "@types/node": "^10.12.7",
