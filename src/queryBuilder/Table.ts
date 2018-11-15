@@ -1,3 +1,4 @@
+import SqlString from 'sqlstring';
 import Query from './Query';
 import { SQLike } from './types';
 
@@ -51,22 +52,24 @@ export default class Table implements SQLike {
   }
 
   project(thing: SQLike): Table {
-    return this.cloneWith({ projections: [...this.projections, thing.toSQL()] });
+    return this.cloneWith({
+      projections: [...this.projections, thing.toSQL()],
+    });
   }
 
   take(amount: number): Table {
-    return this.cloneWith({ tails: [...this.tails, `LIMIT ${amount}`] });
+    return this.cloneWith({ tails: [...this.tails, `LIMIT ${SqlString.escape(amount)}`] });
   }
 
   skip(amount: number): Table {
-    return this.cloneWith({ tails: [...this.tails, `OFFSET ${amount}`] });
+    return this.cloneWith({ tails: [...this.tails, `OFFSET ${SqlString.escape(amount)}`] });
   }
 
   toSQL(): string {
     return [
       'SELECT',
       this.projections.join(', '),
-      `FROM ${this.name}`,
+      `FROM ${SqlString.escapeId(this.name)}`,
       this.wheres.length && `WHERE ${this.wheres.join(' AND ')}`,
       ...this.tails,
     ]

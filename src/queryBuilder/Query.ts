@@ -1,32 +1,48 @@
+import SqlString from 'sqlstring';
 import { SQLike } from './types';
 
 export default class Query implements SQLike {
   private name: string;
   private alias?: string;
   private conditions: string[];
+  private aggregation?: string;
 
-  constructor(name: string, conditions: string[] = [], alias?: string) {
+  constructor(
+    name: string,
+    conditions: string[] = [],
+    alias?: string,
+    aggregation?: string,
+  ) {
     this.name = name;
     this.alias = alias;
     this.conditions = conditions;
+    this.aggregation = aggregation;
   }
 
   private cloneWith({
     name = this.name,
     conditions = [...this.conditions],
     alias = this.alias,
+    aggregation = this.aggregation,
   }): Query {
-    return new Query(name, conditions, alias);
+    return new Query(name, conditions, alias, aggregation);
   }
 
-  private addCondition(symbol: string, value: string | number): Query {
+  private addCondition(
+    symbol: string,
+    value: string | number,
+    preEscaped = false,
+  ): Query {
     return this.cloneWith({
-      conditions: [...this.conditions, `${symbol} '${value}'`],
+      conditions: [
+        ...this.conditions,
+        `${symbol} ${preEscaped ? value : SqlString.escape(value)}`,
+      ],
     });
   }
 
-  private wrapName(fn: string): Query {
-    return this.cloneWith({ name: `${fn}(${this.name})` });
+  private addAggregation(aggregation: string): Query {
+    return this.cloneWith({ aggregation });
   }
 
   as(alias: string): Query {
@@ -34,23 +50,23 @@ export default class Query implements SQLike {
   }
 
   get count(): Query {
-    return this.wrapName('COUNT');
+    return this.addAggregation('COUNT');
   }
 
   get sum(): Query {
-    return this.wrapName('SUM');
+    return this.addAggregation('SUM');
   }
 
   get average(): Query {
-    return this.wrapName('AVG');
+    return this.addAggregation('AVG');
   }
 
   get maximum(): Query {
-    return this.wrapName('MAX');
+    return this.addAggregation('MAX');
   }
 
   get minimum(): Query {
-    return this.wrapName('MIN');
+    return this.addAggregation('MIN');
   }
 
   eq(value: string | number): Query {
@@ -77,15 +93,23 @@ export default class Query implements SQLike {
     return this.addCondition('<=', value);
   }
 
-  in(values: string[] | number[]): Query {
-    return this.addCondition('IN', `(${values.join(', ')})`);
+  in(values: (string | number)[]): Query {
+    return this.addCondition(
+      'IN',
+      `(${values.map(value => SqlString.escape(value)).join(', ')})`,
+      true,
+    );
   }
 
   toSQL(): string {
+    const escapedName = SqlString.escapeId(this.name);
+    const wrappedName = this.aggregation
+      ? `${this.aggregation}(${escapedName})`
+      : escapedName;
     return [
-      this.name,
+      wrappedName,
       this.conditions.join(' '),
-      this.alias && `AS ${this.alias}`,
+      this.alias && `AS ${SqlString.escapeId(this.alias)}`,
     ]
       .filter(Boolean)
       .join(' ');
