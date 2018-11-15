@@ -1,4 +1,4 @@
-import { createRepository } from './Repository';
+import { createRepository } from './src/Repository';
 
 interface IUser {
   firstName: string;

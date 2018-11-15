@@ -1,4 +1,4 @@
-import { Table } from './queryBuilder';
+import { Table } from '@fewer/query-builder';
 
 type Subset<T, V> = { [P in keyof T & V]: T[P] };
 

@@ -1,0 +1,35 @@
+{
+  "name": "fewer",
+  "version": "0.0.0",
+  "description": "A minimal ORM for Node.js.",
+  "keywords": [
+    "orm",
+    "sql",
+    "fewer"
+  ],
+  "author": "Jordan Gensler <jgensler@netflix.com>",
+  "homepage": "https://github.com/fewer/fewer#readme",
+  "license": "MIT",
+  "main": "lib/fewer.js",
+  "directories": {
+    "lib": "lib",
+    "test": "__tests__"
+  },
+  "files": [
+    "lib"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fewer/fewer.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1",
+    "tsc": "tsc"
+  },
+  "bugs": {
+    "url": "https://github.com/fewer/fewer/issues"
+  },
+  "dependencies": {
+    "@fewer/query-builder": "^0.0.0"
+  }
+}

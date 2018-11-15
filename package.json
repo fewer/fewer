@@ -4,7 +4,8 @@
   "description": "",
   "main": "lib/index.js",
   "scripts": {
-    "jest": "jest"
+    "jest": "jest",
+    "build": "lerna run tsc"
   },
   "keywords": [],
   "author": "Jordan Gensler <jordangens@gmail.com>",
@@ -14,6 +15,7 @@
     "@types/node": "^10.12.7",
     "@types/sqlstring": "^2.2.0",
     "jest": "^23.6.0",
+    "lerna": "^3.4.3",
     "prettier": "^1.15.2",
     "ts-jest": "^23.10.4",
     "ts-node-dev": "^1.0.0-pre.30",
