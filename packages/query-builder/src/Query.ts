@@ -30,10 +30,10 @@ export default class Query implements SQLike {
 
   private addCondition(
     symbol: string,
-    value: string | number | (string | number)[][],
+    value: string | number | (string | number)[],
   ): Query {
     return this.cloneWith({
-      conditions: [...this.conditions, `${symbol} ${SqlString.escape(value)}`],
+      conditions: [...this.conditions, `${symbol} ${SqlString.escape([value])}`],
     });
   }
 
@@ -90,7 +90,7 @@ export default class Query implements SQLike {
   }
 
   in(values: (string | number)[]): Query {
-    return this.addCondition('IN', [values]);
+    return this.addCondition('IN', values);
   }
 
   toSQL(): string {
