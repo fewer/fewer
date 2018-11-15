@@ -1,5 +1,6 @@
 import SqlString from 'sqlstring';
 import Query from './Query';
+import sql from './sql';
 import { SQLike } from './types';
 
 interface Dollar {
@@ -29,10 +30,10 @@ export default class Table implements SQLike {
       {},
       {
         get(_, prop) {
-          if (typeof prop !== 'string') {
-            throw new RangeError('You may only use string names.');
+          // Throw away anything that isn't a string:
+          if (typeof prop === 'string') {
+            return new Query(`${name}.${prop}`);
           }
-          return new Query(`${name}.${prop}`);
         },
       },
     );
@@ -58,17 +59,27 @@ export default class Table implements SQLike {
   }
 
   take(amount: number): Table {
-    return this.cloneWith({ tails: [...this.tails, `LIMIT ${SqlString.escape(amount)}`] });
+    return this.cloneWith({
+      tails: [...this.tails, `LIMIT ${SqlString.escape(amount)}`],
+    });
   }
 
   skip(amount: number): Table {
-    return this.cloneWith({ tails: [...this.tails, `OFFSET ${SqlString.escape(amount)}`] });
+    return this.cloneWith({
+      tails: [...this.tails, `OFFSET ${SqlString.escape(amount)}`],
+    });
   }
 
   toSQL(): string {
+    // If no projections were included, default it to *.
+    let projections = this.projections;
+    if (!projections.length) {
+      projections = ['*'];
+    }
+
     return [
       'SELECT',
-      this.projections.join(', '),
+      projections.join(', '),
       `FROM ${SqlString.escapeId(this.name)}`,
       this.wheres.length && `WHERE ${this.wheres.join(' AND ')}`,
       ...this.tails,

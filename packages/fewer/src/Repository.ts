@@ -9,21 +9,24 @@ enum QueryType {
   MULTIPLE,
 }
 
-class Repository<RepoType, SelectionSet = RepoType, QT = QueryType.MULTIPLE> {
+function getInternalSlot(tableName: string): symbol {
+  return Symbol.for(`Internal Fewer Slot: ${tableName}`);
+}
+
+export class Repository<RepoType, SelectionSet = RepoType, QT = QueryType.MULTIPLE> {
   private tableName: string;
   private queryTable: Table;
-  private internalSlot: symbol;
 
-  constructor(tableName: string) {
+  constructor(tableName: string, queryTable = new Table(tableName)) {
+
     this.tableName = tableName;
-    this.queryTable = new Table(tableName);
-    this.internalSlot = Symbol(tableName);
+    this.queryTable = queryTable;
   }
 
   // Converts from plain object into internal representation with the correct slot:
   from<T extends Partial<RepoType>>(obj: T): Subset<T, keyof RepoType> {
     return Object.assign({}, obj, {
-      [this.internalSlot]: true,
+      [getInternalSlot(this.tableName)]: true,
     });
   }
 
@@ -45,7 +48,17 @@ class Repository<RepoType, SelectionSet = RepoType, QT = QueryType.MULTIPLE> {
   where(
     wheres: WhereType<RepoType>,
   ): Repository<RepoType, SelectionSet, QueryType.MULTIPLE> {
-    return new Repository(this.tableName);
+    const builtQuery = Object.entries(wheres).reduce(
+      (qt, [fieldName, matcher]) => {
+        const field = qt.$[fieldName];
+        return qt.where(
+          Array.isArray(matcher) ? field.in(matcher) : field.eq(matcher),
+        );
+      },
+      this.queryTable,
+    );
+
+    return new Repository(this.tableName, builtQuery);
   }
 
   find(
@@ -54,19 +67,43 @@ class Repository<RepoType, SelectionSet = RepoType, QT = QueryType.MULTIPLE> {
     return {} as any;
   }
 
+  // TODO:
+  order() {}
+
+  limit(amount: number): Repository<RepoType, SelectionSet, QT> {
+    return new Repository(this.tableName, this.queryTable.take(amount));
+  }
+
+  offset(amount: number): Repository<RepoType, SelectionSet, QT> {
+    return new Repository(this.tableName, this.queryTable.skip(amount));
+  }
+
   //
   // END QUERY
   //
 
   // TODO: Implement lazy promise evaluation here:
   then(
-    success: (
+    onFulfilled: (
       value: QT extends QueryType.SINGLE ? SelectionSet : SelectionSet[],
     ) => void,
-    error?: (error: Error) => void,
+    onRejected?: (error: Error) => void,
   ) {
+    const hasError = false;
+    if (hasError) {
+      if (onRejected) {
+        return Promise.resolve(onRejected(new Error()));
+      } else {
+        return Promise.reject(new Error());
+      }
+    }
+
     // @ts-ignore
-    return {};
+    return Promise.resolve(onFulfilled({}));
+  }
+
+  toSQL(): string {
+    return this.queryTable.toSQL();
   }
 }
 

@@ -1,15 +1,14 @@
 {
-  "name": "fewer",
-  "version": "0.0.0",
-  "description": "",
-  "main": "lib/index.js",
+  "name": "fewer-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "jest": "jest",
-    "build": "lerna run tsc"
+    "build": "tsc -b packages/*",
+    "dev": "ts-node-dev -r tsconfig-paths/register --transpileOnly ./packages/fewer/example.ts"
   },
-  "keywords": [],
-  "author": "Jordan Gensler <jordangens@gmail.com>",
-  "license": "MIT",
   "devDependencies": {
     "@types/jest": "^23.3.9",
     "@types/node": "^10.12.7",
@@ -19,6 +18,7 @@
     "prettier": "^1.15.2",
     "ts-jest": "^23.10.4",
     "ts-node-dev": "^1.0.0-pre.30",
+    "tsconfig-paths": "^3.7.0",
     "typescript": "^3.1.6"
   },
   "dependencies": {

@@ -5,7 +5,11 @@ const star = sql('*');
 const users = new Table('users');
 
 describe('Table', () => {
-  it('project all', () => {
+  it('defaults to project star', () => {
+    expect(users.toSQL()).toMatchInlineSnapshot(`"SELECT * FROM \`users\`"`);
+  });
+
+  it('can project star', () => {
     expect(users.project(star).toSQL()).toMatchInlineSnapshot(
       `"SELECT * FROM \`users\`"`,
     );

@@ -1,14 +1,13 @@
 module.exports = {
-  roots: ['<rootDir>/src'],
+  roots: ['<rootDir>/packages'],
   transform: {
     '^.+\\.tsx?$': 'ts-jest',
   },
   testRegex: '(/__tests__/.*|(\\.|/)(test|spec))\\.tsx?$',
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  projects: ['<rootDir>/packages/*'],
-  // globals: {
-  //   'ts-jest': {
-  //     diagnostics: false,
-  //   },
-  // },
+  globals: {
+    'ts-jest': {
+      diagnostics: false,
+    },
+  },
 };
