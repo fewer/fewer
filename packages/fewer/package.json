@@ -23,8 +23,7 @@
     "url": "git+https://github.com/fewer/fewer.git"
   },
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1",
-    "tsc": "tsc"
+    "test": "echo \"Error: run tests from root\" && exit 1"
   },
   "bugs": {
     "url": "https://github.com/fewer/fewer/issues"

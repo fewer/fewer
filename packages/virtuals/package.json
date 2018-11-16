@@ -1,10 +1,9 @@
 {
-  "name": "@fewer/query-builder",
+  "name": "@fewer/virtuals",
   "version": "0.0.0",
-  "description": "A simple query builder for Fewer.",
+  "description": "> TODO: description",
   "keywords": [
-    "query",
-    "builder",
+    "virtuals",
     "fewer"
   ],
   "author": "Jordan Gensler <jgensler@netflix.com>",
