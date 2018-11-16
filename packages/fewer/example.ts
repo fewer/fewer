@@ -27,16 +27,19 @@ async function foo() {
 interface SplitUser {
   firstName: string;
   lastName: string;
+  passwordHash;
 }
 
 interface Virtuals {
+  password: string | null;
   fullName: string;
 }
 
-const SecureUsers = createRepository<SplitUser>('secure_users').pipe({
+const SecureUsers = createRepository<SplitUser>('secure_users').pipe<Virtuals>({
   prepare(user) {
     return {
       ...user,
+      password: null,
       get fullName() {
         return [this.firstName, this.lastName].join(' ');
       },
@@ -47,8 +50,17 @@ const SecureUsers = createRepository<SplitUser>('secure_users').pipe({
       }
     };
   },
+
+  async save(user, next) {
+    if (user.password) {
+      user.passwordHash = await hashPassword();
+    }
+    return next();
+  }
 });
 
 const jordanSplit = SecureUsers.from({ fullName: 'Jordan Gensler' });
+
+jordanSplit.password = 'foobar';
 
 

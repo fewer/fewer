@@ -19,7 +19,7 @@ function createModel<RepoType, T>(obj: T): T & Partial<RepoType> {
 
 interface Pipe<RepoType = any, Extensions = any> {
   prepare?(obj: RepoType): RepoType & Extensions;
-  save?(obj: RepoType): Promise<void>;
+  save?(obj: RepoType & Extensions, next: () => Promise<void>): Promise<void>;
 }
 
 export class Repository<
