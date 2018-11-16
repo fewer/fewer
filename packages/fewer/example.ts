@@ -24,4 +24,31 @@ async function foo() {
   });
 }
 
-console.log(Users.where({ firstName: 'emily', lastName: ['foo', 'bar'] }).toSQL());
+interface SplitUser {
+  firstName: string;
+  lastName: string;
+}
+
+interface Virtuals {
+  fullName: string;
+}
+
+const SecureUsers = createRepository<SplitUser>('secure_users').pipe({
+  prepare(user) {
+    return {
+      ...user,
+      get fullName() {
+        return [this.firstName, this.lastName].join(' ');
+      },
+      set fullName(value: string) {
+        const [firstName, lastName] = value.split(' ');
+        this.firstName = firstName;
+        this.lastName = lastName;
+      }
+    };
+  },
+});
+
+const jordanSplit = SecureUsers.from({ fullName: 'Jordan Gensler' });
+
+

@@ -13,26 +13,47 @@ function getInternalSlot(tableName: string): symbol {
   return Symbol.for(`Internal Fewer Slot: ${tableName}`);
 }
 
-export class Repository<RepoType, SelectionSet = RepoType, QT = QueryType.MULTIPLE> {
+function createModel<RepoType, T>(obj: T): T & Partial<RepoType> {
+  return Object.assign({}, obj);
+}
+
+interface Pipe<RepoType = any, Extensions = any> {
+  prepare?(obj: RepoType): RepoType & Extensions;
+  save?(obj: RepoType): Promise<void>;
+}
+
+export class Repository<
+  RepoType,
+  SelectionSet = RepoType,
+  QT = QueryType.MULTIPLE
+> {
   private tableName: string;
   private queryTable: Table;
+  private pipes: Pipe[];
 
-  constructor(tableName: string, queryTable = new Table(tableName)) {
-
+  constructor(
+    tableName: string,
+    queryTable: Table = new Table(tableName),
+    pipes: Pipe[] = [],
+  ) {
     this.tableName = tableName;
     this.queryTable = queryTable;
+    this.pipes = pipes;
   }
 
-  // Converts from plain object into internal representation with the correct slot:
-  from<T extends Partial<RepoType>>(obj: T): Subset<T, keyof RepoType> {
-    return Object.assign({}, obj, {
-      [getInternalSlot(this.tableName)]: true,
-    });
+  pipe<Extensions>(
+    pipe: Pipe<RepoType, Extensions>,
+  ): Repository<RepoType & Extensions, SelectionSet, QT> {
+    return new Repository(this.tableName, this.queryTable, [...this.pipes, pipe]);
   }
 
-  // TODO: Does this need to be a different return type vs `from`?
+  // Converts from plain object into internal representation:
+  from<T extends Partial<RepoType>>(obj: T): T & Partial<RepoType> {
+    return createModel(obj);
+  }
+
   create<T extends Partial<RepoType>>(obj: T): Promise<T & Partial<RepoType>> {
-    return Promise.resolve(this.from(obj) as T & Partial<RepoType>);
+    return Promise.resolve(this.from(obj));
   }
 
   //
