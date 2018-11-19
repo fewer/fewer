@@ -4,29 +4,35 @@ type Subset<T, V> = { [P in keyof T & V]: T[P] };
 
 type WhereType<T> = { [P in keyof T]?: T[P] | T[P][] };
 
-enum QueryType {
+export enum QueryTypes {
   SINGLE,
   MULTIPLE,
-}
-
-function getInternalSlot(tableName: string): symbol {
-  return Symbol.for(`Internal Fewer Slot: ${tableName}`);
 }
 
 function createModel<RepoType, T>(obj: T): T & Partial<RepoType> {
   return Object.assign({}, obj);
 }
 
-interface Pipe<RepoType = any, Extensions = any> {
-  prepare?(obj: RepoType): RepoType & Extensions;
-  save?(obj: RepoType & Extensions, next: () => Promise<void>): Promise<void>;
+interface Pipe<RepoType = any, Extensions = RepoType> {
+  prepare(obj: RepoType & Partial<Extensions>): void;
+  save?(obj: RepoType, next: () => Promise<void>): Promise<void>;
 }
 
 export class Repository<
   RepoType,
   SelectionSet = RepoType,
-  QT = QueryType.MULTIPLE
+  RegisteredExtensions = {},
+  QueryType = QueryTypes.MULTIPLE
 > {
+  // @ts-ignore Intentionally stashing type so that we can refer back to it:
+  public readonly $$RepoType: RepoType;
+  // @ts-ignore Intentionally stashing type so that we can refer back to it:
+  public readonly $$SelectionSet: SelectionSet;
+  // @ts-ignore Intentionally stashing type so that we can refer back to it:
+  public readonly $$RegisteredExtensions: RegisteredExtensions;
+  // @ts-ignore Intentionally stashing type so that we can refer back to it:
+  public readonly $$QueryType: QueryType;
+
   private tableName: string;
   private queryTable: Table;
   private pipes: Pipe[];
@@ -43,8 +49,16 @@ export class Repository<
 
   pipe<Extensions>(
     pipe: Pipe<RepoType, Extensions>,
-  ): Repository<RepoType & Extensions, SelectionSet, QT> {
-    return new Repository(this.tableName, this.queryTable, [...this.pipes, pipe]);
+  ): Repository<
+    RepoType & Extensions,
+    RegisteredExtensions & Extensions,
+    SelectionSet,
+    QueryType
+  > {
+    return new Repository(this.tableName, this.queryTable, [
+      ...this.pipes,
+      pipe,
+    ]);
   }
 
   // Converts from plain object into internal representation:
@@ -62,13 +76,13 @@ export class Repository<
 
   pluck<Key extends keyof RepoType>(
     ...args: Key[]
-  ): Repository<RepoType, Subset<RepoType, Key>, QT> {
+  ): Repository<RepoType, Subset<RepoType, Key>, RegisteredExtensions, QueryType> {
     return new Repository(this.tableName);
   }
 
   where(
     wheres: WhereType<RepoType>,
-  ): Repository<RepoType, SelectionSet, QueryType.MULTIPLE> {
+  ): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryTypes.MULTIPLE> {
     const builtQuery = Object.entries(wheres).reduce(
       (qt, [fieldName, matcher]) => {
         const field = qt.$[fieldName];
@@ -84,18 +98,18 @@ export class Repository<
 
   find(
     id: string | number,
-  ): Repository<RepoType, SelectionSet, QueryType.SINGLE> {
+  ): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryTypes.SINGLE> {
     return {} as any;
   }
 
   // TODO:
   order() {}
 
-  limit(amount: number): Repository<RepoType, SelectionSet, QT> {
+  limit(amount: number): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryType> {
     return new Repository(this.tableName, this.queryTable.take(amount));
   }
 
-  offset(amount: number): Repository<RepoType, SelectionSet, QT> {
+  offset(amount: number): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryType> {
     return new Repository(this.tableName, this.queryTable.skip(amount));
   }
 
@@ -106,7 +120,9 @@ export class Repository<
   // TODO: Implement lazy promise evaluation here:
   then(
     onFulfilled: (
-      value: QT extends QueryType.SINGLE ? SelectionSet : SelectionSet[],
+      value: QueryType extends QueryTypes.SINGLE
+        ? SelectionSet
+        : SelectionSet[],
     ) => void,
     onRejected?: (error: Error) => void,
   ) {
