@@ -1,3 +1,3 @@
-import { createRepository } from './Repository';
+import { Repository, createRepository } from './Repository';
 
-export { createRepository };
+export { Repository, createRepository };
