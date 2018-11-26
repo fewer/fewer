@@ -1,0 +1,3 @@
+# `@fewer/cli`
+
+> TODO: description
