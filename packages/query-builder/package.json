@@ -8,7 +8,7 @@
     "fewer"
   ],
   "author": "Jordan Gensler <jgensler@netflix.com>",
-  "homepage": "https://github.com/fewer/fewer#readme",
+  "homepage": "https://github.com/fewer/fewer",
   "license": "MIT",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
