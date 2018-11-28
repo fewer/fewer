@@ -1,0 +1,7 @@
+before_script:
+  - yarn install
+
+node8:
+  image: node:8
+  script:
+    npm run jest
