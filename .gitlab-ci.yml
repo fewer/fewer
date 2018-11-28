@@ -5,3 +5,14 @@ node8:
   image: node:8
   script:
     npm run jest
+
+node10:
+  image: node:10
+  script:
+    npm run jest
+
+latest:
+  image: node:latest
+  allow_failure: true
+  script:
+    npm run jest
