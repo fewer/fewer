@@ -29,6 +29,7 @@
     "url": "https://github.com/fewer/fewer/issues"
   },
   "dependencies": {
-    "@fewer/query-builder": "^0.0.0"
+    "@fewer/query-builder": "^0.0.0",
+    "io-ts": "^1.4.2"
   }
 }
