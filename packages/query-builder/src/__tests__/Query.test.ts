@@ -4,7 +4,7 @@ const query = new Query('users.name');
 
 describe('Query', () => {
   it('supports printing the name directly', () => {
-    expect(query.toSQL()).toMatchInlineSnapshot(`"\`users\`.\`nae\`"`);
+    expect(query.toSQL()).toMatchInlineSnapshot(`"\`users\`.\`name\`"`);
   });
 
   it('supports conditions', () => {
