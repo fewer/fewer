@@ -24,14 +24,11 @@ export class Repository<
   RegisteredExtensions = {},
   QueryType = QueryTypes.MULTIPLE
 > {
-  // @ts-ignore Intentionally stashing type so that we can refer back to it:
-  public readonly $$RepoType: RepoType;
-  // @ts-ignore Intentionally stashing type so that we can refer back to it:
-  public readonly $$SelectionSet: SelectionSet;
-  // @ts-ignore Intentionally stashing type so that we can refer back to it:
-  public readonly $$RegisteredExtensions: RegisteredExtensions;
-  // @ts-ignore Intentionally stashing type so that we can refer back to it:
-  public readonly $$QueryType: QueryType;
+  // Intentionally stash types so that we can refer back to them:
+  readonly $$RepoType!: RepoType;
+  readonly $$SelectionSet!: SelectionSet;
+  readonly $$RegisteredExtensions!: RegisteredExtensions;
+  readonly $$QueryType!: QueryType;
 
   private tableName: string;
   private queryTable: Table;

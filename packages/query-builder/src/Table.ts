@@ -1,29 +1,36 @@
 import SqlString from 'sqlstring';
 import Query from './Query';
-import sql from './sql';
 import { SQLike } from './types';
+import sql from './sql';
 
 interface Dollar {
   [key: string]: Query;
 }
 
+interface Context {
+  projections: SQLike[];
+  wheres: SQLike[];
+  limit?: number;
+  offset?: number;
+}
+
+function getContext(context?: Context): Context {
+  return {
+    projections: [],
+    wheres: [],
+    ...context,
+  };
+}
+
 export default class Table implements SQLike {
   private name: string;
-  private projections: string[];
-  private wheres: string[];
-  private tails: string[];
-  public $: Dollar;
+  private ctx: Context;
 
-  constructor(
-    name: string,
-    projections: string[] = [],
-    wheres: string[] = [],
-    tails: string[] = [],
-  ) {
+  $: Dollar;
+
+  constructor(name: string, ctx: Context) {
     this.name = name;
-    this.projections = projections;
-    this.wheres = wheres;
-    this.tails = tails;
+    this.ctx = getContext(ctx);
 
     // TODO: Avoid re-creating this proxy for every construction:
     this.$ = new Proxy(
@@ -39,50 +46,47 @@ export default class Table implements SQLike {
     );
   }
 
-  private cloneWith({
-    name = this.name,
-    projections = [...this.projections],
-    wheres = [...this.wheres],
-    tails = [...this.tails],
-  }): Table {
-    return new Table(name, projections, wheres, tails);
+  private cloneWith(newCtx: Partial<Context>): Table {
+    return new Table(this.name, { ...this.ctx, ...newCtx });
   }
 
   where(thing: SQLike): Table {
-    return this.cloneWith({ wheres: [...this.wheres, thing.toSQL()] });
+    return this.cloneWith({ wheres: [...this.ctx.wheres, thing] });
   }
 
   project(thing: SQLike): Table {
     return this.cloneWith({
-      projections: [...this.projections, thing.toSQL()],
+      projections: [...this.ctx.projections, thing],
     });
   }
 
   take(amount: number): Table {
     return this.cloneWith({
-      tails: [...this.tails, `LIMIT ${SqlString.escape(amount)}`],
+      limit: amount,
     });
   }
 
   skip(amount: number): Table {
     return this.cloneWith({
-      tails: [...this.tails, `OFFSET ${SqlString.escape(amount)}`],
+      offset: amount,
     });
   }
 
   toSQL(): string {
+    let { projections, wheres, limit, offset } = this.ctx;
+
     // If no projections were included, default it to *.
-    let projections = this.projections;
     if (!projections.length) {
-      projections = ['*'];
+      projections = [sql('*')];
     }
 
     return [
       'SELECT',
-      projections.join(', '),
+      projections.map(projection => projection.toSQL()).join(', '),
       `FROM ${SqlString.escapeId(this.name)}`,
-      this.wheres.length && `WHERE ${this.wheres.join(' AND ')}`,
-      ...this.tails,
+      wheres.length && `WHERE ${wheres.map(x => x.toSQL()).join(' AND ')}`,
+      limit && `LIMIT ${limit}`,
+      offset && `OFFSET ${offset}`,
     ]
       .filter(Boolean)
       .join(' ');

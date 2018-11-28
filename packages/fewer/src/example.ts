@@ -1,14 +1,29 @@
 import { createVirtuals } from '@fewer/virtuals';
+import Schema from './Schema';
 import { createRepository } from './Repository';
 
-interface IUser {
-  firstName: string;
-  lastName: string;
-  deleted: boolean;
-}
+const schema = new Schema(20080906171750)
+  .createTable('users', { force: true }, t => ({
+    firstName: t.optional(t.string),
+    lastName: t.string,
+    deleted: t.boolean,
+    createdAt: t.datetime,
+    updatedAt: t.datetime,
+  }))
+  .createTable('products', { force: true }, t => ({
+    name: t.string,
+    description: t.text,
+    created_at: t.datetime,
+    updated_at: t.datetime,
+    part_number: t.string,
+  }));
 
-const Users = createRepository<IUser>('users');
-export const DeletedUsers = Users.where({ deleted: [true, true] }).where({deleted: false});
+type User = typeof schema.tables.users;
+
+const Users = createRepository<User>('users');
+export const DeletedUsers = Users.where({ deleted: [true, true] }).where({
+  deleted: false,
+});
 
 const jordan = Users.create({ firstName: 'jordan' });
 const emily = Users.from({ firstName: 'emily' });
@@ -31,8 +46,10 @@ interface Virtuals {
   fullName: string;
 }
 
-const FullUsers = Users.pipe(createVirtuals(user => ({
-  get fullName() {
-    return [user.firstName, user.lastName].join(' ');
-  },
-})));
+const FullUsers = Users.pipe(
+  createVirtuals(user => ({
+    get fullName() {
+      return [user.firstName, user.lastName].join(' ');
+    },
+  })),
+);
