@@ -1,5 +1,6 @@
-export class Type<T> {
-  $$Type!: T;
+export class Type<T = any, NonNull = false> {
+  $$Type!: NonNull extends true ? T : T | undefined;
+
   constructor(config?: object) {
     // TODO:
   }
@@ -7,6 +8,11 @@ export class Type<T> {
 
 function type<T>(name: string) {
   return (config?: object) => new Type<T>(config);
+}
+
+export function nonNull<T extends Type>(type: T)  {
+  type SubType = T extends Type<infer U> ? U : never;
+  return new Type<SubType, true>();
 }
 
 // NUMBER TYPES:

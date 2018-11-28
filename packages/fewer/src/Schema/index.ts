@@ -18,7 +18,7 @@ class Table<T = {}> {
 }
 
 export interface BaseBuilt {
-  [key: string]: FieldTypes.Type<any>;
+  [key: string]: FieldTypes.Type<any, boolean>;
 }
 
 type BuiltTable<Built extends BaseBuilt> = {

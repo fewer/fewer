@@ -4,7 +4,7 @@ import { createRepository } from './Repository';
 
 const schema = new Schema(20080906171750)
   .createTable('users', { force: true }, t => ({
-    firstName: t.string(),
+    firstName: t.nonNull(t.string()),
     lastName: t.string(),
     deleted: t.boolean(),
     createdAt: t.datetime(),
