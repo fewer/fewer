@@ -4,18 +4,18 @@ import { createRepository } from './Repository';
 
 const schema = new Schema(20080906171750)
   .createTable('users', { force: true }, t => ({
-    firstName: t.optional(t.string),
-    lastName: t.string,
-    deleted: t.boolean,
-    createdAt: t.datetime,
-    updatedAt: t.datetime,
+    firstName: t.nonNull(t.string()),
+    lastName: t.string(),
+    deleted: t.boolean(),
+    createdAt: t.datetime(),
+    updatedAt: t.datetime(),
   }))
   .createTable('products', { force: true }, t => ({
-    name: t.string,
-    description: t.text,
-    created_at: t.datetime,
-    updated_at: t.datetime,
-    part_number: t.string,
+    name: t.string(),
+    description: t.text(),
+    created_at: t.datetime(),
+    updated_at: t.datetime(),
+    part_number: t.string(),
   }));
 
 type User = typeof schema.tables.users;
