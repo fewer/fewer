@@ -5,7 +5,8 @@
     "packages/*"
   ],
   "scripts": {
-    "jest": "jest",
+    "test:jest": "jest",
+    "test:typeval": "node utils/typeval",
     "build": "tsc -b packages/*",
     "dev": "ts-node-dev -r tsconfig-paths/register --transpileOnly ./packages/fewer/example.ts"
   },
@@ -22,6 +23,7 @@
     "typescript": "^3.1.6"
   },
   "dependencies": {
+    "fast-glob": "^2.2.4",
     "rel": "0.0.3",
     "sqlstring": "^2.3.1"
   }
