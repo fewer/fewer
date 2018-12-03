@@ -12,15 +12,13 @@ export interface BaseBuilt {
   [key: string]: FieldTypes.Type<any, boolean>;
 }
 
-type BuiltTable<Built extends BaseBuilt> = WithUndefinedPropertiesAsOptionals<
-  {
-    // TODO: There's probably a way to infer this rather than do it this way:
-    [P in keyof Built]: Built[P]['$$Type']
-  }
->;
+type BuiltTable<Built extends BaseBuilt> = {
+  // TODO: There's probably a way to infer this rather than do it this way:
+  [P in keyof Built]: Built[P]['$$Type']
+};
 
 export class SchemaTable<T extends BaseBuilt> {
-  $$Type!: BuiltTable<T>;
+  $$Type!: WithUndefinedPropertiesAsOptionals<BuiltTable<T>>;
 
   name: string;
 

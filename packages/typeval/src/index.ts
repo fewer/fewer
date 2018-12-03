@@ -2,16 +2,19 @@ export function as<T>() {
   return {} as T;
 }
 
-export function accepts<T>() {
+export function buildAccepts<T>() {
   return (arg: T) => {};
 }
 
-export const acceptsString = accepts<string>();
-export const acceptsNumber = accepts<number>();
-export const acceptsBoolean = accepts<boolean>();
+export function accepts<T>(arg: T) {}
+
+export const acceptsString = buildAccepts<string>();
+export const acceptsNumber = buildAccepts<number>();
+export const acceptsBoolean = buildAccepts<boolean>();
 
 export const optional = {
-  acceptsString: accepts<string | undefined>(),
-  acceptsNumber: accepts<number | undefined>(),
-  acceptsBoolean: accepts<boolean | undefined>(),
+  accepts<T>(arg?: T) {},
+  acceptsString: buildAccepts<string | undefined>(),
+  acceptsNumber: buildAccepts<number | undefined>(),
+  acceptsBoolean: buildAccepts<boolean | undefined>(),
 };
