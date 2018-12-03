@@ -1,5 +1,5 @@
-import sql from '../sql';
-import Table from '../Table';
+import sql from '../src/sql';
+import Table from '../src/Table';
 
 const star = sql('*');
 const users = new Table('users');

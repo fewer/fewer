@@ -147,5 +147,5 @@ interface RepoInit {
 }
 
 export function createRepository<Type extends RepoInit>(table: Type) {
-  return new Repository<Type extends SchemaTable ? Type['$$Type'] : Type>(table.name);
+  return new Repository<Type extends SchemaTable<any> ? Type['$$Type'] : Type>(table.name);
 }
