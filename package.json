@@ -23,7 +23,10 @@
     "typescript": "^3.2.1"
   },
   "dependencies": {
+    "create-jest-runner": "^0.4.1",
+    "execa": "^1.0.0",
     "fast-glob": "^2.2.4",
+    "jest-worker": "^23.2.0",
     "rel": "0.0.3",
     "sqlstring": "^2.3.1"
   }

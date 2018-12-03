@@ -1738,6 +1738,14 @@ cosmiconfig@^5.0.2:
     js-yaml "^3.9.0"
     parse-json "^4.0.0"
 
+create-jest-runner@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/create-jest-runner/-/create-jest-runner-0.4.1.tgz#eeda15bc0f9dc622ef2de5a7fd9a0f1a2c2eb62d"
+  integrity sha512-JOy675JMZ3b05F3VfAAi6Igme3pVBWu7Rt+gbW9ujAiX/Dua7+G47O7IbfiUU/FZjXhtipu/tz930b++UMGQEA==
+  dependencies:
+    jest-worker "^23.2.0"
+    throat "^4.1.0"
+
 cross-spawn@^5.0.1:
   version "5.1.0"
   resolved "https://registry.yarnpkg.com/cross-spawn/-/cross-spawn-5.1.0.tgz#e8bd0efee58fcff6f8f94510a0a554bbfa235449"
@@ -2446,11 +2454,6 @@ form-data@~2.3.2:
     combined-stream "^1.0.6"
     mime-types "^2.1.12"
 
-fp-ts@^1.0.0:
-  version "1.11.2"
-  resolved "https://registry.yarnpkg.com/fp-ts/-/fp-ts-1.11.2.tgz#653cca622f8bdb868fa87a971830e011c1e176c8"
-  integrity sha512-iCVO6TXkU2QDlLGlAoA/4FL4FfFhWP06C4fNv8q46vKO8EIYH7fIp7Qlzwmsblf5xbUpOHbhLpljhkr0PmhMbg==
-
 fragment-cache@^0.2.1:
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/fragment-cache/-/fragment-cache-0.2.1.tgz#4290fad27f13e89be7f33799c6bc5a0abfff0d19"
@@ -2987,13 +2990,6 @@ invert-kv@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/invert-kv/-/invert-kv-2.0.0.tgz#7393f5afa59ec9ff5f67a27620d11c226e3eec02"
   integrity sha512-wPVv/y/QQ/Uiirj/vh3oP+1Ww+AWehmi1g5fFWGPF6IpCBCDVrhgHRMvrLfdYcwDh3QJbGXDW4JAuzxElLSqKA==
-
-io-ts@^1.4.2:
-  version "1.4.2"
-  resolved "https://registry.yarnpkg.com/io-ts/-/io-ts-1.4.2.tgz#d3cb1ef7d7ba68d59af85d839a728aad7f4b1c28"
-  integrity sha512-U4uw8jjj8jYZip7zHgBj40GW0DpYdVi1i0J3anezp2ytYHDg7+cKc7iIFlIyCh+NLwMxzwu6OQ/b9S61KUjPGg==
-  dependencies:
-    fp-ts "^1.0.0"
 
 ip@^1.1.5:
   version "1.1.5"
@@ -6009,7 +6005,7 @@ text-extensions@^1.0.0:
   resolved "https://registry.yarnpkg.com/text-extensions/-/text-extensions-1.9.0.tgz#1853e45fee39c945ce6f6c36b2d659b5aabc2a26"
   integrity sha512-wiBrwC1EhBelW12Zy26JeOUkQ5mRu+5o8rpsJk5+2t+Y5vE7e842qtZDQ2g1NpX/29HdyFeJ4nSIhI47ENSxlQ==
 
-throat@^4.0.0:
+throat@^4.0.0, throat@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/throat/-/throat-4.1.0.tgz#89037cbc92c56ab18926e6ba4cbb200e15672a6a"
   integrity sha1-iQN8vJLFarGJJua6TLsgDhVnKmo=
