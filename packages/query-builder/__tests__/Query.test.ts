@@ -1,4 +1,4 @@
-import Query from '../Query';
+import Query from '../src/Query';
 
 const query = new Query('users.name');
 

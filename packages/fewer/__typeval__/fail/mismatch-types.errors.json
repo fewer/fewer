@@ -1,0 +1,30 @@
+[
+    {
+        "location": {
+            "start": {
+                "line": 19,
+                "column": 23
+            },
+            "end": {
+                "line": 19,
+                "column": 37
+            }
+        },
+        "errorMessage": "Argument of type 'number' is not assignable to parameter of type 'string'.",
+        "filePath": "/Users/jgensler/dev/fewer/packages/fewer/__typeval__/fail/mismatch-types.ts"
+    },
+    {
+        "location": {
+            "start": {
+                "line": 20,
+                "column": 23
+            },
+            "end": {
+                "line": 20,
+                "column": 37
+            }
+        },
+        "errorMessage": "Argument of type 'number' is not assignable to parameter of type 'string'.",
+        "filePath": "/Users/jgensler/dev/fewer/packages/fewer/__typeval__/fail/mismatch-types.ts"
+    }
+]

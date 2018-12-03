@@ -1,6 +1,8 @@
 .DS_Store
+.vscode
 node_modules/
 lerna-debug.log
+yarn-error.log
 npm-debug.log
 packages/*/lib
 packages/sq

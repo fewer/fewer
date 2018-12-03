@@ -1,4 +1,4 @@
-import { Repository, createRepository } from './Repository';
 import Schema from './Schema';
+import { Repository, createRepository } from './Repository';
 
-export { Repository, Schema, createRepository };
+export { Schema, Repository, createRepository };

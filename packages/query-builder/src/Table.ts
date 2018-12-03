@@ -28,7 +28,7 @@ export default class Table implements SQLike {
 
   $: Dollar;
 
-  constructor(name: string, ctx: Context) {
+  constructor(name: string, ctx?: Context) {
     this.name = name;
     this.ctx = getContext(ctx);
 

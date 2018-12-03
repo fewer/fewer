@@ -1,5 +1,5 @@
 import { createVirtuals } from '@fewer/virtuals';
-import Schema from './Schema';
+import { Schema } from './';
 import { createRepository } from './Repository';
 
 const schema = new Schema(20080906171750)
@@ -18,15 +18,20 @@ const schema = new Schema(20080906171750)
     part_number: t.string(),
   }));
 
-type User = typeof schema.tables.users;
+const Users = createRepository(schema.tables.users);
 
-const Users = createRepository<User>('users');
+// Manual def:
+interface InternalUser {
+  name: string;
+}
+const InternalUsers = createRepository<InternalUser>({ name: 'users' });
+
 export const DeletedUsers = Users.where({ deleted: [true, true] }).where({
   deleted: false,
 });
 
 const jordan = Users.create({ firstName: 'jordan' });
-const emily = Users.from({ firstName: 'emily' });
+const emily = Users.from({});
 
 async function foo() {
   const user = await Users.find(123).pluck('firstName');

@@ -1,4 +1,5 @@
 import { Table } from '@fewer/query-builder';
+import { SchemaTable } from './Schema';
 
 type Subset<T, V> = { [P in keyof T & V]: T[P] };
 
@@ -141,6 +142,10 @@ export class Repository<
   }
 }
 
-export function createRepository<Type>(tableName: string) {
-  return new Repository<Type>(tableName);
+interface RepoInit {
+  name: string;
+}
+
+export function createRepository<Type extends RepoInit>(table: Type) {
+  return new Repository<Type extends SchemaTable<any> ? Type['$$Type'] : Type>(table.name);
 }

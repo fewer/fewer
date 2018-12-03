@@ -31,5 +31,11 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "sqlstring": "^2.3.1"
+  },
+  "devDependencies": {
+    "@types/sqlstring": "^2.2.0"
   }
 }
