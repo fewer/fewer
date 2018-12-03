@@ -1,0 +1,7 @@
+{
+    "name": "@fewer/typeval",
+    "private": true,
+    "version": "0.0.0",
+    "main": "lib/index.js",
+    "typings": "lib/index.d.ts"
+  }
