@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const isEqual = require('lodash/isEqual');
 const ts = require('typescript');
+const diff = require('jest-diff');
 const { pass, fail } = require('create-jest-runner');
 const { codeFrameColumns: codeFrame } = require('@babel/code-frame');
 
@@ -144,7 +145,9 @@ module.exports = ({ testPath, config: jestConfig }) => {
         const failure = fail({
           ...baseObj,
           end,
-          errorMessage: 'The snapshot did not match the type errors. Use Jest watch mode and press `e` to update tests.',
+          errorMessage:
+            'The snapshot did not match the type errors. Use Jest watch mode and press `e` to update tests.\n' +
+            diff(errorsSnapshot, errorsWithInfo),
         });
         failure.errorsSnapshot = errorsWithInfo;
         return failure;
