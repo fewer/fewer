@@ -1,18 +1,18 @@
 before_script:
-  - yarn install
+  - yarn
 
 node8:
   image: node:8
   script:
-    npm run test
+    yarn test
 
 node10:
   image: node:10
   script:
-    npm run test
+    yarn test
 
 latest:
   image: node:latest
   allow_failure: true
   script:
-    npm run test
+    yarn test
