@@ -3,7 +3,7 @@ import { SchemaTable } from './Schema';
 
 type Subset<T, V> = { [P in keyof T & V]: T[P] };
 
-type WhereType<T> = { [P in keyof T]?: T[P] | T[P][] };
+type WhereType<T> = { [P in keyof T]?: NonNullable<T[P]> | NonNullable<T[P]>[] };
 
 export enum QueryTypes {
   SINGLE,

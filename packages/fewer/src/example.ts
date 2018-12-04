@@ -26,7 +26,7 @@ interface InternalUser {
 }
 const InternalUsers = createRepository<InternalUser>({ name: 'users' });
 
-export const DeletedUsers = Users.where({ deleted: [true, true] }).where({
+export const DeletedUsers = Users.where({ deleted: true }).where({
   deleted: false,
 });
 

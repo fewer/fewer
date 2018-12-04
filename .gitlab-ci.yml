@@ -4,15 +4,15 @@ before_script:
 node8:
   image: node:8
   script:
-    npm run jest
+    npm run test
 
 node10:
   image: node:10
   script:
-    npm run jest
+    npm run test
 
 latest:
   image: node:latest
   allow_failure: true
   script:
-    npm run jest
+    npm run test

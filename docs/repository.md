@@ -10,9 +10,9 @@
 import { createRepository } from 'fewer';
 
 interface IUsers {
-    id: number;
-    firstName: string;
-    lastName?: string;
+  id: number;
+  firstName: string;
+  lastName?: string;
 }
 
 const Users = createRepository<IUsers>('users');

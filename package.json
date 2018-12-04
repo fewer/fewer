@@ -7,14 +7,15 @@
   "scripts": {
     "test": "jest",
     "build": "tsc -b packages/*",
-    "dev": "ts-node-dev -r tsconfig-paths/register --transpileOnly ./packages/fewer/example.ts"
+    "dev": "ts-node-dev -r tsconfig-paths/register --transpileOnly ./packages/fewer/example.ts",
+    "prettier": "prettier --write ./packages/**/* ./docs/**/* *.md"
   },
   "devDependencies": {
     "@types/jest": "^23.3.9",
     "@types/node": "^10.12.7",
     "jest": "^23.6.0",
     "lerna": "^3.4.3",
-    "prettier": "^1.15.2",
+    "prettier": "^1.15.3",
     "ts-jest": "^23.10.4",
     "ts-node-dev": "^1.0.0-pre.30",
     "tsconfig-paths": "^3.7.0",
