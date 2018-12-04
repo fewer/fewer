@@ -124,6 +124,9 @@ module.exports = ({ testPath, config: jestConfig }) => {
     }
   });
 
+  const errorsForSnapshot = errorsWithInfo.map(
+    ({ filePath, ...error }) => error,
+  );
   const errors = errorsWithInfo.map(appendCodeFrame);
 
   const end = Date.now();
@@ -141,15 +144,15 @@ module.exports = ({ testPath, config: jestConfig }) => {
         ),
       );
 
-      if (!isEqual(errorsSnapshot, errorsWithInfo)) {
+      if (!isEqual(errorsSnapshot, errorsForSnapshot)) {
         const failure = fail({
           ...baseObj,
           end,
           errorMessage:
             'The snapshot did not match the type errors. Use Jest watch mode and press `e` to update tests.\n' +
-            diff(errorsSnapshot, errorsWithInfo),
+            diff(errorsSnapshot, errorsForSnapshot),
         });
-        failure.errorsSnapshot = errorsWithInfo;
+        failure.errorsSnapshot = errorsForSnapshot;
         return failure;
       }
 
@@ -164,7 +167,7 @@ module.exports = ({ testPath, config: jestConfig }) => {
         errorMessage:
           'No error snapshot found. Use Jest watch mode and press `e` to update tests.',
       });
-      failure.errorsSnapshot = errorsWithInfo;
+      failure.errorsSnapshot = errorsForSnapshot;
       return failure;
     }
   } else if (!shouldPass && !errors.length) {
