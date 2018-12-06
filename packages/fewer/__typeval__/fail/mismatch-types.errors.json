@@ -10,8 +10,7 @@
                 "column": 37
             }
         },
-        "errorMessage": "Argument of type 'number' is not assignable to parameter of type 'string'.",
-        "filePath": "/Users/jgensler/dev/fewer/packages/fewer/__typeval__/fail/mismatch-types.ts"
+        "errorMessage": "Argument of type 'number' is not assignable to parameter of type 'string'."
     },
     {
         "location": {
@@ -24,7 +23,6 @@
                 "column": 37
             }
         },
-        "errorMessage": "Argument of type 'number' is not assignable to parameter of type 'string'.",
-        "filePath": "/Users/jgensler/dev/fewer/packages/fewer/__typeval__/fail/mismatch-types.ts"
+        "errorMessage": "Argument of type 'number' is not assignable to parameter of type 'string'."
     }
 ]

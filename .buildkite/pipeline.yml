@@ -1,3 +1,7 @@
 steps:
-  - label: Example Test
-    command: echo "Hello!"
+  - name: ':node:'
+    command: 'yarn install && yarn test'
+    plugins:
+      - docker#v1.0.0:
+          image: node
+          workdir: /app
