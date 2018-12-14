@@ -5,6 +5,7 @@
     "packages/*"
   ],
   "scripts": {
+    "preinstall": "yarn-only",
     "test": "jest",
     "build": "tsc -b packages/*",
     "dev": "ts-node-dev -r tsconfig-paths/register --transpileOnly ./packages/fewer/example.ts",
@@ -20,6 +21,7 @@
     "ts-jest": "^23.10.4",
     "ts-node-dev": "^1.0.0-pre.30",
     "tsconfig-paths": "^3.7.0",
-    "typescript": "^3.2.1"
+    "typescript": "^3.2.1",
+    "yarn-only": "^1.0.4"
   }
 }
