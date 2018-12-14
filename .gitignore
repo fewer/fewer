@@ -1,8 +1,9 @@
 .DS_Store
 .vscode
 node_modules/
-lerna-debug.log
-yarn-error.log
-npm-debug.log
-packages/*/lib
-packages/sq
+*.log
+lib
+website/translated_docs
+website/build/
+website/node_modules
+website/i18n/*

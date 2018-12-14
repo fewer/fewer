@@ -64,9 +64,7 @@ class HomeSplash extends React.Component {
         <div className="inner">
           <ProjectTitle siteConfig={siteConfig} />
           <PromoSection>
-            <Button href="#try">Try It Out</Button>
-            <Button href={docUrl('doc1.html')}>Example Link</Button>
-            <Button href={docUrl('doc2.html')}>Example Link 2</Button>
+            <Button href={docUrl('introduction/getting-started')}>Get Started</Button>
           </PromoSection>
         </div>
       </SplashContainer>
@@ -101,19 +99,6 @@ class Index extends React.Component {
       </div>
     );
 
-    const TryOut = () => (
-      <Block id="try">
-        {[
-          {
-            content: 'Talk about trying this out',
-            image: `${baseUrl}img/docusaurus.svg`,
-            imageAlign: 'left',
-            title: 'Try it Out',
-          },
-        ]}
-      </Block>
-    );
-
     const Description = () => (
       <Block background="dark">
         {[
@@ -145,16 +130,22 @@ class Index extends React.Component {
       <Block layout="fourColumn">
         {[
           {
-            content: 'This is the content of my feature',
-            image: `${baseUrl}img/docusaurus.svg`,
+            content: 'Provides a clean minimal set of APIs, as well as hooks to provide arbitrary additional functionality.',
+            image: `${baseUrl}img/icons/arrow-down.svg`,
             imageAlign: 'top',
-            title: 'Feature One',
+            title: 'Minimal',
           },
           {
-            content: 'The content of my second feature',
-            image: `${baseUrl}img/docusaurus.svg`,
+            content: 'Works flawless with TypeScript to provide an enhanced authoring experience.',
+            image: `${baseUrl}img/icons/lock.svg`,
             imageAlign: 'top',
-            title: 'Feature Two',
+            title: 'Type Safe',
+          },
+          {
+            content: 'Fewer fits into your existing projects without requiring any special setup.',
+            image: `${baseUrl}img/icons/circle.svg`,
+            imageAlign: 'top',
+            title: 'Flexible',
           },
         ]}
       </Block>
@@ -167,7 +158,6 @@ class Index extends React.Component {
           <Features />
           <FeatureCallout />
           <LearnHow />
-          <TryOut />
           <Description />
         </div>
       </div>

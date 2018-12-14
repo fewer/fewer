@@ -14,8 +14,9 @@ const siteConfig = {
 
   // For no header links in the top nav bar -> headerLinks: [],
   headerLinks: [
-    { doc: 'doc1', label: 'Docs' },
-    { doc: 'doc4', label: 'API' },
+    { doc: 'introduction/getting-started', label: 'Getting Started' },
+    { doc: 'api/api-reference', label: 'API' },
+    { href: 'https://www.github.com/fewer/fewer', label: 'Github' },
     { page: 'help', label: 'Help' },
     // { blog: true, label: 'Blog' },
   ],
@@ -27,7 +28,7 @@ const siteConfig = {
 
   /* Colors for website */
   colors: {
-    primaryColor: '#fd5c63',
+    primaryColor: '#cc9900',
     secondaryColor: '#205C3B',
   },
 
@@ -54,7 +55,7 @@ const siteConfig = {
   },
 
   // Add custom scripts here that would be placed in <script> tags.
-  scripts: ['https://buttons.github.io/buttons.js'],
+  scripts: ['https://buttons.github.io/buttons.js', 'https://unpkg.com/quicklink', '/scripts/init.js'],
 
   // On page navigation for the current documentation page.
   onPageNav: 'separate',
@@ -64,9 +65,6 @@ const siteConfig = {
   // Open Graph and Twitter card images.
   ogImage: 'img/docusaurus.png',
   twitterImage: 'img/docusaurus.png',
-
-  // Show documentation's last update time.
-  enableUpdateTime: true,
 };
 
 module.exports = siteConfig;

@@ -5,32 +5,46 @@
     "previous": "Previous",
     "tagline": "A minimal ORM for Node.js.",
     "docs": {
-      "doc1": {
-        "title": "Latin-ish",
-        "sidebar_label": "Example Page"
+      "advanced/multi-db": {
+        "title": "Multiple Databases",
+        "sidebar_label": "Multiple Databases"
       },
-      "doc2": {
-        "title": "document number 2"
+      "api/api-reference": {
+        "title": "API Reference",
+        "sidebar_label": "API Reference"
       },
-      "doc3": {
-        "title": "This is document number 3"
+      "introduction/getting-started": {
+        "title": "Getting Started",
+        "sidebar_label": "Getting Started"
       },
-      "doc4": {
-        "title": "Other Document"
+      "introduction/installation": {
+        "title": "Installation",
+        "sidebar_label": "Installation"
       },
-      "doc5": {
-        "title": "Fifth Document"
+      "pipes": {
+        "title": "pipes"
+      },
+      "README": {
+        "title": "README"
+      },
+      "repository": {
+        "title": "repository"
       }
     },
     "links": {
-      "Docs": "Docs",
+      "Getting Started": "Getting Started",
       "API": "API",
+      "Github": "Github",
       "Help": "Help"
     },
     "categories": {
-      "Docusaurus": "Docusaurus",
-      "First Category": "First Category",
-      "Second Category": "Second Category"
+      "Introduction": "Introduction",
+      "Basic Tutorial": "Basic Tutorial",
+      "Advanced Topics": "Advanced Topics",
+      "Recipes": "Recipes",
+      "FAQ": "FAQ",
+      "Other": "Other",
+      "API Reference": "API Reference"
     }
   },
   "pages-strings": {
