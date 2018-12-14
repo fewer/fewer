@@ -1,16 +1,15 @@
 import { createVirtuals } from '@fewer/virtuals';
-import { Schema } from './';
-import { createRepository } from './Repository';
+import { createRepository, createSchema } from './';
 
-const schema = new Schema(20080906171750)
-  .createTable('users', { force: true }, t => ({
+const schema = createSchema(20080906171750)
+  .table('users', { force: true }, t => ({
     firstName: t.nonNull(t.string()),
     lastName: t.string(),
     deleted: t.boolean(),
     createdAt: t.datetime(),
     updatedAt: t.datetime(),
   }))
-  .createTable('products', { force: true }, t => ({
+  .table('products', { force: true }, t => ({
     name: t.string(),
     description: t.text(),
     created_at: t.datetime(),

@@ -31,7 +31,7 @@ export class SchemaTable<T extends BaseBuilt> {
   }
 }
 
-export default class Schema<RegisteredTables = {}> {
+export class Schema<RegisteredTables = {}> {
   version: number;
   tables: RegisteredTables;
 
@@ -40,7 +40,7 @@ export default class Schema<RegisteredTables = {}> {
     this.tables = tables;
   }
 
-  createTable<TableName extends string, Built extends BaseBuilt>(
+  table<TableName extends string, Built extends BaseBuilt>(
     name: TableName,
     config: TableOptions,
     builder: (t: typeof FieldTypes) => Built,
@@ -48,4 +48,8 @@ export default class Schema<RegisteredTables = {}> {
     const table = new SchemaTable(name, config, builder);
     return new Schema(this.version, { ...this.tables, [name]: table });
   }
+}
+
+export function createSchema(version: number) {
+  return new Schema(version);
 }

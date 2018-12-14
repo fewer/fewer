@@ -1,7 +1,7 @@
 import * as typeval from '@fewer/typeval';
-import Schema from '../../src/Schema';
+import { createSchema } from '../../src';
 
-const schema = new Schema(20080906171750).createTable(
+const schema = createSchema(20080906171750).table(
   'flex',
   { force: true },
   t => ({
