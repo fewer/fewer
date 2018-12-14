@@ -1,7 +1,7 @@
 const siteConfig = {
   title: 'Fewer', // Title for your website.
   tagline: 'A minimal ORM for Node.js.',
-  url: 'https://fewer.github.io', // Your website URL
+  url: 'https://fewer.netlify.com', // Your website URL
   baseUrl: '/',
   // baseUrl: '/fewer', // Base URL for your project */
   // For github.io type URLs, you would set the url and baseUrl like:
@@ -17,17 +17,17 @@ const siteConfig = {
     { doc: 'doc1', label: 'Docs' },
     { doc: 'doc4', label: 'API' },
     { page: 'help', label: 'Help' },
-    { blog: true, label: 'Blog' },
+    // { blog: true, label: 'Blog' },
   ],
 
   /* path to images for header/footer */
-  headerIcon: 'img/docusaurus.svg',
+  headerIcon: 'img/FewerIcon.svg',
   footerIcon: 'img/docusaurus.svg',
-  favicon: 'img/favicon.png',
+  favicon: 'img/FewerIcon.png',
 
   /* Colors for website */
   colors: {
-    primaryColor: '#2E8555',
+    primaryColor: '#fd5c63',
     secondaryColor: '#205C3B',
   },
 
@@ -46,7 +46,7 @@ const siteConfig = {
   */
 
   // This copyright info is used in /core/Footer.js and blog RSS/Atom feeds.
-  copyright: `Copyright © ${new Date().getFullYear()} Your Name or Your Company Name`,
+  copyright: `Copyright © ${new Date().getFullYear()} Jordan Gensler & Emily Dobervich`,
 
   highlight: {
     // Highlight.js theme to use for syntax highlighting in code blocks.
