@@ -16,7 +16,7 @@
     "@types/node": "^10.12.7",
     "jest": "^23.6.0",
     "jest-diff": "^23.6.0",
-    "lerna": "^3.4.3",
+    "lerna": "^3.5.1",
     "prettier": "^1.15.3",
     "ts-jest": "^23.10.4",
     "ts-node-dev": "^1.0.0-pre.30",

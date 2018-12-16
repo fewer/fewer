@@ -1,5 +1,6 @@
 import * as FieldTypes from './FieldTypes';
 import { WithUndefinedPropertiesAsOptionals } from './typeHelpers';
+import { Database, globalDatabase } from '../Database';
 
 type TableOptions =
   | {
@@ -34,10 +35,19 @@ export class SchemaTable<T extends BaseBuilt> {
 export class Schema<RegisteredTables = {}> {
   version: number;
   tables: RegisteredTables;
+  database?: Database;
 
   constructor(version: number, tables = {} as RegisteredTables) {
     this.version = version;
     this.tables = tables;
+    this.wireDatabase();
+  }
+
+  // TODO: This needs to have other options to eventually support multi-db setups.
+  private wireDatabase() {
+    globalDatabase.wait((db) => {
+      this.database = db;
+    });
   }
 
   table<TableName extends string, Built extends BaseBuilt>(

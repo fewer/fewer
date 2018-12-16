@@ -1,10 +1,11 @@
 {
-  "name": "@fewer/validations",
+  "name": "@fewer/adapter-postgres",
   "version": "0.0.0",
   "description": "> TODO: description",
   "keywords": [
     "fewer",
-    "validations"
+    "adapter",
+    "postgres"
   ],
   "author": "Jordan Gensler <jgensler@netflix.com>",
   "homepage": "https://github.com/fewer/fewer",
@@ -30,5 +31,12 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "pg": "^7.7.1"
+  },
+  "devDependencies": {
+    "@types/pg": "^7.4.11",
+    "fewer": "^0.0.0"
   }
 }

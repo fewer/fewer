@@ -10,6 +10,7 @@
     "module": "commonjs",
     "outDir": "./lib",
     "paths": {
+      "fewer": ["./packages/fewer/src"],
       "@fewer/*": ["./packages/*/src"]
     },
     "baseUrl": "."
