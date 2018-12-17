@@ -6016,6 +6016,11 @@ sqlstring@^2.3.1:
   resolved "https://registry.yarnpkg.com/sqlstring/-/sqlstring-2.3.1.tgz#475393ff9e91479aea62dcaf0ca3d14983a7fb40"
   integrity sha1-R1OT/56RR5rqYtyvDKPRSYOn+0A=
 
+squel@^5.12.2:
+  version "5.12.2"
+  resolved "https://registry.yarnpkg.com/squel/-/squel-5.12.2.tgz#8c7b54fd5462d95fe2432663c8762b65d29efe4c"
+  integrity sha512-pIM8SjlUJlN2G6xz3we+lCp2aNQgxauGqKXJDi8y2n0hqJlSot0IUEdHh7/zGFFuRYnypbDiOhSWLZzT1BXnlQ==
+
 sshpk@^1.7.0:
   version "1.15.2"
   resolved "https://registry.yarnpkg.com/sshpk/-/sshpk-1.15.2.tgz#c946d6bd9b1a39d0e8635763f5242d6ed6dcb629"

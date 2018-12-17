@@ -2,5 +2,5 @@
 
 export default interface Adapter {
   connect(): Promise<void>;
-  query(queryString: string, values: any[]): Promise<any>;
+  query(queryString: string, values?: any[]): Promise<any>;
 }

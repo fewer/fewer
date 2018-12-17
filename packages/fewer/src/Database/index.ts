@@ -14,7 +14,11 @@ export class Database {
     }
 
     connect(): Promise<void> {
-        return Promise.reject('Not yet implemented.');
+        return this.adapter.connect();
+    }
+
+    query(queryString: string, values?: any[]): Promise<any> {
+        return this.adapter.query(queryString, values);
     }
 }
 

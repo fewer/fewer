@@ -1,9 +1,12 @@
-import { Table } from '@fewer/query-builder';
+import sq, { Select, QueryBuilder } from '@fewer/sq';
 import { SchemaTable } from '../Schema';
+import { Database, globalDatabase } from '../Database';
 
 type Subset<T, V> = { [P in keyof T & V]: T[P] };
 
-type WhereType<T> = { [P in keyof T]?: NonNullable<T[P]> | NonNullable<T[P]>[] };
+type WhereType<T> = {
+  [P in keyof T]?: NonNullable<T[P]> | NonNullable<T[P]>[]
+};
 
 export enum QueryTypes {
   SINGLE,
@@ -32,17 +35,20 @@ export class Repository<
   readonly $$QueryType!: QueryType;
 
   private tableName: string;
-  private queryTable: Table;
+  private runningQuery?: QueryBuilder;
   private pipes: Pipe[];
+
+  private database: Promise<Database>;
 
   constructor(
     tableName: string,
-    queryTable: Table = new Table(tableName),
-    pipes: Pipe[] = [],
+    runningQuery: QueryBuilder | undefined,
+    pipes: Pipe[],
   ) {
     this.tableName = tableName;
-    this.queryTable = queryTable;
+    this.runningQuery = runningQuery;
     this.pipes = pipes;
+    this.database = globalDatabase.waitFor();
   }
 
   pipe<Extensions>(
@@ -53,7 +59,7 @@ export class Repository<
     SelectionSet,
     QueryType
   > {
-    return new Repository(this.tableName, this.queryTable, [
+    return new Repository(this.tableName, this.runningQuery, [
       ...this.pipes,
       pipe,
     ]);
@@ -65,7 +71,8 @@ export class Repository<
   }
 
   create<T extends Partial<RepoType>>(obj: T): Promise<T & Partial<RepoType>> {
-    return Promise.resolve(this.from(obj));
+    throw new Error('Not implemented');
+    // return Promise.resolve(this.from(obj));
   }
 
   //
@@ -73,50 +80,86 @@ export class Repository<
   //
 
   pluck<Key extends keyof RepoType>(
-    ...args: Key[]
-  ): Repository<RepoType, Subset<RepoType, Key>, RegisteredExtensions, QueryType> {
-    return new Repository(this.tableName);
+    ...fields: Key[]
+  ): Repository<
+    RepoType,
+    Subset<RepoType, Key>,
+    RegisteredExtensions,
+    QueryType
+  > {
+    const nextQuery = this.nextQuery<Select>();
+    for (const fieldName of fields) {
+      nextQuery.field(fieldName as string);
+    }
+    return new Repository(this.tableName, nextQuery, this.pipes);
   }
 
   where(
     wheres: WhereType<RepoType>,
-  ): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryTypes.MULTIPLE> {
-    const builtQuery = Object.entries(wheres).reduce(
-      (qt, [fieldName, matcher]) => {
-        const field = qt.$[fieldName];
-        return qt.where(
-          Array.isArray(matcher) ? field.in(matcher) : field.eq(matcher),
-        );
-      },
-      this.queryTable,
-    );
+  ): Repository<
+    RepoType,
+    SelectionSet,
+    RegisteredExtensions,
+    QueryTypes.MULTIPLE
+  > {
+    const nextQuery = this.nextQuery<Select>();
 
-    return new Repository(this.tableName, builtQuery);
+    for (const [fieldName, matcher] of Object.entries(wheres)) {
+      if (Array.isArray(matcher)) {
+        nextQuery.where(`${fieldName} IN ?`, matcher);
+      } else {
+        nextQuery.where(`${fieldName} = ?`, matcher);
+      }
+    }
+
+    return new Repository(this.tableName, nextQuery, this.pipes);
   }
 
   find(
     id: string | number,
-  ): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryTypes.SINGLE> {
-    return {} as any;
+  ): Repository<
+    RepoType,
+    SelectionSet,
+    RegisteredExtensions,
+    QueryTypes.SINGLE
+  > {
+    return new Repository(
+      this.tableName,
+      this.nextQuery<Select>().where('id = ?', id),
+      this.pipes,
+    );
   }
 
   // TODO:
-  order() {}
-
-  limit(amount: number): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryType> {
-    return new Repository(this.tableName, this.queryTable.take(amount));
+  order() {
+    throw new Error('Not implemented');
   }
 
-  offset(amount: number): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryType> {
-    return new Repository(this.tableName, this.queryTable.skip(amount));
+  limit(
+    amount: number,
+  ): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryType> {
+    return new Repository(
+      this.tableName,
+      this.nextQuery<Select>().limit(amount),
+      this.pipes,
+    );
+  }
+
+  offset(
+    amount: number,
+  ): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryType> {
+    return new Repository(
+      this.tableName,
+      this.nextQuery<Select>().offset(amount),
+      this.pipes,
+    );
   }
 
   //
   // END QUERY
   //
 
-  // TODO: Implement lazy promise evaluation here:
-  then(
+  async then(
     onFulfilled: (
       value: QueryType extends QueryTypes.SINGLE
         ? SelectionSet
@@ -124,21 +167,34 @@ export class Repository<
     ) => void,
     onRejected?: (error: Error) => void,
   ) {
-    const hasError = false;
-    if (hasError) {
+    const db = await this.database;
+    try {
+      const data = await db.query(this.toSQL());
+      return onFulfilled(data);
+    } catch (error) {
       if (onRejected) {
-        return Promise.resolve(onRejected(new Error()));
+        return Promise.resolve(onRejected(error));
       } else {
-        return Promise.reject(new Error());
+        return Promise.reject(error);
       }
     }
-
-    // @ts-ignore
-    return Promise.resolve(onFulfilled({}));
   }
 
   toSQL(): string {
-    return this.queryTable.toSQL();
+    if (!this.runningQuery) {
+      throw new Error('No query found.');
+    }
+
+    return this.runningQuery.toString();
+  }
+
+  private nextQuery<T extends QueryBuilder>(): T {
+    if (!this.runningQuery) {
+      this.runningQuery = sq.select().from(this.tableName);
+    }
+
+    // @ts-ignore We expect the calling code to know what it is doing.
+    return this.runningQuery.clone();
   }
 }
 
@@ -147,5 +203,9 @@ interface RepoInit {
 }
 
 export function createRepository<Type extends RepoInit>(table: Type) {
-  return new Repository<Type extends SchemaTable<any> ? Type['$$Type'] : Type>(table.name);
+  return new Repository<Type extends SchemaTable<any> ? Type['$$Type'] : Type>(
+    table.name,
+    undefined,
+    [],
+  );
 }
