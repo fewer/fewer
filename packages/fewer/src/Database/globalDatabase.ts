@@ -21,17 +21,20 @@ export default {
     waiters = [];
   },
 
-  wait(cb: Waiter) {
+  waitFor(): Promise<Database> {
     if (db) {
-      cb(db);
+      return Promise.resolve(db);
     } else {
-      waiters.push(cb);
-      // TODO: This error needs to be much more clear on what is happening, why it might be happening, and how to fix it.
-      timeouts.push(
-        setTimeout(() => {
-          console.warn('Schema did not locate database within one second.');
-        }, 1000),
-      );
+      return new Promise(resolve => {
+        waiters.push(resolve);
+
+        // TODO: This error needs to be much more clear on what is happening, why it might be happening, and how to fix it.
+        timeouts.push(
+          setTimeout(() => {
+            console.warn('Schema did not locate database within one second.');
+          }, 1000),
+        );
+      });
     }
   },
 };

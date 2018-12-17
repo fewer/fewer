@@ -5,10 +5,10 @@
     "packages/*"
   ],
   "scripts": {
-    "preinstall": "yarn-only",
+    "preinstall": "npx yarn-only",
     "test": "jest",
-    "build": "tsc -b packages/*",
-    "dev": "ts-node-dev -r tsconfig-paths/register --transpileOnly ./packages/fewer/example.ts",
+    "build": "tsc --build packages/*",
+    "clean": "npm run build --clean",
     "prettier": "prettier --write ./packages/**/* ./docs/**/* *.md"
   },
   "devDependencies": {
@@ -21,7 +21,6 @@
     "ts-jest": "^23.10.4",
     "ts-node-dev": "^1.0.0-pre.30",
     "tsconfig-paths": "^3.7.0",
-    "typescript": "^3.2.1",
-    "yarn-only": "^1.0.4"
+    "typescript": "^3.2.1"
   }
 }

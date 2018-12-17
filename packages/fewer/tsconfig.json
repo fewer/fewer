@@ -6,5 +6,5 @@
     "rootDir": "src"
   },
   "include": ["./src"],
-  "references": [{ "path": "../query-builder" }]
+  "references": [{ "path": "../sq" }]
 }
