@@ -16,7 +16,7 @@ export default {
     // First reset our timeouts:
     timeouts.forEach(id => clearTimeout(id));
     timeouts = [];
-    // Then notify any listeners:
+    // Then notify listeners:
     waiters.forEach(fn => fn(db));
     waiters = [];
   },

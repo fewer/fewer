@@ -1,4 +1,4 @@
-import sq, { Select, QueryBuilder } from '@fewer/sq';
+import sq, { Select, Insert, QueryBuilder } from '@fewer/sq';
 import { SchemaTable } from '../Schema';
 import { Database, globalDatabase } from '../Database';
 
@@ -70,9 +70,10 @@ export class Repository<
     return createModel(obj);
   }
 
-  create<T extends Partial<RepoType>>(obj: T): Promise<T & Partial<RepoType>> {
-    throw new Error('Not implemented');
-    // return Promise.resolve(this.from(obj));
+  async create<T extends Partial<RepoType>>(obj: T): Promise<T & Partial<RepoType>> {
+    const db = await this.database;
+    const query = sq.insert().into(this.tableName).setFields(obj).toString();
+    return db.query(query);
   }
 
   //
@@ -188,9 +189,17 @@ export class Repository<
     return this.runningQuery.toString();
   }
 
-  private nextQuery<T extends QueryBuilder>(): T {
+  // TODO: Remove genericand make the mode flip the type. (use enum)
+  private nextQuery<T extends QueryBuilder>(mode: "select" | "insert" = "select"): T {
     if (!this.runningQuery) {
-      this.runningQuery = sq.select().from(this.tableName);
+      switch (mode) {
+        case 'select':
+          this.runningQuery = sq.select().from(this.tableName);
+        case 'insert':
+          this.runningQuery = sq.insert().into(this.tableName);
+        default:
+          throw new Error('Unknown mode');
+      }
     }
 
     // @ts-ignore We expect the calling code to know what it is doing.
