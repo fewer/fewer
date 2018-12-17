@@ -1,15 +1,15 @@
 import Adapter from "./Adapter";
 import globalDatabase from "./globalDatabase";
 
-interface DatabaseConfig {
+export interface DatabaseConfig {
     adapter: Adapter,
-    config: any,
 }
 
 export class Database {
     private adapter: Adapter;
-    constructor(config: DatabaseConfig) {
-        this.adapter = config.adapter;
+
+    constructor({ adapter }: DatabaseConfig) {
+        this.adapter = adapter;
         globalDatabase.set(this);
     }
 
@@ -18,8 +18,8 @@ export class Database {
     }
 }
 
-export function createDatabase(config: DatabaseConfig) {
-    return new Database(config);
+export function createDatabase(options: DatabaseConfig) {
+    return new Database(options);
 }
 
 export { Adapter, globalDatabase };

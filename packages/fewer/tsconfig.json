@@ -2,7 +2,8 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "lib",
-    "composite": true
+    "composite": true,
+    "rootDir": "src"
   },
   "include": ["./src"],
   "references": [{ "path": "../query-builder" }]

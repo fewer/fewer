@@ -1,7 +1,7 @@
-import { Adapter } from 'fewer';
+import { Adapter as BaseAdapter } from 'fewer';
 import { Client, ConnectionConfig } from 'pg';
 
-export default class PostgresAdapter implements Adapter {
+class PostgresAdapter implements BaseAdapter {
     private client: Client;
 
     constructor(options: ConnectionConfig) {
@@ -16,3 +16,5 @@ export default class PostgresAdapter implements Adapter {
         return this.client.query(queryString, values);
     }
 }
+
+export const Adapter = PostgresAdapter;

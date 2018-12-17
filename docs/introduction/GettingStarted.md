@@ -48,17 +48,16 @@ Open the **`db.ts`** file to configure your database connection:
 
 ```ts
 import { createDatabase } from 'fewer';
-import { adapter } from '@fewer/adapter-mysql';
+import { Adapter } from '@fewer/adapter-mysql';
 
 export default createDatabase({
-  adapter,
-  config: {
+  adapter: new Adapter({
     host: 'localhost',
     port: 3306,
     username: 'test',
     password: 'test',
     database: 'test',
-  },
+  }),
 });
 ```
 
