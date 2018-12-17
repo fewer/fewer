@@ -5,7 +5,7 @@
     "packages/*"
   ],
   "scripts": {
-    "preinstall": "node ./check-yarn.js",
+    "preinstall": "npx yarn-only",
     "test": "jest",
     "build": "tsc --build packages/*",
     "clean": "npm run build --clean",
