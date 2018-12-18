@@ -6,9 +6,10 @@
   ],
   "scripts": {
     "preinstall": "npx yarn-only",
+    "prepare": "yarn run clean && yarn run build",
     "test": "jest",
     "build": "tsc --build packages/*",
-    "clean": "npm run build --clean",
+    "clean": "yarn run build --clean",
     "prettier": "prettier --write ./packages/**/* ./docs/**/* *.md"
   },
   "devDependencies": {
