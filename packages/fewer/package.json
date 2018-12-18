@@ -1,6 +1,6 @@
 {
   "name": "fewer",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A minimal ORM for Node.js.",
   "keywords": [
     "orm",
@@ -32,6 +32,6 @@
     "@fewer/sq": "^0.0.1"
   },
   "devDependencies": {
-    "@fewer/typeval": "^0.0.1"
+    "@fewer/typeval": "^0.0.2"
   }
 }
