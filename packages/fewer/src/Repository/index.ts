@@ -28,12 +28,6 @@ export class Repository<
   RegisteredExtensions = {},
   QueryType = QueryTypes.MULTIPLE
 > {
-  // Intentionally stash types so that we can refer back to them:
-  readonly $$RepoType!: RepoType;
-  readonly $$SelectionSet!: SelectionSet;
-  readonly $$RegisteredExtensions!: RegisteredExtensions;
-  readonly $$QueryType!: QueryType;
-
   private tableName: string;
   private runningQuery?: QueryBuilder;
   private pipes: Pipe[];
@@ -51,6 +45,9 @@ export class Repository<
     this.database = globalDatabase.waitFor();
   }
 
+  /**
+   * TODO: Documentation.
+   */
   pipe<Extensions>(
     pipe: Pipe<RepoType, Extensions>,
   ): Repository<
@@ -65,11 +62,16 @@ export class Repository<
     ]);
   }
 
-  // Converts from plain object into internal representation:
+  /**
+   * TODO: Documentation.
+   */
   from<T extends Partial<RepoType>>(obj: T): T & Partial<RepoType> {
     return createModel(obj);
   }
 
+  /**
+   * TODO: Documentation.
+   */
   async create<T extends Partial<RepoType>>(
     obj: T,
   ): Promise<T & Partial<RepoType>> {
@@ -86,21 +88,9 @@ export class Repository<
   // QUERY
   //
 
-  pluck<Key extends keyof RepoType>(
-    ...fields: Key[]
-  ): Repository<
-    RepoType,
-    Subset<RepoType, Key>,
-    RegisteredExtensions,
-    QueryType
-  > {
-    const nextQuery = this.nextQuery<Select>();
-    for (const fieldName of fields) {
-      nextQuery.field(fieldName as string);
-    }
-    return new Repository(this.tableName, nextQuery, this.pipes);
-  }
-
+  /**
+   * TODO: Documentation.
+   */
   where(
     wheres: WhereType<RepoType>,
   ): Repository<
@@ -122,6 +112,9 @@ export class Repository<
     return new Repository(this.tableName, nextQuery, this.pipes);
   }
 
+  /**
+   * TODO: Documentation.
+   */
   find(
     id: string | number,
   ): Repository<
@@ -137,11 +130,34 @@ export class Repository<
     );
   }
 
-  // TODO:
+  /**
+   * TODO: Documentation.
+   */
+  pluck<Key extends keyof RepoType>(
+    ...fields: Key[]
+  ): Repository<
+    RepoType,
+    Subset<RepoType, Key>,
+    RegisteredExtensions,
+    QueryType
+  > {
+    const nextQuery = this.nextQuery<Select>();
+    for (const fieldName of fields) {
+      nextQuery.field(fieldName as string);
+    }
+    return new Repository(this.tableName, nextQuery, this.pipes);
+  }
+
+  /**
+   * TODO: Documentation.
+   */
   order() {
     throw new Error('Not implemented');
   }
 
+  /**
+   * TODO: Documentation.
+   */
   limit(
     amount: number,
   ): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryType> {
@@ -152,6 +168,9 @@ export class Repository<
     );
   }
 
+  /**
+   * TODO: Documentation.
+   */
   offset(
     amount: number,
   ): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryType> {
@@ -166,6 +185,9 @@ export class Repository<
   // END QUERY
   //
 
+  /**
+   * TODO: Documentation.
+   */
   async then(
     onFulfilled: (
       value: QueryType extends QueryTypes.SINGLE
@@ -187,7 +209,7 @@ export class Repository<
     }
   }
 
-  toSQL(): string {
+  private toSQL(): string {
     if (!this.runningQuery) {
       throw new Error('No query found.');
     }
@@ -195,7 +217,7 @@ export class Repository<
     return this.runningQuery.toString();
   }
 
-  // TODO: Remove genericand make the mode flip the type. (use enum)
+  // TODO: Remove generic and make the mode flip the type. (use enum)
   private nextQuery<T extends QueryBuilder>(
     mode: 'select' | 'insert' = 'select',
   ): T {
@@ -221,6 +243,9 @@ interface RepoInit {
   name: string;
 }
 
+/**
+ * TODO: Documentation.
+ */
 export function createRepository<Type extends RepoInit>(table: Type) {
   return new Repository<Type extends SchemaTable<any> ? Type['$$Type'] : Type>(
     table.name,

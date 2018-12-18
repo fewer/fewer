@@ -40,6 +40,9 @@ export class Schema<RegisteredTables = {}> {
     this.tables = tables;
   }
 
+  /**
+   * TODO: Documentation.
+   */
   table<TableName extends string, Built extends BaseBuilt>(
     name: TableName,
     config: TableOptions,
@@ -50,6 +53,9 @@ export class Schema<RegisteredTables = {}> {
   }
 }
 
+/**
+ * TODO: Documentation.
+ */
 export function createSchema(version: number) {
   return new Schema(version);
 }

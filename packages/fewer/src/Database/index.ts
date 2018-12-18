@@ -1,29 +1,38 @@
-import Adapter from "./Adapter";
-import globalDatabase from "./globalDatabase";
+import Adapter from './Adapter';
+import globalDatabase from './globalDatabase';
 
 export interface DatabaseConfig {
-    adapter: Adapter,
+  adapter: Adapter;
 }
 
 export class Database {
-    private adapter: Adapter;
+  private adapter: Adapter;
 
-    constructor({ adapter }: DatabaseConfig) {
-        this.adapter = adapter;
-        globalDatabase.set(this);
-    }
+  constructor({ adapter }: DatabaseConfig) {
+    this.adapter = adapter;
+    globalDatabase.set(this);
+  }
 
-    connect(): Promise<void> {
-        return this.adapter.connect();
-    }
+  /**
+   * TODO: Documentation.
+   */
+  connect(): Promise<void> {
+    return this.adapter.connect();
+  }
 
-    query(queryString: string, values?: any[]): Promise<any> {
-        return this.adapter.query(queryString, values);
-    }
+  /**
+   * TODO: Documentation.
+   */
+  query(queryString: string, values?: any[]): Promise<any> {
+    return this.adapter.query(queryString, values);
+  }
 }
 
+/**
+ * TODO: Documentation.
+ */
 export function createDatabase(options: DatabaseConfig) {
-    return new Database(options);
+  return new Database(options);
 }
 
 export { Adapter, globalDatabase };
