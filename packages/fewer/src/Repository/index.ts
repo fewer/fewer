@@ -70,9 +70,15 @@ export class Repository<
     return createModel(obj);
   }
 
-  async create<T extends Partial<RepoType>>(obj: T): Promise<T & Partial<RepoType>> {
+  async create<T extends Partial<RepoType>>(
+    obj: T,
+  ): Promise<T & Partial<RepoType>> {
     const db = await this.database;
-    const query = sq.insert().into(this.tableName).setFields(obj).toString();
+    const query = sq
+      .insert()
+      .into(this.tableName)
+      .setFields(obj)
+      .toString();
     return db.query(query);
   }
 
@@ -190,13 +196,17 @@ export class Repository<
   }
 
   // TODO: Remove genericand make the mode flip the type. (use enum)
-  private nextQuery<T extends QueryBuilder>(mode: "select" | "insert" = "select"): T {
+  private nextQuery<T extends QueryBuilder>(
+    mode: 'select' | 'insert' = 'select',
+  ): T {
     if (!this.runningQuery) {
       switch (mode) {
         case 'select':
           this.runningQuery = sq.select().from(this.tableName);
+          break;
         case 'insert':
           this.runningQuery = sq.insert().into(this.tableName);
+          break;
         default:
           throw new Error('Unknown mode');
       }
