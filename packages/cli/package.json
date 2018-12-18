@@ -9,7 +9,7 @@
     ]
   },
   "name": "@fewer/cli",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "The CLI to scaffold and perform operations for Fewer.",
   "keywords": [
     "cli",
