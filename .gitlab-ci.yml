@@ -1,18 +1,30 @@
 before_script:
   - yarn
 
+services:
+  - postgres:9-alpine
+
+variables:
+  POSTGRES_DB: fewer-test
+  POSTGRES_USER: fewer-test
+  POSTGRES_PASSWORD: ""
+  PGHOST: postgres
+  PGDATABASE: fewer-test
+  PGUSER: fewer-test
+  PGPASSWORD: ""
+
 node8:
-  image: node:8
+  image: node:8-alpine
   script:
     yarn test
 
 node10:
-  image: node:10
+  image: node:10-alpine
   script:
     yarn test
 
 latest:
-  image: node:latest
+  image: node:alpine
   allow_failure: true
   script:
     yarn test

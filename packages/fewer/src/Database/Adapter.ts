@@ -17,4 +17,6 @@ export default interface Adapter {
    * Updates a record in the database. Returns the id of the updated item.
    */
   update(query: Update): Promise<any>;
+
+  rawQuery(query: String): Promise<any>;
 }

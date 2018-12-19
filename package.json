@@ -2,7 +2,8 @@
   "name": "fewer-monorepo",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "scripts/"
   ],
   "scripts": {
     "preinstall": "npx yarn-only",
@@ -10,7 +11,10 @@
     "test": "jest",
     "build": "tsc --build packages/*",
     "clean": "yarn run build --clean",
-    "prettier": "prettier --write ./packages/**/* ./docs/**/* *.md"
+    "prettier": "prettier --write ./packages/**/* ./docs/**/* *.md",
+    "integration:local": "./env.sh yarn run _integration:local",
+    "_integration:local": "yarn run _integration:prep && jest --config=jest.config.integration.js",
+    "_integration:prep": "ts-node scripts/integrationPrep.ts"
   },
   "devDependencies": {
     "@types/jest": "^23.3.9",
@@ -22,6 +26,6 @@
     "ts-jest": "^23.10.4",
     "ts-node-dev": "^1.0.0-pre.30",
     "tsconfig-paths": "^3.7.0",
-    "typescript": "^3.2.1"
+    "typescript": "^3.2.2"
   }
 }

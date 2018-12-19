@@ -3,6 +3,8 @@ import { Client, ConnectionConfig } from 'pg';
 import squel from 'squel';
 import { Insert, Select, Update } from '@fewer/sq';
 
+export { createMigration } from './createMigration';
+
 const postgresSquel = squel.useFlavour('postgres');
 
 export class PostgresAdapter implements BaseAdapter {
@@ -70,6 +72,11 @@ export class PostgresAdapter implements BaseAdapter {
       .setFields(context.fields);
 
     const results = await this.client.query(update.toString());
+    return results.rows;
+  }
+
+  async rawQuery(query: string) {
+    const results = await this.client.query(query);
     return results.rows;
   }
 }
