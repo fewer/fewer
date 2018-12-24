@@ -1,19 +1,5 @@
-const Dirty: unique symbol = Symbol('dirty');
-const Changed: unique symbol = Symbol('dirty');
-
-export const Symbols: {
-  /**
-   * Used to determine if any of the properties on the model have been changed.
-   */
-  readonly dirty: typeof Dirty;
-  /**
-   * Used to determine the set of properties on the model that have been changed.
-   */
-  readonly changed: typeof Changed;
-} = {
-  dirty: Dirty,
-  changed: Changed,
-};
+export const Dirty: unique symbol = Symbol('dirty');
+export const Changed: unique symbol = Symbol('dirty');
 
 type PropertySet = Set<string | symbol | number>;
 

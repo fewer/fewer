@@ -1,7 +1,7 @@
 import sq, { Select } from '@fewer/sq';
 import { SchemaTable } from '../Schema';
 import { Database, globalDatabase } from '../Database';
-import createModel, { Symbols, SymbolProperties } from './createModel';
+import createModel, { SymbolProperties, Dirty, Changed } from './createModel';
 
 type Subset<T, V> = { [P in keyof T & V]: T[P] };
 
@@ -28,7 +28,19 @@ export class Repository<
   /**
    * Contains symbols that are used to access metadata about the state of models.
    */
-  readonly symbols = Symbols;
+  readonly symbols: {
+    /**
+     * Used to determine if any of the properties on the model have been changed.
+     */
+    readonly dirty: typeof Dirty;
+    /**
+     * Used to determine the set of properties on the model that have been changed.
+     */
+    readonly changed: typeof Changed;
+  } = {
+    dirty: Dirty,
+    changed: Changed,
+  };
 
   private tableName: string;
   private runningQuery?: Select;
