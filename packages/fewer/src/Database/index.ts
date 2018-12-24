@@ -14,14 +14,14 @@ export class Database {
   }
 
   /**
-   * TODO: Documentation.
+   * Connects to the database.
    */
   connect(): Promise<void> {
     return this.adapter.connect();
   }
 
   /**
-   * TODO: Documentation.
+   * Issues a SQL query against the database.
    */
   query(queryString: string, values?: any[]): Promise<any> {
     return this.adapter.query(queryString, values);
