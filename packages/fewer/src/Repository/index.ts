@@ -1,7 +1,12 @@
 import sq, { Select } from '@fewer/sq';
 import { SchemaTable } from '../Schema';
 import { Database, globalDatabase } from '../Database';
-import createModel, { SymbolProperties, Dirty, Changed } from './createModel';
+import createModel, {
+  SymbolProperties,
+  Symbols,
+  ValidationError,
+  InternalSymbols,
+} from './createModel';
 
 type Subset<T, V> = { [P in keyof T & V]: T[P] };
 
@@ -15,12 +20,36 @@ export enum QueryTypes {
 }
 
 interface Pipe<RepoType = any, Extensions = RepoType> {
-  prepare(obj: RepoType & Partial<Extensions>): void;
-  save?(obj: RepoType, next: () => Promise<void>): Promise<void>;
+  /**
+   * Set an object up. Add virtuals and other properties.
+   */
+  prepare?(obj: RepoType & Partial<Extensions>): void;
+  /**
+   * Middleware.
+   */
+  use?(obj: RepoType, next: () => Promise<void>): Promise<void>;
+  // TODO: This also needs to be async:
+  /**
+   * Perform validation. Return either undefined or null to signal no validation errors.
+   * Return either an array of Validation Errors, or a single validation error.
+   *
+   * @example
+   * return {
+   *   on: 'name',
+   *   message: 'No name was provided',
+   * }
+   */
+  validate?(
+    obj: RepoType,
+  ):
+    | undefined
+    | null
+    | ValidationError<keyof RepoType & keyof Extensions>
+    | ValidationError<keyof RepoType & keyof Extensions>[];
 }
 
 export class Repository<
-  RepoType,
+  RepoType = {},
   SelectionSet = RepoType,
   RegisteredExtensions = {},
   QueryType = QueryTypes.MULTIPLE
@@ -28,19 +57,7 @@ export class Repository<
   /**
    * Contains symbols that are used to access metadata about the state of models.
    */
-  readonly symbols: {
-    /**
-     * Used to determine if any of the properties on the model have been changed.
-     */
-    readonly dirty: typeof Dirty;
-    /**
-     * Used to determine the set of properties on the model that have been changed.
-     */
-    readonly changed: typeof Changed;
-  } = {
-    dirty: Dirty,
-    changed: Changed,
-  };
+  readonly symbols = Symbols;
 
   private tableName: string;
   private runningQuery?: Select;
@@ -59,6 +76,7 @@ export class Repository<
 
     // TODO: It's probably not ideal to create this promise on every chain. We should probably lazily create it.
     // Alternatively, we could consume it from the schema or something like that.
+    // Probably the schema, with a default on the global database if none from schema is provided.
     this.database = globalDatabase.waitFor();
   }
 
@@ -77,6 +95,37 @@ export class Repository<
       ...this.pipes,
       pipe,
     ]);
+  }
+
+  /**
+   * Validates an object
+   */
+  validate<T extends Partial<RepoType> & SymbolProperties>(obj: T) {
+    if (!obj[Symbols.isModel]) {
+      throw new Error(
+        'Attempted to validate an object that was not a fewer model.',
+      );
+    }
+
+    const errors: ValidationError[] = [];
+
+    this.pipes.forEach(pipe => {
+      if (!pipe.validate) return;
+
+      const validationErrors = pipe.validate(obj);
+      if (validationErrors) {
+        if (Array.isArray(validationErrors)) {
+          errors.concat(validationErrors);
+        } else {
+          errors.push(validationErrors);
+        }
+      }
+    });
+
+    // @ts-ignore We intentionally don't include internal symbols in the types:
+    const setErrors: Function = obj[InternalSymbols.setErrors];
+
+    setErrors(errors);
   }
 
   /**
