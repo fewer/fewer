@@ -26,6 +26,9 @@ export const Symbols: {
    * Used to determine if the model is valid.
    */
   readonly valid: typeof Valid;
+  /**
+   * Used to get the errors that are currently attached to the model.
+   */
   readonly errors: typeof Errors;
 } = {
   isModel: IsModel,
@@ -42,7 +45,6 @@ export interface SymbolProperties<T = any> {
   readonly [Symbols.changed]: Set<string | symbol | number>;
   readonly [Symbols.changes]: Map<string | symbol | number, any>;
   readonly [Symbols.valid]: boolean;
-  // TODO: Figure out the shape of errors:
   readonly [Symbols.errors]: ValidationError<T>[];
 }
 
@@ -51,7 +53,14 @@ export const InternalSymbols = {
 };
 
 export interface ValidationError<T = any> {
-  on?: T;
+  /**
+   * The field that contained the validation error.
+   * If the validation error occured on the entire model, then this field should be omitted.
+   */
+  on?: keyof T;
+  /**
+   * The message for the validation error.
+   */
   message: string;
 }
 
@@ -59,7 +68,7 @@ const DEFAULT_ERRORS: ReadonlyArray<ValidationError> = Object.freeze([]);
 
 export default function createModel<RepoType, T extends object>(
   obj: T,
-): T & Partial<RepoType> & SymbolProperties {
+): T & Partial<RepoType> & SymbolProperties<RepoType> {
   const changes = new Map();
 
   let errors: ReadonlyArray<ValidationError> = DEFAULT_ERRORS;

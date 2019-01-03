@@ -19,7 +19,7 @@ export enum QueryTypes {
   MULTIPLE,
 }
 
-interface Pipe<RepoType = any, Extensions = RepoType> {
+export interface Pipe<RepoType = any, Extensions = RepoType> {
   /**
    * Set an object up. Add virtuals and other properties.
    */
@@ -27,7 +27,10 @@ interface Pipe<RepoType = any, Extensions = RepoType> {
   /**
    * Middleware.
    */
-  use?(obj: RepoType, next: () => Promise<void>): Promise<void>;
+  use?(
+    obj: RepoType & Partial<Extensions>,
+    next: () => Promise<void>,
+  ): Promise<void>;
   // TODO: This also needs to be async:
   /**
    * Perform validation. Return either undefined or null to signal no validation errors.
@@ -40,12 +43,13 @@ interface Pipe<RepoType = any, Extensions = RepoType> {
    * }
    */
   validate?(
-    obj: RepoType,
+    obj: RepoType & Partial<Extensions>,
   ):
+    | void
     | undefined
     | null
-    | ValidationError<keyof RepoType & keyof Extensions>
-    | ValidationError<keyof RepoType & keyof Extensions>[];
+    | ValidationError<RepoType & Extensions>
+    | ValidationError<RepoType & Extensions>[];
 }
 
 export class Repository<
@@ -98,9 +102,9 @@ export class Repository<
   }
 
   /**
-   * Validates an object
+   * Validates an object.
    */
-  validate<T extends Partial<RepoType> & SymbolProperties>(obj: T) {
+  validate<T extends Partial<RepoType> & SymbolProperties<RepoType>>(obj: T) {
     if (!obj[Symbols.isModel]) {
       throw new Error(
         'Attempted to validate an object that was not a fewer model.',
@@ -126,6 +130,8 @@ export class Repository<
     const setErrors: Function = obj[InternalSymbols.setErrors];
 
     setErrors(errors);
+
+    return errors.length === 0;
   }
 
   /**
@@ -140,7 +146,7 @@ export class Repository<
    */
   async create<T extends Partial<RepoType>>(
     obj: T,
-  ): Promise<T & Partial<RepoType> & SymbolProperties> {
+  ): Promise<T & Partial<RepoType> & SymbolProperties<RepoType>> {
     const db = await this.database;
     const query = sq
       .insert()
@@ -285,6 +291,8 @@ export class Repository<
     return this.runningQuery.clone();
   }
 }
+
+export { ValidationError };
 
 /**
  * TODO: Documentation.

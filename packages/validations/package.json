@@ -30,5 +30,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "fewer": "^0.0.5"
   }
 }
