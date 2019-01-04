@@ -1,5 +1,6 @@
 import * as FieldTypes from './FieldTypes';
 import { WithUndefinedPropertiesAsOptionals } from './typeHelpers';
+import { INTERNAL_TYPE } from '../types';
 
 type TableOptions =
   | {
@@ -13,12 +14,11 @@ export interface BaseBuilt {
 }
 
 type BuiltTable<Built extends BaseBuilt> = {
-  // TODO: There's probably a way to infer this rather than do it this way:
-  [P in keyof Built]: Built[P]['$$Type']
+  [P in keyof Built]: Built[P][typeof INTERNAL_TYPE]
 };
 
 export class SchemaTable<T extends BaseBuilt> {
-  $$Type!: WithUndefinedPropertiesAsOptionals<BuiltTable<T>>;
+  [INTERNAL_TYPE]: WithUndefinedPropertiesAsOptionals<BuiltTable<T>>;
 
   name: string;
 

@@ -7,6 +7,8 @@ import createModel, {
   ValidationError,
   InternalSymbols,
 } from './createModel';
+import { Association } from '../Association';
+import { INTERNAL_TYPE } from '../types';
 
 type Subset<T, V> = { [P in keyof T & V]: T[P] };
 
@@ -55,9 +57,13 @@ export interface Pipe<RepoType = any, Extensions = RepoType> {
 export class Repository<
   RepoType = {},
   SelectionSet = RepoType,
+  // TODO: Either move the additions into registered extensions and preserve the repo type, or
+  // just remove this generic all together.
   RegisteredExtensions = {},
-  QueryType = QueryTypes.MULTIPLE
+  QueryType = any
 > {
+  [INTERNAL_TYPE]: RepoType;
+
   /**
    * Contains symbols that are used to access metadata about the state of models.
    */
@@ -251,6 +257,27 @@ export class Repository<
   }
 
   /**
+   * Loads an association so that it can be used
+   */
+  load<Name extends string, LoadAssociation extends Association>(
+    name: Name,
+    association: LoadAssociation,
+  ): Repository<
+    RepoType &
+      {
+        [P in Name]: LoadAssociation[typeof INTERNAL_TYPE][typeof INTERNAL_TYPE]
+      },
+    SelectionSet &
+      {
+        [P in Name]: LoadAssociation[typeof INTERNAL_TYPE][typeof INTERNAL_TYPE]
+      },
+    RegisteredExtensions,
+    QueryType
+  > {
+    return new Repository(this.tableName, this.runningQuery, this.pipes);
+  }
+
+  /**
    * TODO: Documentation.
    */
   async then(
@@ -299,8 +326,15 @@ export { ValidationError };
  */
 export function createRepository<Type extends SchemaTable<any>>(
   table: Type,
-): Repository<Type['$$Type']>;
-export function createRepository<Type>(table: string): Repository<Type>;
+): Repository<
+  Type[typeof INTERNAL_TYPE],
+  Type[typeof INTERNAL_TYPE],
+  {},
+  QueryTypes.MULTIPLE
+>;
+export function createRepository<Type>(
+  table: string,
+): Repository<Type, Type, {}, QueryTypes.MULTIPLE>;
 export function createRepository(table: any): any {
   return new Repository(
     typeof table === 'string' ? table : table.name,
