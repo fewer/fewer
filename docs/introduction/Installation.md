@@ -21,7 +21,7 @@ npm install @fewer/cli --global
 The core `fewer` package includes the basic functionality needed to interact with your database, but you'll likely want one of the pre-built helper packages to take care of common functionality.
 
 ```bash
-npm install @fewer/validations # Validates models when saving
-npm install @fewer/virtuals # Support for adding virtuals to models.
+npm install @fewer/validations # A collection of pipes that handle common model validation use-cases.
+npm install @fewer/virtuals # Support for adding virtuals and custom methods to models.
 npm install @fewer/password # Automatically handle hashing password fields.
 ```

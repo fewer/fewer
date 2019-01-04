@@ -7,7 +7,7 @@ Pipes are an intentionally low-level feature that allow you to build large amoun
 We have built some common use-case pipes that you can install and use:
 
 - **`@fewer/virtuals`** - A pipe to add custom fields and methods to objects returned by the repository.
-- **`@fewer/validations`**
+- **`@fewer/validations`** - A collection of pipes that handle common model validation use-cases.
 - **`@fewer/hashed-field`** - A pipe that handles hashing fields automatically.
 
 ## Building your own pipes

@@ -1,8 +1,4 @@
-// TODO: Expose pipe type somewhere:
-interface Pipe<RepoType = any, Extensions = RepoType> {
-  prepare(obj: RepoType & Extensions): void;
-  save?(obj: RepoType, next: () => Promise<void>): Promise<void>;
-}
+import { Pipe } from 'fewer';
 
 export function createVirtuals<Instance, Extensions>(
   config: (instance: Instance) => Extensions,

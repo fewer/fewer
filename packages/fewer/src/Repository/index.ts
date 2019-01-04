@@ -1,6 +1,12 @@
-import sq, { Select, Insert, QueryBuilder } from '@fewer/sq';
+import sq, { Select } from '@fewer/sq';
 import { SchemaTable } from '../Schema';
 import { Database, globalDatabase } from '../Database';
+import createModel, {
+  SymbolProperties,
+  Symbols,
+  ValidationError,
+  InternalSymbols,
+} from './createModel';
 
 type Subset<T, V> = { [P in keyof T & V]: T[P] };
 
@@ -13,35 +19,68 @@ export enum QueryTypes {
   MULTIPLE,
 }
 
-function createModel<RepoType, T>(obj: T): T & Partial<RepoType> {
-  return Object.assign({}, obj);
-}
-
-interface Pipe<RepoType = any, Extensions = RepoType> {
-  prepare(obj: RepoType & Partial<Extensions>): void;
-  save?(obj: RepoType, next: () => Promise<void>): Promise<void>;
+export interface Pipe<RepoType = any, Extensions = RepoType> {
+  /**
+   * Set an object up. Add virtuals and other properties.
+   */
+  prepare?(obj: RepoType & Partial<Extensions>): void;
+  /**
+   * Middleware.
+   */
+  use?(
+    obj: RepoType & Partial<Extensions>,
+    next: () => Promise<void>,
+  ): Promise<void>;
+  // TODO: This also needs to be async:
+  /**
+   * Perform validation. Return either undefined or null to signal no validation errors.
+   * Return either an array of Validation Errors, or a single validation error.
+   *
+   * @example
+   * return {
+   *   on: 'name',
+   *   message: 'No name was provided',
+   * }
+   */
+  validate?(
+    obj: RepoType & Partial<Extensions>,
+  ):
+    | void
+    | undefined
+    | null
+    | ValidationError<RepoType & Extensions>
+    | ValidationError<RepoType & Extensions>[];
 }
 
 export class Repository<
-  RepoType,
+  RepoType = {},
   SelectionSet = RepoType,
   RegisteredExtensions = {},
   QueryType = QueryTypes.MULTIPLE
 > {
+  /**
+   * Contains symbols that are used to access metadata about the state of models.
+   */
+  readonly symbols = Symbols;
+
   private tableName: string;
-  private runningQuery?: QueryBuilder;
+  private runningQuery?: Select;
   private pipes: Pipe[];
 
   private database: Promise<Database>;
 
   constructor(
     tableName: string,
-    runningQuery: QueryBuilder | undefined,
+    runningQuery: Select | undefined,
     pipes: Pipe[],
   ) {
     this.tableName = tableName;
     this.runningQuery = runningQuery;
     this.pipes = pipes;
+
+    // TODO: It's probably not ideal to create this promise on every chain. We should probably lazily create it.
+    // Alternatively, we could consume it from the schema or something like that.
+    // Probably the schema, with a default on the global database if none from schema is provided.
     this.database = globalDatabase.waitFor();
   }
 
@@ -63,9 +102,42 @@ export class Repository<
   }
 
   /**
+   * Validates an object.
+   */
+  validate<T extends Partial<RepoType> & SymbolProperties<RepoType>>(obj: T) {
+    if (!obj[Symbols.isModel]) {
+      throw new Error(
+        'Attempted to validate an object that was not a fewer model.',
+      );
+    }
+
+    const errors: ValidationError[] = [];
+
+    this.pipes.forEach(pipe => {
+      if (!pipe.validate) return;
+
+      const validationErrors = pipe.validate(obj);
+      if (validationErrors) {
+        if (Array.isArray(validationErrors)) {
+          errors.concat(validationErrors);
+        } else {
+          errors.push(validationErrors);
+        }
+      }
+    });
+
+    // @ts-ignore We intentionally don't include internal symbols in the types:
+    const setErrors: Function = obj[InternalSymbols.setErrors];
+
+    setErrors(errors);
+
+    return errors.length === 0;
+  }
+
+  /**
    * TODO: Documentation.
    */
-  from<T extends Partial<RepoType>>(obj: T): T & Partial<RepoType> {
+  from<T extends Partial<RepoType>>(obj: T) {
     return createModel(obj);
   }
 
@@ -74,19 +146,16 @@ export class Repository<
    */
   async create<T extends Partial<RepoType>>(
     obj: T,
-  ): Promise<T & Partial<RepoType>> {
+  ): Promise<T & Partial<RepoType> & SymbolProperties<RepoType>> {
     const db = await this.database;
     const query = sq
       .insert()
       .into(this.tableName)
       .setFields(obj)
       .toString();
+
     return db.query(query);
   }
-
-  //
-  // QUERY
-  //
 
   /**
    * TODO: Documentation.
@@ -99,7 +168,7 @@ export class Repository<
     RegisteredExtensions,
     QueryTypes.MULTIPLE
   > {
-    const nextQuery = this.nextQuery<Select>();
+    const nextQuery = this.selectQuery();
 
     for (const [fieldName, matcher] of Object.entries(wheres)) {
       if (Array.isArray(matcher)) {
@@ -125,7 +194,7 @@ export class Repository<
   > {
     return new Repository(
       this.tableName,
-      this.nextQuery<Select>().where('id = ?', id),
+      this.selectQuery().where('id = ?', id),
       this.pipes,
     );
   }
@@ -141,7 +210,7 @@ export class Repository<
     RegisteredExtensions,
     QueryType
   > {
-    const nextQuery = this.nextQuery<Select>();
+    const nextQuery = this.selectQuery();
     for (const fieldName of fields) {
       nextQuery.field(fieldName as string);
     }
@@ -163,7 +232,7 @@ export class Repository<
   ): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryType> {
     return new Repository(
       this.tableName,
-      this.nextQuery<Select>().limit(amount),
+      this.selectQuery().limit(amount),
       this.pipes,
     );
   }
@@ -176,14 +245,10 @@ export class Repository<
   ): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryType> {
     return new Repository(
       this.tableName,
-      this.nextQuery<Select>().offset(amount),
+      this.selectQuery().offset(amount),
       this.pipes,
     );
   }
-
-  //
-  // END QUERY
-  //
 
   /**
    * TODO: Documentation.
@@ -217,38 +282,28 @@ export class Repository<
     return this.runningQuery.toString();
   }
 
-  // TODO: Remove generic and make the mode flip the type. (use enum)
-  private nextQuery<T extends QueryBuilder>(
-    mode: 'select' | 'insert' = 'select',
-  ): T {
+  private selectQuery(): Select {
     if (!this.runningQuery) {
-      switch (mode) {
-        case 'select':
-          this.runningQuery = sq.select().from(this.tableName);
-          break;
-        case 'insert':
-          this.runningQuery = sq.insert().into(this.tableName);
-          break;
-        default:
-          throw new Error('Unknown mode');
-      }
+      this.runningQuery = sq.select().from(this.tableName);
+      return this.runningQuery;
     }
 
-    // @ts-ignore We expect the calling code to know what it is doing.
     return this.runningQuery.clone();
   }
 }
 
-interface RepoInit {
-  name: string;
-}
+export { ValidationError };
 
 /**
  * TODO: Documentation.
  */
-export function createRepository<Type extends RepoInit>(table: Type) {
-  return new Repository<Type extends SchemaTable<any> ? Type['$$Type'] : Type>(
-    table.name,
+export function createRepository<Type extends SchemaTable<any>>(
+  table: Type,
+): Repository<Type['$$Type']>;
+export function createRepository<Type>(table: string): Repository<Type>;
+export function createRepository(table: any): any {
+  return new Repository(
+    typeof table === 'string' ? table : table.name,
     undefined,
     [],
   );
