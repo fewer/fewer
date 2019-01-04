@@ -15,5 +15,5 @@ interface IUsers {
   lastName?: string;
 }
 
-const Users = createAIUsers>('users');
+const Users = createRepository<IUsers>('users');
 ```
