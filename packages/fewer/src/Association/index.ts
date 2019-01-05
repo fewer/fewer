@@ -10,27 +10,24 @@ export enum AssociationType {
 export class Association<
   Base extends Repository = Repository,
   Associate extends Repository = Repository
-> {
+> extends Repository {
   [INTERNAL_TYPE]: Associate;
 
   private type: AssociationType;
-  private base: Base;
   private associate: Associate;
 
-  constructor(type: AssociationType, base: Base, associate: Associate) {
+  constructor(type: AssociationType, associate: Associate) {
+    super(associate);
     this.type = type;
-    this.base = base;
     this.associate = associate;
   }
 }
 
 export function createAssociation<
-  Base extends Repository,
   Associate extends Repository
 >(
-  base: Base,
   type: AssociationType,
   associate: Associate,
-): Association<Base, Associate> {
-  return new Association(type, base, associate);
+): Association<Associate> {
+  return new Association(type, associate);
 }

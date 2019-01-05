@@ -48,7 +48,7 @@ Open the **`db.ts`** file to configure your database connection:
 
 ```ts
 import { createDatabase } from 'fewer';
-import { Adapter } from '@fewer/adapter-mysql';
+import { MySQLAdapter as Adapter } from '@fewer/adapter-mysql';
 
 export default createDatabase({
   adapter: new Adapter({

@@ -21,6 +21,8 @@ export enum QueryTypes {
   MULTIPLE,
 }
 
+const ALL_FIELDS: unique symbol = Symbol('ALL_FIELDS');
+
 export interface Pipe<RepoType = any, Extensions = RepoType> {
   /**
    * Set an object up. Add virtuals and other properties.
@@ -56,10 +58,7 @@ export interface Pipe<RepoType = any, Extensions = RepoType> {
 
 export class Repository<
   RepoType = {},
-  SelectionSet = RepoType,
-  // TODO: Either move the additions into registered extensions and preserve the repo type, or
-  // just remove this generic all together.
-  RegisteredExtensions = {},
+  SelectionSet = typeof ALL_FIELDS,
   QueryType = any
 > {
   [INTERNAL_TYPE]: RepoType;
@@ -75,14 +74,22 @@ export class Repository<
 
   private database: Promise<Database>;
 
+  constructor(repository: Repository);
   constructor(
     tableName: string,
     runningQuery: Select | undefined,
     pipes: Pipe[],
-  ) {
-    this.tableName = tableName;
-    this.runningQuery = runningQuery;
-    this.pipes = pipes;
+  );
+  constructor(tableNameOrRepo: any, runningQuery?: any, pipes?: any) {
+    if (tableNameOrRepo instanceof Repository) {
+      this.tableName = tableNameOrRepo.tableName;
+      this.runningQuery = tableNameOrRepo.runningQuery;
+      this.pipes = tableNameOrRepo.pipes;
+    } else {
+      this.tableName = tableNameOrRepo;
+      this.runningQuery = runningQuery;
+      this.pipes = pipes;
+    }
 
     // TODO: It's probably not ideal to create this promise on every chain. We should probably lazily create it.
     // Alternatively, we could consume it from the schema or something like that.
@@ -97,7 +104,6 @@ export class Repository<
     pipe: Pipe<RepoType, Extensions>,
   ): Repository<
     RepoType & Extensions,
-    RegisteredExtensions & Extensions,
     SelectionSet,
     QueryType
   > {
@@ -171,7 +177,6 @@ export class Repository<
   ): Repository<
     RepoType,
     SelectionSet,
-    RegisteredExtensions,
     QueryTypes.MULTIPLE
   > {
     const nextQuery = this.selectQuery();
@@ -195,7 +200,6 @@ export class Repository<
   ): Repository<
     RepoType,
     SelectionSet,
-    RegisteredExtensions,
     QueryTypes.SINGLE
   > {
     return new Repository(
@@ -213,7 +217,6 @@ export class Repository<
   ): Repository<
     RepoType,
     Subset<RepoType, Key>,
-    RegisteredExtensions,
     QueryType
   > {
     const nextQuery = this.selectQuery();
@@ -221,6 +224,17 @@ export class Repository<
       nextQuery.field(fieldName as string);
     }
     return new Repository(this.tableName, nextQuery, this.pipes);
+  }
+
+  pluckAs<Key extends keyof RepoType, Alias extends string>(
+    key: Key,
+    alias: Alias,
+  ): Repository<
+    RepoType & { [P in Alias]: RepoType[Key] },
+    Subset<RepoType & { [P in Alias]: RepoType[Key] }, Alias>,
+    QueryType
+  > {
+    return {} as any;
   }
 
   /**
@@ -235,7 +249,7 @@ export class Repository<
    */
   limit(
     amount: number,
-  ): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryType> {
+  ): Repository<RepoType, SelectionSet, QueryType> {
     return new Repository(
       this.tableName,
       this.selectQuery().limit(amount),
@@ -248,7 +262,7 @@ export class Repository<
    */
   offset(
     amount: number,
-  ): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryType> {
+  ): Repository<RepoType, SelectionSet, QueryType> {
     return new Repository(
       this.tableName,
       this.selectQuery().offset(amount),
@@ -271,7 +285,6 @@ export class Repository<
       {
         [P in Name]: LoadAssociation[typeof INTERNAL_TYPE][typeof INTERNAL_TYPE]
       },
-    RegisteredExtensions,
     QueryType
   > {
     return new Repository(this.tableName, this.runningQuery, this.pipes);
@@ -329,12 +342,11 @@ export function createRepository<Type extends SchemaTable<any>>(
 ): Repository<
   Type[typeof INTERNAL_TYPE],
   Type[typeof INTERNAL_TYPE],
-  {},
   QueryTypes.MULTIPLE
 >;
 export function createRepository<Type>(
   table: string,
-): Repository<Type, Type, {}, QueryTypes.MULTIPLE>;
+): Repository<Type, Type, QueryTypes.MULTIPLE>;
 export function createRepository(table: any): any {
   return new Repository(
     typeof table === 'string' ? table : table.name,
