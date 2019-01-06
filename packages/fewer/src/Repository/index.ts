@@ -19,15 +19,10 @@ type CreateSelectionSet<
   Additional
 > = Original extends typeof ALL_FIELDS ? Additional : Original | Additional;
 
-// type Subset<Root, Keys extends keyof Root> = Keys extends typeof ALL_FIELDS
-//   ? Root
-//   : { [P in keyof Root & Keys]: Root[P] };
-
-type Subset<Root, Keys> = Keys extends typeof ALL_FIELDS
+// NOTE: We intentionally wrap types here in `[]` to avoid TS distributing the keys.
+type Subset<Root, Keys> = [Keys] extends [typeof ALL_FIELDS]
   ? Root
-  : [Keys] extends [string]
-  ? { [P in (keyof Root) & Keys]: Root[P] }
-  : never;
+  : { [P in (keyof Root) & Keys]: Root[P] };
 
 type WhereType<T> = {
   [P in keyof T]?: NonNullable<T[P]> | NonNullable<T[P]>[]
