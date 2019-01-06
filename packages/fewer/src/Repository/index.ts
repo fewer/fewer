@@ -6,6 +6,7 @@ import createModel, {
   Symbols,
   ValidationError,
   InternalSymbols,
+  InternalSymbolProperties,
 } from './createModel';
 import { Pipe } from './pipe';
 import { Association } from '../Association';
@@ -85,21 +86,25 @@ export class Repository<
   /**
    * Validates an object.
    */
-  // TODO: Async + Dirty Validation
-  // We need a model that says hasRunValidation: false in the beginning, and then gets
-  // set to true after we run validate on it. And after any field changes, we reset
-  // the field back to false, forcing validation to run again.
-  // When we run validate, we check hasRunValidation, and if it's true, we skip running
-  // all of the validations, and then we return the current arrays index.
-  validate<T extends Partial<RepoType> & SymbolProperties<RepoType>>(obj: T) {
-    if (!obj[Symbols.isModel]) {
+  // TODO: Async
+  validate<T extends Partial<RepoType> & SymbolProperties<RepoType>>(model: T) {
+    // Ensure that we're actually working with a model:
+    if (!model[Symbols.isModel]) {
       throw new Error(
         'Attempted to validate an object that was not a fewer model.',
       );
     }
 
-    const errors: ValidationError[] = [];
+    // We clarify the object here to include the internal properties that exist on the model:
+    const obj = model as T & InternalSymbolProperties;
 
+    // If validation has already run, then we can re-use the last result:
+    if (obj[InternalSymbols.hasValidationRun]) {
+      return obj[Symbols.valid];
+    }
+
+    // Run through the error pipes and aggregate the validation errors:
+    const errors: ValidationError[] = [];
     this.pipes.forEach(pipe => {
       if (!pipe.validate) return;
 
@@ -113,10 +118,8 @@ export class Repository<
       }
     });
 
-    // @ts-ignore We intentionally don't include internal symbols in the types:
-    const setErrors: Function = obj[InternalSymbols.setErrors];
-
-    setErrors(errors);
+    // NOTE: This also sets the hasValidationRun flag:
+    obj[InternalSymbols.setErrors](errors);
 
     return errors.length === 0;
   }
@@ -125,33 +128,76 @@ export class Repository<
    * Converts a plain JavaScript object into a Fewer model.
    */
   from<T extends Partial<RepoType>>(obj: T) {
-    return createModel(obj);
+    return createModel<RepoType, T>(obj);
   }
 
   /**
    * TODO: Documentation.
    */
-  async create<T extends Partial<RepoType>>(
-    obj: T,
-  ): Promise<T & Partial<RepoType> & SymbolProperties<RepoType>> {
-    const db = await this.database;
+  async create<T extends Partial<RepoType>>(obj: T) {
+    // Convert the object:
+    const model = this.from(obj);
+
+    const valid = this.validate(model);
+    if (!valid) {
+      throw new Error('model was not valid');
+    }
+
     const query = sq
       .insert()
       .into(this.tableName)
-      .setFields(obj)
+      .setFields(model)
       .toString();
 
+    const db = await this.database;
     const [data] = await db.query(query);
-    return data;
+
+    // TODO: Avoid double-creating the model:
+    return this.from(data);
   }
 
   /**
    * Updates a model in the database.
    */
   async update<T extends Partial<RepoType> & SymbolProperties<RepoType>>(
-    obj: T,
-  ): Promise<any> {
-    throw new Error('Not yet implemented');
+    model: T,
+  ) {
+    // Ensure that we're actually working with a model:
+    if (!model[Symbols.isModel]) {
+      throw new Error(
+        'Attempted to update an object that was not a fewer model.',
+      );
+    }
+
+    const valid = this.validate(model);
+    if (!valid) {
+      throw new Error('model was not valid');
+    }
+
+    // If the model isn't dirty, then we don't need to do anything:
+    if (!model[Symbols.dirty]) {
+      return model;
+    }
+
+    // Generate a map of the properties that have changed:
+    const changedProperties = model[Symbols.changed];
+    const changeSet: Partial<T> = {};
+    for (const property of changedProperties) {
+      changeSet[property] = model[property];
+    }
+
+    const query = sq
+      .update()
+      .table(this.tableName)
+      .setFields(changeSet)
+      // TODO: Make this work:
+      // .where("id = ?", model.id)
+      .toString();
+
+    const db = await this.database;
+    const [data] = await db.query(query);
+
+    return this.from(data);
   }
 
   /**
