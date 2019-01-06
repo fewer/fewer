@@ -117,6 +117,12 @@ export class Repository<
   /**
    * Validates an object.
    */
+  // TODO: Async + Dirty Validation
+  // We need a model that says hasRunValidation: false in the beginning, and then gets
+  // set to true after we run validate on it. And after any field changes, we reset
+  // the field back to false, forcing validation to run again.
+  // When we run validate, we check hasRunValidation, and if it's true, we skip running
+  // all of the validations, and then we return the current arrays index.
   validate<T extends Partial<RepoType> & SymbolProperties<RepoType>>(obj: T) {
     if (!obj[Symbols.isModel]) {
       throw new Error(
@@ -168,6 +174,13 @@ export class Repository<
       .toString();
 
     return db.query(query);
+  }
+
+  /**
+   * Updates a model in the database.
+   */
+  async update<T extends Partial<RepoType> & SymbolProperties<RepoType>>(obj: T): Promise<any> {
+    throw new Error('Not yet implemented');
   }
 
   /**
@@ -330,14 +343,14 @@ export class Repository<
     return new Repository(this.tableName, this.runningQuery, this.pipes);
   }
 
-  /**
-   * TODO: Documentation.
-   */
   [RESOLVED_TYPE]: Subset<
     RepoType & ResolveAssociations<LoadAssociations>,
     SelectionSet
   >;
 
+  /**
+   * TODO: Documentation.
+   */
   async then(
     onFulfilled: (
       value: QueryType extends QueryTypes.SINGLE
