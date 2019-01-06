@@ -1,6 +1,6 @@
 import * as FieldTypes from './FieldTypes';
 import { WithUndefinedPropertiesAsOptionals } from './typeHelpers';
-import { INTERNAL_TYPE } from '../types';
+import { INTERNAL_TYPES } from '../types';
 
 type TableOptions =
   | {
@@ -14,11 +14,11 @@ export interface BaseBuilt {
 }
 
 type BuiltTable<Built extends BaseBuilt> = {
-  [P in keyof Built]: Built[P][typeof INTERNAL_TYPE]
+  [P in keyof Built]: Built[P][INTERNAL_TYPES.INTERNAL_TYPE]
 };
 
 export class SchemaTable<T extends BaseBuilt> {
-  [INTERNAL_TYPE]: WithUndefinedPropertiesAsOptionals<BuiltTable<T>>;
+  [INTERNAL_TYPES.INTERNAL_TYPE]: WithUndefinedPropertiesAsOptionals<BuiltTable<T>>;
 
   name: string;
 

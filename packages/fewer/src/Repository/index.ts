@@ -8,59 +8,30 @@ import createModel, {
   InternalSymbols,
 } from './createModel';
 import { Pipe } from './pipe';
-import { Association, AssociationType } from '../Association';
-import { INTERNAL_TYPE } from '../types';
-
-const ALL_FIELDS: unique symbol = Symbol('ALL_FIELDS');
-
-// We default to selecting all fields, but once you pluck one field, we need to remove
-// the ALL_FIELDS symbol and only carry forward the plucked fields.
-type CreateSelectionSet<
-  Original,
-  Additional
-> = Original extends typeof ALL_FIELDS ? Additional : Original | Additional;
-
-// NOTE: We intentionally wrap types here in `[]` to avoid TS distributing the keys.
-type Subset<Root, Keys> = [Keys] extends [typeof ALL_FIELDS]
-  ? Root
-  : { [P in (keyof Root) & Keys]: Root[P] };
-
-type UnrollAssociation<
-  T extends Association
-> = T[typeof INTERNAL_TYPE][typeof INTERNAL_TYPE];
-
-interface Associations {
-  [key: string]: Association;
-}
-
-type WhereForType<T> = {
-  [P in keyof T]?: NonNullable<T[P]> | NonNullable<T[P]>[]
-};
-
-type WhereType<Root, Assoc extends Associations> = WhereForType<Root> &
-  { [P in keyof Assoc]?: WhereForType<UnrollAssociation<Assoc[P]>> };
+import { Association } from '../Association';
+import {
+  INTERNAL_TYPES,
+  CommonQuery,
+  Associations,
+  WhereType,
+  CreateSelectionSet,
+  Subset,
+  ResolveAssociations,
+} from '../types';
 
 export enum QueryTypes {
   SINGLE,
   MULTIPLE,
 }
 
-const RESOLVED_TYPE: unique symbol = Symbol('resolved type');
-
-type ResolveAssociations<Assoc extends Associations> = {
-  [P in keyof Assoc]: [Assoc[P]['type']] extends [AssociationType.HAS_MANY]
-    ? Assoc[P][typeof INTERNAL_TYPE][typeof RESOLVED_TYPE][]
-    : Assoc[P][typeof INTERNAL_TYPE][typeof RESOLVED_TYPE]
-};
-
 export class Repository<
-  RepoType = {},
-  SelectionSet = typeof ALL_FIELDS,
+  RepoType = any,
+  SelectionSet = INTERNAL_TYPES.ALL_FIELDS,
   LoadAssociations extends Associations = {},
   JoinAssociations extends Associations = {},
   QueryType extends QueryTypes = any
-> {
-  [INTERNAL_TYPE]: RepoType;
+> implements CommonQuery<RepoType, LoadAssociations & JoinAssociations> {
+  [INTERNAL_TYPES.INTERNAL_TYPE]: RepoType;
 
   /**
    * Contains symbols that are used to access metadata about the state of models.
@@ -74,30 +45,16 @@ export class Repository<
 
   private database: Promise<Database>;
 
-  constructor(repository: Repository);
   constructor(
     tableName: string,
     runningQuery: Select | undefined,
     pipes: Pipe[],
     queryType: QueryTypes,
-  );
-  constructor(
-    tableNameOrRepo: any,
-    runningQuery?: any,
-    pipes?: any,
-    queryType?: any,
   ) {
-    if (tableNameOrRepo instanceof Repository) {
-      this.tableName = tableNameOrRepo.tableName;
-      this.runningQuery = tableNameOrRepo.runningQuery;
-      this.pipes = tableNameOrRepo.pipes;
-      this.queryType = tableNameOrRepo.queryType;
-    } else {
-      this.tableName = tableNameOrRepo;
-      this.runningQuery = runningQuery;
-      this.pipes = pipes;
-      this.queryType = queryType;
-    }
+    this.tableName = tableName;
+    this.runningQuery = runningQuery;
+    this.pipes = pipes;
+    this.queryType = queryType;
 
     // TODO: It's probably not ideal to create this promise on every chain. We should probably lazily create it.
     // Alternatively, we could consume it from the schema or something like that.
@@ -241,7 +198,9 @@ export class Repository<
   > {
     return new Repository(
       this.tableName,
-      this.selectQuery().where('id = ?', id),
+      this.selectQuery()
+        .where('id = ?', id)
+        .limit(1),
       this.pipes,
       this.queryType,
     );
@@ -381,7 +340,7 @@ export class Repository<
     );
   }
 
-  [RESOLVED_TYPE]: Subset<
+  [INTERNAL_TYPES.RESOLVED_TYPE]: Subset<
     RepoType & ResolveAssociations<LoadAssociations>,
     SelectionSet
   >;
@@ -444,15 +403,15 @@ export { ValidationError, Pipe };
 export function createRepository<Type extends SchemaTable<any>>(
   table: Type,
 ): Repository<
-  Type[typeof INTERNAL_TYPE],
-  typeof ALL_FIELDS,
+  Type[INTERNAL_TYPES.INTERNAL_TYPE],
+  INTERNAL_TYPES.ALL_FIELDS,
   {},
   {},
   QueryTypes.MULTIPLE
 >;
 export function createRepository<Type>(
   table: string,
-): Repository<Type, typeof ALL_FIELDS, {}, {}, QueryTypes.MULTIPLE>;
+): Repository<Type, INTERNAL_TYPES.ALL_FIELDS, {}, {}, QueryTypes.MULTIPLE>;
 export function createRepository(table: any): any {
   return new Repository(
     typeof table === 'string' ? table : table.name,

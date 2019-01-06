@@ -9,10 +9,11 @@ const Users = createRepository<{
 }>('users');
 
 async function main() {
-    // const user = await Users.find(1).pluck('firstName', 'lastName').pluckAs('birthday', 'bd');
-    const user = Users.find(1).pluck(['firstName', 'lastName', ['birthday', 'bd']]);
+  const user = await Users.find(1)
+    .pluck('firstName', 'lastName')
+    .pluckAs('birthday', 'bd');
 
-    typeval.acceptsString(user.firstName);
-    typeval.acceptsString(user.lastName);
-    typeval.accepts<Date>(user.bd);
+  typeval.acceptsString(user.firstName);
+  typeval.acceptsString(user.lastName);
+  typeval.accepts<Date>(user.bd);
 }

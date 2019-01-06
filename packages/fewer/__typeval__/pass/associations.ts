@@ -12,6 +12,7 @@ interface User {
 
 interface Post {
   title: string;
+  subtitle: string;
 }
 
 const Users = createRepository<User>('users');

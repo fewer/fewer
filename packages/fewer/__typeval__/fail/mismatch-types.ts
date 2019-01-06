@@ -1,6 +1,6 @@
 import * as typeval from '@fewer/typeval';
 import { createSchema } from '../../src';
-import { INTERNAL_TYPE } from '../../src/types';
+import { INTERNAL_TYPES } from '../../src/types';
 
 const schema = createSchema(20080906171750).table(
   'users',
@@ -12,9 +12,6 @@ const schema = createSchema(20080906171750).table(
     createdAt: t.datetime(),
   }),
 );
-
-type User = typeof schema.tables.users[typeof INTERNAL_TYPE];
-const user = typeval.as<User>();
 
 // Test individual properties:
 typeval.acceptsString(schema.version);
