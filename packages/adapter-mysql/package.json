@@ -1,7 +1,7 @@
 {
   "name": "@fewer/adapter-mysql",
   "version": "0.0.5",
-  "description": "> TODO: description",
+  "description": "A Fewer database adapter to connect to MySQL",
   "keywords": [
     "fewer",
     "adapter",

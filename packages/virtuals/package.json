@@ -1,7 +1,7 @@
 {
   "name": "@fewer/virtuals",
   "version": "0.0.3",
-  "description": "> TODO: description",
+  "description": "A pipe to add custom fields and methods to objects returned by the repository",
   "keywords": [
     "virtuals",
     "fewer"

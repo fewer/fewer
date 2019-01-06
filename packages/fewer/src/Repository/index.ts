@@ -70,6 +70,7 @@ export class Repository<
   private tableName: string;
   private runningQuery?: Select;
   private pipes: Pipe[];
+  private queryType: QueryTypes;
 
   private database: Promise<Database>;
 
@@ -78,16 +79,24 @@ export class Repository<
     tableName: string,
     runningQuery: Select | undefined,
     pipes: Pipe[],
+    queryType: QueryTypes,
   );
-  constructor(tableNameOrRepo: any, runningQuery?: any, pipes?: any) {
+  constructor(
+    tableNameOrRepo: any,
+    runningQuery?: any,
+    pipes?: any,
+    queryType?: any,
+  ) {
     if (tableNameOrRepo instanceof Repository) {
       this.tableName = tableNameOrRepo.tableName;
       this.runningQuery = tableNameOrRepo.runningQuery;
       this.pipes = tableNameOrRepo.pipes;
+      this.queryType = tableNameOrRepo.queryType;
     } else {
       this.tableName = tableNameOrRepo;
       this.runningQuery = runningQuery;
       this.pipes = pipes;
+      this.queryType = queryType;
     }
 
     // TODO: It's probably not ideal to create this promise on every chain. We should probably lazily create it.
@@ -108,10 +117,12 @@ export class Repository<
     JoinAssociations,
     QueryType
   > {
-    return new Repository(this.tableName, this.runningQuery, [
-      ...this.pipes,
-      pipe,
-    ]);
+    return new Repository(
+      this.tableName,
+      this.runningQuery,
+      [...this.pipes, pipe],
+      this.queryType,
+    );
   }
 
   /**
@@ -154,7 +165,7 @@ export class Repository<
   }
 
   /**
-   * TODO: Documentation.
+   * Converts a plain JavaScript object into a Fewer model.
    */
   from<T extends Partial<RepoType>>(obj: T) {
     return createModel(obj);
@@ -173,13 +184,16 @@ export class Repository<
       .setFields(obj)
       .toString();
 
-    return db.query(query);
+    const [data] = await db.query(query);
+    return data;
   }
 
   /**
    * Updates a model in the database.
    */
-  async update<T extends Partial<RepoType> & SymbolProperties<RepoType>>(obj: T): Promise<any> {
+  async update<T extends Partial<RepoType> & SymbolProperties<RepoType>>(
+    obj: T,
+  ): Promise<any> {
     throw new Error('Not yet implemented');
   }
 
@@ -205,7 +219,12 @@ export class Repository<
       }
     }
 
-    return new Repository(this.tableName, nextQuery, this.pipes);
+    return new Repository(
+      this.tableName,
+      nextQuery,
+      this.pipes,
+      this.queryType,
+    );
   }
 
   /**
@@ -224,6 +243,7 @@ export class Repository<
       this.tableName,
       this.selectQuery().where('id = ?', id),
       this.pipes,
+      this.queryType,
     );
   }
 
@@ -243,7 +263,12 @@ export class Repository<
     for (const fieldName of fields) {
       nextQuery.field(fieldName as string);
     }
-    return new Repository(this.tableName, nextQuery, this.pipes);
+    return new Repository(
+      this.tableName,
+      nextQuery,
+      this.pipes,
+      this.queryType,
+    );
   }
 
   /**
@@ -263,6 +288,7 @@ export class Repository<
       this.tableName,
       this.selectQuery().field(name as string, alias),
       this.pipes,
+      this.queryType,
     );
   }
 
@@ -289,6 +315,7 @@ export class Repository<
       this.tableName,
       this.selectQuery().limit(amount),
       this.pipes,
+      this.queryType,
     );
   }
 
@@ -308,6 +335,7 @@ export class Repository<
       this.tableName,
       this.selectQuery().offset(amount),
       this.pipes,
+      this.queryType,
     );
   }
 
@@ -324,7 +352,12 @@ export class Repository<
     JoinAssociations,
     QueryType
   > {
-    return new Repository(this.tableName, this.runningQuery, this.pipes);
+    return new Repository(
+      this.tableName,
+      this.runningQuery,
+      this.pipes,
+      this.queryType,
+    );
   }
 
   /**
@@ -340,7 +373,12 @@ export class Repository<
     JoinAssociations & { [P in Name]: JoinAssociation },
     QueryType
   > {
-    return new Repository(this.tableName, this.runningQuery, this.pipes);
+    return new Repository(
+      this.tableName,
+      this.runningQuery,
+      this.pipes,
+      this.queryType,
+    );
   }
 
   [RESOLVED_TYPE]: Subset<
@@ -365,7 +403,12 @@ export class Repository<
     const db = await this.database;
     try {
       const data = await db.query(this.toSQL());
-      return onFulfilled(data);
+
+      if (this.queryType === QueryTypes.SINGLE) {
+        return onFulfilled(data[0]);
+      } else {
+        return onFulfilled(data as any);
+      }
     } catch (error) {
       if (onRejected) {
         return Promise.resolve(onRejected(error));
@@ -415,5 +458,6 @@ export function createRepository(table: any): any {
     typeof table === 'string' ? table : table.name,
     undefined,
     [],
+    QueryTypes.MULTIPLE,
   );
 }
