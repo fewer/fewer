@@ -12,7 +12,7 @@ export class PostgresAdapter implements BaseAdapter {
         return this.client.connect();
     }
 
-    async query(queryString: string, values: any[]) {
+    async query(queryString: string, values?: any[]) {
         const results = await this.client.query(queryString, values);
         return results.rows;
     }
