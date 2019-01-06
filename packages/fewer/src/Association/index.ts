@@ -8,7 +8,6 @@ export enum AssociationType {
 }
 
 export class Association<
-  Base extends Repository = Repository,
   Associate extends Repository = Repository
 > extends Repository {
   [INTERNAL_TYPE]: Associate;

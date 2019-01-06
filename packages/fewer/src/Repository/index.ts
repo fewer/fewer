@@ -69,7 +69,8 @@ export interface Pipe<RepoType = any, Extensions = RepoType> {
 export class Repository<
   RepoType = {},
   SelectionSet = typeof ALL_FIELDS,
-  QueryType = any
+  Associations extends object = {},
+  QueryType extends QueryTypes = any
 > {
   [INTERNAL_TYPE]: RepoType;
 
@@ -112,7 +113,7 @@ export class Repository<
    */
   pipe<Extensions>(
     pipe: Pipe<RepoType, Extensions>,
-  ): Repository<RepoType & Extensions, SelectionSet, QueryType> {
+  ): Repository<RepoType & Extensions, SelectionSet, Associations, QueryType> {
     return new Repository(this.tableName, this.runningQuery, [
       ...this.pipes,
       pipe,
@@ -180,7 +181,7 @@ export class Repository<
    */
   where(
     wheres: WhereType<RepoType>,
-  ): Repository<RepoType, SelectionSet, QueryTypes.MULTIPLE> {
+  ): Repository<RepoType, SelectionSet, Associations, QueryTypes.MULTIPLE> {
     const nextQuery = this.selectQuery();
 
     for (const [fieldName, matcher] of Object.entries(wheres)) {
@@ -199,7 +200,7 @@ export class Repository<
    */
   find(
     id: string | number,
-  ): Repository<RepoType, SelectionSet, QueryTypes.SINGLE> {
+  ): Repository<RepoType, SelectionSet, Associations, QueryTypes.SINGLE> {
     return new Repository(
       this.tableName,
       this.selectQuery().where('id = ?', id),
@@ -212,7 +213,12 @@ export class Repository<
    */
   pluck<Key extends keyof RepoType>(
     ...fields: Key[]
-  ): Repository<RepoType, CreateSelectionSet<SelectionSet, Key>, QueryType> {
+  ): Repository<
+    RepoType,
+    CreateSelectionSet<SelectionSet, Key>,
+    Associations,
+    QueryType
+  > {
     const nextQuery = this.selectQuery();
     for (const fieldName of fields) {
       nextQuery.field(fieldName as string);
@@ -226,6 +232,7 @@ export class Repository<
   ): Repository<
     RepoType & { [P in Alias]: RepoType[Key] },
     CreateSelectionSet<SelectionSet, Alias>,
+    Associations,
     QueryType
   > {
     return {} as any;
@@ -241,7 +248,9 @@ export class Repository<
   /**
    * TODO: Documentation.
    */
-  limit(amount: number): Repository<RepoType, SelectionSet, QueryType> {
+  limit(
+    amount: number,
+  ): Repository<RepoType, SelectionSet, Associations, QueryType> {
     return new Repository(
       this.tableName,
       this.selectQuery().limit(amount),
@@ -252,7 +261,9 @@ export class Repository<
   /**
    * TODO: Documentation.
    */
-  offset(amount: number): Repository<RepoType, SelectionSet, QueryType> {
+  offset(
+    amount: number,
+  ): Repository<RepoType, SelectionSet, Associations, QueryType> {
     return new Repository(
       this.tableName,
       this.selectQuery().offset(amount),
@@ -267,11 +278,12 @@ export class Repository<
     name: Name,
     association: LoadAssociation,
   ): Repository<
-    RepoType &
+    RepoType,
+    SelectionSet,
+    Associations &
       {
         [P in Name]: LoadAssociation[typeof INTERNAL_TYPE][typeof INTERNAL_TYPE]
       },
-    SelectionSet & Name,
     QueryType
   > {
     return new Repository(this.tableName, this.runningQuery, this.pipes);
@@ -283,8 +295,8 @@ export class Repository<
   async then(
     onFulfilled: (
       value: QueryType extends QueryTypes.SINGLE
-        ? Subset<RepoType, SelectionSet>
-        : Subset<RepoType, SelectionSet>[],
+        ? Subset<RepoType & Associations, SelectionSet>
+        : Subset<RepoType & Associations, SelectionSet>[],
     ) => void,
     onRejected?: (error: Error) => void,
   ) {
@@ -329,11 +341,12 @@ export function createRepository<Type extends SchemaTable<any>>(
 ): Repository<
   Type[typeof INTERNAL_TYPE],
   typeof ALL_FIELDS,
+  {},
   QueryTypes.MULTIPLE
 >;
 export function createRepository<Type>(
   table: string,
-): Repository<Type, typeof ALL_FIELDS, QueryTypes.MULTIPLE>;
+): Repository<Type, typeof ALL_FIELDS, {}, QueryTypes.MULTIPLE>;
 export function createRepository(table: any): any {
   return new Repository(
     typeof table === 'string' ? table : table.name,

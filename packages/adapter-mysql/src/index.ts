@@ -8,8 +8,8 @@ export class MySQLAdapter implements BaseAdapter {
     this.connection = mysql.createConnection(options);
   }
 
-  connect(): Promise<void> {
-    return new Promise((resolve, reject) => {
+  connect() {
+    return new Promise<void>((resolve, reject) => {
       this.connection.connect(err => {
         if (err) {
           reject(err);
@@ -20,15 +20,15 @@ export class MySQLAdapter implements BaseAdapter {
     });
   }
 
-  query(queryString: string, values: any[]) {
-    return new Promise((resolve, reject) => {
-        this.connection.query(queryString, values, (error, results) => {
-            if (error) {
-                reject(error);
-            } else {
-                resolve(results);
-            }
-        });
+  query(queryString: string, values?: any[]) {
+    return new Promise<any[]>((resolve, reject) => {
+      this.connection.query(queryString, values, (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
     });
   }
 }
