@@ -7,7 +7,8 @@ import createModel, {
   ValidationError,
   InternalSymbols,
 } from './createModel';
-import { Association } from '../Association';
+import { Pipe } from './pipe';
+import { Association, AssociationType } from '../Association';
 import { INTERNAL_TYPE } from '../types';
 
 const ALL_FIELDS: unique symbol = Symbol('ALL_FIELDS');
@@ -24,56 +25,39 @@ type Subset<Root, Keys> = [Keys] extends [typeof ALL_FIELDS]
   ? Root
   : { [P in (keyof Root) & Keys]: Root[P] };
 
+type UnrollAssociation<
+  T extends Association
+> = T[typeof INTERNAL_TYPE][typeof INTERNAL_TYPE];
+
+interface Associations {
+  [key: string]: Association;
+}
+
 type WhereForType<T> = {
   [P in keyof T]?: NonNullable<T[P]> | NonNullable<T[P]>[]
 };
 
-type WhereType<Root, Assoc> = WhereForType<Root> &
-  { [P in keyof Assoc]?: WhereForType<Assoc[P]> };
+type WhereType<Root, Assoc extends Associations> = WhereForType<Root> &
+  { [P in keyof Assoc]?: WhereForType<UnrollAssociation<Assoc[P]>> };
 
 export enum QueryTypes {
   SINGLE,
   MULTIPLE,
 }
 
-export interface Pipe<RepoType = any, Extensions = RepoType> {
-  /**
-   * Set an object up. Add virtuals and other properties.
-   */
-  prepare?(obj: RepoType & Partial<Extensions>): void;
-  /**
-   * Middleware.
-   */
-  use?(
-    obj: RepoType & Partial<Extensions>,
-    next: () => Promise<void>,
-  ): Promise<void>;
-  // TODO: This also needs to be async:
-  /**
-   * Perform validation. Return either undefined or null to signal no validation errors.
-   * Return either an array of Validation Errors, or a single validation error.
-   *
-   * @example
-   * return {
-   *   on: 'name',
-   *   message: 'No name was provided',
-   * }
-   */
-  validate?(
-    obj: RepoType & Partial<Extensions>,
-  ):
-    | void
-    | undefined
-    | null
-    | ValidationError<RepoType & Extensions>
-    | ValidationError<RepoType & Extensions>[];
-}
+const RESOLVED_TYPE: unique symbol = Symbol('resolved type');
+
+type ResolveAssociations<Assoc extends Associations> = {
+  [P in keyof Assoc]: [Assoc[P]['type']] extends [AssociationType.HAS_MANY]
+    ? Assoc[P][typeof INTERNAL_TYPE][typeof RESOLVED_TYPE][]
+    : Assoc[P][typeof INTERNAL_TYPE][typeof RESOLVED_TYPE]
+};
 
 export class Repository<
   RepoType = {},
   SelectionSet = typeof ALL_FIELDS,
-  LoadAssociations extends object = {},
-  JoinAssociations extends object = {},
+  LoadAssociations extends Associations = {},
+  JoinAssociations extends Associations = {},
   QueryType extends QueryTypes = any
 > {
   [INTERNAL_TYPE]: RepoType;
@@ -323,10 +307,7 @@ export class Repository<
   ): Repository<
     RepoType,
     SelectionSet,
-    LoadAssociations &
-      {
-        [P in Name]: LoadAssociation[typeof INTERNAL_TYPE][typeof INTERNAL_TYPE]
-      },
+    LoadAssociations & { [P in Name]: LoadAssociation },
     JoinAssociations,
     QueryType
   > {
@@ -343,10 +324,7 @@ export class Repository<
     RepoType,
     SelectionSet,
     LoadAssociations,
-    JoinAssociations &
-      {
-        [P in Name]: JoinAssociation[typeof INTERNAL_TYPE][typeof INTERNAL_TYPE]
-      },
+    JoinAssociations & { [P in Name]: JoinAssociation },
     QueryType
   > {
     return new Repository(this.tableName, this.runningQuery, this.pipes);
@@ -355,11 +333,19 @@ export class Repository<
   /**
    * TODO: Documentation.
    */
+  [RESOLVED_TYPE]: Subset<
+    RepoType & ResolveAssociations<LoadAssociations>,
+    SelectionSet
+  >;
+
   async then(
     onFulfilled: (
       value: QueryType extends QueryTypes.SINGLE
-        ? Subset<RepoType & LoadAssociations, SelectionSet>
-        : Subset<RepoType & LoadAssociations, SelectionSet>[],
+        ? Subset<RepoType & ResolveAssociations<LoadAssociations>, SelectionSet>
+        : Subset<
+            RepoType & ResolveAssociations<LoadAssociations>,
+            SelectionSet
+          >[],
     ) => void,
     onRejected?: (error: Error) => void,
   ) {
@@ -394,7 +380,7 @@ export class Repository<
   }
 }
 
-export { ValidationError };
+export { ValidationError, Pipe };
 
 /**
  * TODO: Documentation.

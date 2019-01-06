@@ -7,6 +7,7 @@ import {
 
 interface User {
   firstName: string;
+  lastName: string
 }
 
 interface Post {
@@ -41,6 +42,6 @@ async function main() {
       },
     });
 
-  typeval.accepts<Post>(user.posts);
+  typeval.accepts<Post[]>(user.posts);
   typeval.accepts<User>(post.user);
 }
