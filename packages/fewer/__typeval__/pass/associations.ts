@@ -23,6 +23,24 @@ async function main() {
   const user = await Users.find(1).load('posts', userPosts);
   const post = await Posts.find(1).load('user', postUser);
 
+  // Query through join:
+  Users.find(1)
+    .join('posts', userPosts)
+    .where({
+      posts: {
+        title: 'testing',
+      },
+    });
+
+  // Query through load:
+  Users.find(1)
+    .load('posts', userPosts)
+    .where({
+      posts: {
+        title: 'testing',
+      },
+    });
+
   typeval.accepts<Post>(user.posts);
   typeval.accepts<User>(post.user);
 }

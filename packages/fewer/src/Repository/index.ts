@@ -24,9 +24,12 @@ type Subset<Root, Keys> = [Keys] extends [typeof ALL_FIELDS]
   ? Root
   : { [P in (keyof Root) & Keys]: Root[P] };
 
-type WhereType<T> = {
+type WhereForType<T> = {
   [P in keyof T]?: NonNullable<T[P]> | NonNullable<T[P]>[]
 };
+
+type WhereType<Root, Assoc> = WhereForType<Root> &
+  { [P in keyof Assoc]?: WhereForType<Assoc[P]> };
 
 export enum QueryTypes {
   SINGLE,
@@ -69,7 +72,8 @@ export interface Pipe<RepoType = any, Extensions = RepoType> {
 export class Repository<
   RepoType = {},
   SelectionSet = typeof ALL_FIELDS,
-  Associations extends object = {},
+  LoadAssociations extends object = {},
+  JoinAssociations extends object = {},
   QueryType extends QueryTypes = any
 > {
   [INTERNAL_TYPE]: RepoType;
@@ -113,7 +117,13 @@ export class Repository<
    */
   pipe<Extensions>(
     pipe: Pipe<RepoType, Extensions>,
-  ): Repository<RepoType & Extensions, SelectionSet, Associations, QueryType> {
+  ): Repository<
+    RepoType & Extensions,
+    SelectionSet,
+    LoadAssociations,
+    JoinAssociations,
+    QueryType
+  > {
     return new Repository(this.tableName, this.runningQuery, [
       ...this.pipes,
       pipe,
@@ -180,8 +190,14 @@ export class Repository<
    * TODO: Documentation.
    */
   where(
-    wheres: WhereType<RepoType>,
-  ): Repository<RepoType, SelectionSet, Associations, QueryTypes.MULTIPLE> {
+    wheres: WhereType<RepoType, LoadAssociations & JoinAssociations>,
+  ): Repository<
+    RepoType,
+    SelectionSet,
+    LoadAssociations,
+    JoinAssociations,
+    QueryTypes.MULTIPLE
+  > {
     const nextQuery = this.selectQuery();
 
     for (const [fieldName, matcher] of Object.entries(wheres)) {
@@ -200,7 +216,13 @@ export class Repository<
    */
   find(
     id: string | number,
-  ): Repository<RepoType, SelectionSet, Associations, QueryTypes.SINGLE> {
+  ): Repository<
+    RepoType,
+    SelectionSet,
+    LoadAssociations,
+    JoinAssociations,
+    QueryTypes.SINGLE
+  > {
     return new Repository(
       this.tableName,
       this.selectQuery().where('id = ?', id),
@@ -216,7 +238,8 @@ export class Repository<
   ): Repository<
     RepoType,
     CreateSelectionSet<SelectionSet, Key>,
-    Associations,
+    LoadAssociations,
+    JoinAssociations,
     QueryType
   > {
     const nextQuery = this.selectQuery();
@@ -226,16 +249,24 @@ export class Repository<
     return new Repository(this.tableName, nextQuery, this.pipes);
   }
 
+  /**
+   * TODO: Documentation
+   */
   pluckAs<Key extends keyof RepoType, Alias extends string>(
-    key: Key,
+    name: Key,
     alias: Alias,
   ): Repository<
     RepoType & { [P in Alias]: RepoType[Key] },
     CreateSelectionSet<SelectionSet, Alias>,
-    Associations,
+    LoadAssociations,
+    JoinAssociations,
     QueryType
   > {
-    return {} as any;
+    return new Repository(
+      this.tableName,
+      this.selectQuery().field(name as string, alias),
+      this.pipes,
+    );
   }
 
   /**
@@ -250,7 +281,13 @@ export class Repository<
    */
   limit(
     amount: number,
-  ): Repository<RepoType, SelectionSet, Associations, QueryType> {
+  ): Repository<
+    RepoType,
+    SelectionSet,
+    LoadAssociations,
+    JoinAssociations,
+    QueryType
+  > {
     return new Repository(
       this.tableName,
       this.selectQuery().limit(amount),
@@ -263,7 +300,13 @@ export class Repository<
    */
   offset(
     amount: number,
-  ): Repository<RepoType, SelectionSet, Associations, QueryType> {
+  ): Repository<
+    RepoType,
+    SelectionSet,
+    LoadAssociations,
+    JoinAssociations,
+    QueryType
+  > {
     return new Repository(
       this.tableName,
       this.selectQuery().offset(amount),
@@ -272,7 +315,7 @@ export class Repository<
   }
 
   /**
-   * Loads an association so that it can be used
+   * Loads an association.
    */
   load<Name extends string, LoadAssociation extends Association>(
     name: Name,
@@ -280,9 +323,29 @@ export class Repository<
   ): Repository<
     RepoType,
     SelectionSet,
-    Associations &
+    LoadAssociations &
       {
         [P in Name]: LoadAssociation[typeof INTERNAL_TYPE][typeof INTERNAL_TYPE]
+      },
+    JoinAssociations,
+    QueryType
+  > {
+    return new Repository(this.tableName, this.runningQuery, this.pipes);
+  }
+
+  /**
+   * Resolves the association, but does not load the records.
+   */
+  join<Name extends string, JoinAssociation extends Association>(
+    name: Name,
+    association: JoinAssociation,
+  ): Repository<
+    RepoType,
+    SelectionSet,
+    LoadAssociations,
+    JoinAssociations &
+      {
+        [P in Name]: JoinAssociation[typeof INTERNAL_TYPE][typeof INTERNAL_TYPE]
       },
     QueryType
   > {
@@ -295,8 +358,8 @@ export class Repository<
   async then(
     onFulfilled: (
       value: QueryType extends QueryTypes.SINGLE
-        ? Subset<RepoType & Associations, SelectionSet>
-        : Subset<RepoType & Associations, SelectionSet>[],
+        ? Subset<RepoType & LoadAssociations, SelectionSet>
+        : Subset<RepoType & LoadAssociations, SelectionSet>[],
     ) => void,
     onRejected?: (error: Error) => void,
   ) {
@@ -342,11 +405,12 @@ export function createRepository<Type extends SchemaTable<any>>(
   Type[typeof INTERNAL_TYPE],
   typeof ALL_FIELDS,
   {},
+  {},
   QueryTypes.MULTIPLE
 >;
 export function createRepository<Type>(
   table: string,
-): Repository<Type, typeof ALL_FIELDS, {}, QueryTypes.MULTIPLE>;
+): Repository<Type, typeof ALL_FIELDS, {}, {}, QueryTypes.MULTIPLE>;
 export function createRepository(table: any): any {
   return new Repository(
     typeof table === 'string' ? table : table.name,
