@@ -9,8 +9,8 @@ const user = Users.from({});
 typeval.accepts<true>(user[Users.symbols.isModel]);
 typeval.acceptsBoolean(user[Users.symbols.dirty]);
 typeval.acceptsBoolean(user[Users.symbols.valid]);
-typeval.accepts<Set<'firstName' | 'lastName'>>(user[Users.symbols.changed]);
-typeval.accepts<Map<'firstName' | 'lastName', any>>(
+typeval.accepts<Array<'firstName' | 'lastName'>>(user[Users.symbols.changed]);
+typeval.accepts<{ [P in 'firstName' | 'lastName']: any }>(
   user[Users.symbols.changes],
 );
 typeval.accepts<ReadonlyArray<ValidationError>>(user[Users.symbols.errors]);
