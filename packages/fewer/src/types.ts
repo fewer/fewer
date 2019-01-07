@@ -34,9 +34,11 @@ export type WhereType<Root, Assoc extends Associations = {}> = WhereForType<
 > &
   { [P in keyof Assoc]?: WhereForType<UnrollAssociation<Assoc[P]>> };
 
-export type Subset<Root, Keys> = [Keys] extends [INTERNAL_TYPES.ALL_FIELDS]
+export type Subset<Root, Keys, AssociationKeys extends keyof Root> = [
+  Keys
+] extends [INTERNAL_TYPES.ALL_FIELDS]
   ? Root
-  : { [P in (keyof Root) & Keys]: Root[P] };
+  : { [P in ((keyof Root) & Keys) | AssociationKeys]: Root[P] };
 
 export type ResolveAssociations<Assoc extends Associations> = {
   [P in keyof Assoc]: [Assoc[P]['type']] extends [AssociationType.HAS_MANY]

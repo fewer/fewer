@@ -7,7 +7,7 @@ import {
 
 interface User {
   firstName: string;
-  lastName: string
+  lastName: string;
 }
 
 interface Post {
@@ -22,8 +22,11 @@ const userPosts = createAssociation(AssociationType.HAS_MANY, Posts);
 const postUser = createAssociation(AssociationType.BELONGS_TO, Users);
 
 async function main() {
-  const user = await Users.find(1).load('posts', userPosts);
-  const post = await Posts.find(1).load('user', postUser);
+  const user = await Users.find(1)
+    .pluck('firstName')
+    .load('posts', userPosts);
+
+  const post = await Posts.find(1).load('user', postUser.pluck('firstName'));
 
   // Query through join:
   Users.find(1)
@@ -43,6 +46,7 @@ async function main() {
       },
     });
 
+  typeval.acceptsString(user.firstName);
   typeval.accepts<Post[]>(user.posts);
-  typeval.accepts<User>(post.user);
+  typeval.accepts<{ firstName: string; lastName?: never }>(post.user);
 }

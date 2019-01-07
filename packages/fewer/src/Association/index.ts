@@ -25,7 +25,8 @@ export class Association<
   [INTERNAL_TYPES.INTERNAL_TYPE]: RepoType;
   [INTERNAL_TYPES.RESOLVED_TYPE]: Subset<
     RepoType & ResolveAssociations<LoadAssociations>,
-    SelectionSet
+    SelectionSet,
+    keyof LoadAssociations
   >;
 
   /**

@@ -388,7 +388,8 @@ export class Repository<
 
   [INTERNAL_TYPES.RESOLVED_TYPE]: Subset<
     RepoType & ResolveAssociations<LoadAssociations>,
-    SelectionSet
+    SelectionSet,
+    keyof LoadAssociations
   >;
 
   /**
@@ -397,10 +398,15 @@ export class Repository<
   async then(
     onFulfilled: (
       value: QueryType extends QueryTypes.SINGLE
-        ? Subset<RepoType & ResolveAssociations<LoadAssociations>, SelectionSet>
+        ? Subset<
+            RepoType & ResolveAssociations<LoadAssociations>,
+            SelectionSet,
+            keyof LoadAssociations
+          >
         : Subset<
             RepoType & ResolveAssociations<LoadAssociations>,
-            SelectionSet
+            SelectionSet,
+            keyof LoadAssociations
           >[],
     ) => void,
     onRejected?: (error: Error) => void,
