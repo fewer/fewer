@@ -39,12 +39,14 @@ export const Symbols: {
   errors: Errors,
 };
 
+// NOTE: Intentionally type as any[] so that we can do un-guarded includes() lookups:
+const SYMBOL_VALUES: any[] = Object.values(Symbols);
+
 export interface SymbolProperties<T = any> {
-  keys: keyof T;
   readonly [Symbols.isModel]: true;
   readonly [Symbols.dirty]: boolean;
-  readonly [Symbols.changed]: Set<keyof T>;
-  readonly [Symbols.changes]: Map<keyof T, any>;
+  readonly [Symbols.changed]: (keyof T)[];
+  readonly [Symbols.changes]: { [P in keyof T]: any };
   readonly [Symbols.valid]: boolean;
   readonly [Symbols.errors]: ValidationError<T>[];
 }
@@ -53,8 +55,8 @@ const SetErrors: unique symbol = Symbol('setErrors');
 const HasValidationRun: unique symbol = Symbol('hasValidationRun');
 
 export const InternalSymbols: {
-  setErrors: typeof SetErrors,
-  hasValidationRun: typeof HasValidationRun,
+  setErrors: typeof SetErrors;
+  hasValidationRun: typeof HasValidationRun;
 } = {
   setErrors: SetErrors,
   hasValidationRun: HasValidationRun,
@@ -102,10 +104,15 @@ export default function createModel<RepoType, T extends object>(
           return true;
         case Symbols.dirty:
           return changes.size > 0;
-        case Symbols.changes:
-          return changes;
+        case Symbols.changes: {
+          const map: { [key: string]: any } = {};
+          for (const prop of changes.keys()) {
+            map[prop] = changes.get(prop);
+          }
+          return Object.freeze(map);
+        }
         case Symbols.changed:
-          return new Set(changes.keys());
+          return Object.freeze([...changes.keys()]);
         case Symbols.valid:
           return hasValidationRun && errors.length === 0;
         case Symbols.errors:
@@ -123,6 +130,10 @@ export default function createModel<RepoType, T extends object>(
     },
 
     set(obj, prop, value) {
+      if (typeof prop === 'symbol' && SYMBOL_VALUES.includes(prop)) {
+        throw new Error('Cannot set Fewer Symbol properties');
+      }
+
       // Reset our validation state:
       hasValidationRun = false;
 
