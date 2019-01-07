@@ -1,7 +1,7 @@
 {
   "name": "@fewer/validations",
   "version": "0.0.3",
-  "description": "> TODO: description",
+  "description": "A collection of pipes that handle common model validation use-cases for Fewer",
   "keywords": [
     "fewer",
     "validations"

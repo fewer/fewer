@@ -23,7 +23,7 @@ export class Database {
   /**
    * Issues a SQL query against the database.
    */
-  query(queryString: string, values?: any[]): Promise<any> {
+  query(queryString: string, values?: any[]): Promise<any[]> {
     return this.adapter.query(queryString, values);
   }
 }

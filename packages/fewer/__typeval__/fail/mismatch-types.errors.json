@@ -2,11 +2,11 @@
     {
         "location": {
             "start": {
-                "line": 19,
+                "line": 17,
                 "column": 23
             },
             "end": {
-                "line": 19,
+                "line": 17,
                 "column": 37
             }
         },
@@ -15,11 +15,11 @@
     {
         "location": {
             "start": {
-                "line": 20,
+                "line": 18,
                 "column": 23
             },
             "end": {
-                "line": 20,
+                "line": 18,
                 "column": 37
             }
         },

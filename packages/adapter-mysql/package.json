@@ -1,10 +1,11 @@
 {
-  "name": "@fewer/virtuals",
-  "version": "0.0.3",
-  "description": "A pipe to add custom fields and methods to objects returned by the repository",
+  "name": "@fewer/adapter-mysql",
+  "version": "0.0.5",
+  "description": "A Fewer database adapter to connect to MySQL",
   "keywords": [
-    "virtuals",
-    "fewer"
+    "fewer",
+    "adapter",
+    "mysql"
   ],
   "author": "Jordan Gensler <jgensler@netflix.com>",
   "homepage": "https://github.com/fewer/fewer",
@@ -31,7 +32,12 @@
   "publishConfig": {
     "access": "public"
   },
+  "dependencies": {
+    "mysql": "^2.16.0"
+  },
   "devDependencies": {
+    "@types/mysql": "^2.15.5",
+    "@types/pg": "^7.4.11",
     "fewer": "^0.0.5"
   }
 }

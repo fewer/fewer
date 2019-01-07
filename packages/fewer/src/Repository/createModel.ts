@@ -40,17 +40,30 @@ export const Symbols: {
 };
 
 export interface SymbolProperties<T = any> {
+  keys: keyof T;
   readonly [Symbols.isModel]: true;
   readonly [Symbols.dirty]: boolean;
-  readonly [Symbols.changed]: Set<string | symbol | number>;
-  readonly [Symbols.changes]: Map<string | symbol | number, any>;
+  readonly [Symbols.changed]: Set<keyof T>;
+  readonly [Symbols.changes]: Map<keyof T, any>;
   readonly [Symbols.valid]: boolean;
   readonly [Symbols.errors]: ValidationError<T>[];
 }
 
-export const InternalSymbols = {
-  setErrors: Symbol('setErrors'),
+const SetErrors: unique symbol = Symbol('setErrors');
+const HasValidationRun: unique symbol = Symbol('hasValidationRun');
+
+export const InternalSymbols: {
+  setErrors: typeof SetErrors,
+  hasValidationRun: typeof HasValidationRun,
+} = {
+  setErrors: SetErrors,
+  hasValidationRun: HasValidationRun,
 };
+
+export interface InternalSymbolProperties {
+  [InternalSymbols.setErrors]: (newErrors: ValidationError[]) => void;
+  [InternalSymbols.hasValidationRun]: boolean;
+}
 
 export interface ValidationError<T = any> {
   /**
@@ -71,9 +84,12 @@ export default function createModel<RepoType, T extends object>(
 ): T & Partial<RepoType> & SymbolProperties<RepoType> {
   const changes = new Map();
 
+  let hasValidationRun = false;
   let errors: ReadonlyArray<ValidationError> = DEFAULT_ERRORS;
 
   function setErrors(newErrors: ValidationError[]) {
+    // Errors get set when running validation, so we mark that we have run validation when we set the errors:
+    hasValidationRun = true;
     errors = Object.freeze(newErrors);
   }
 
@@ -90,15 +106,16 @@ export default function createModel<RepoType, T extends object>(
           return changes;
         case Symbols.changed:
           return new Set(changes.keys());
-        // TODO: Expose hooks to perform validation + add errors:
         case Symbols.valid:
-          return errors.length === 0;
+          return hasValidationRun && errors.length === 0;
         case Symbols.errors:
           return errors;
 
         // Internal symbols:
         case InternalSymbols.setErrors:
           return setErrors;
+        case InternalSymbols.hasValidationRun:
+          return hasValidationRun;
 
         default:
           return Reflect.get(target, prop, receiver);
@@ -106,6 +123,9 @@ export default function createModel<RepoType, T extends object>(
     },
 
     set(obj, prop, value) {
+      // Reset our validation state:
+      hasValidationRun = false;
+
       if (changes.has(prop)) {
         // If the value is reset to the original value then there is no work to do:
         if (changes.get(prop) === value) {

@@ -1,9 +1,10 @@
 import * as typeval from '@fewer/typeval';
 import { createSchema } from '../../src';
+import { INTERNAL_TYPES } from 'packages/fewer/src/types';
 
 const schema = createSchema(20080906171750).table(
   'flex',
-  { force: true },
+  {},
   t => ({
     integer: t.nonNull(t.integer()),
     smallint: t.nonNull(t.smallint()),
@@ -25,7 +26,7 @@ const schema = createSchema(20080906171750).table(
   }),
 );
 
-type Flex = typeof schema.tables.flex.$$Type;
+type Flex = typeof schema.tables.flex[INTERNAL_TYPES.INTERNAL_TYPE];
 const flex = typeval.as<Flex>();
 
 typeval.acceptsNumber(flex.integer);

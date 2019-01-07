@@ -1,18 +1,15 @@
 import * as typeval from '@fewer/typeval';
 import { createSchema } from '../../src';
+import { INTERNAL_TYPES } from 'packages/fewer/src/types';
 
-const schema = createSchema(20080906171750).table(
-  'users',
-  { force: true },
-  t => ({
-    firstName: t.nonNull(t.string()),
-    lastName: t.string(),
-    deleted: t.boolean(),
-    createdAt: t.datetime(),
-  }),
-);
+const schema = createSchema(20080906171750).table('users', {}, t => ({
+  firstName: t.nonNull(t.string()),
+  lastName: t.string(),
+  deleted: t.boolean(),
+  createdAt: t.datetime(),
+}));
 
-type User = typeof schema.tables.users.$$Type;
+type User = typeof schema.tables.users[INTERNAL_TYPES.INTERNAL_TYPE];
 const user = typeval.as<User>();
 
 // Test individual properties:

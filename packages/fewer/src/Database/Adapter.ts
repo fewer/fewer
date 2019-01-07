@@ -1,6 +1,10 @@
-// TODO: Query response needs to be well formed.
-
 export default interface Adapter {
+  /**
+   * Initiate the connection to the Database.
+   */
   connect(): Promise<void>;
-  query(queryString: string, values?: any[]): Promise<any>;
+  /**
+   * Performs a query against the database. Returns an array of results from the database.
+   */
+  query(queryString: string, values?: any[]): Promise<any[]>;
 }

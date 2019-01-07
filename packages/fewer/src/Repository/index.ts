@@ -6,58 +6,34 @@ import createModel, {
   Symbols,
   ValidationError,
   InternalSymbols,
+  InternalSymbolProperties,
 } from './createModel';
-
-type Subset<T, V> = { [P in keyof T & V]: T[P] };
-
-type WhereType<T> = {
-  [P in keyof T]?: NonNullable<T[P]> | NonNullable<T[P]>[]
-};
+import { Pipe } from './pipe';
+import { Association } from '../Association';
+import {
+  INTERNAL_TYPES,
+  CommonQuery,
+  Associations,
+  WhereType,
+  CreateSelectionSet,
+  Subset,
+  ResolveAssociations,
+} from '../types';
 
 export enum QueryTypes {
   SINGLE,
   MULTIPLE,
 }
 
-export interface Pipe<RepoType = any, Extensions = RepoType> {
-  /**
-   * Set an object up. Add virtuals and other properties.
-   */
-  prepare?(obj: RepoType & Partial<Extensions>): void;
-  /**
-   * Middleware.
-   */
-  use?(
-    obj: RepoType & Partial<Extensions>,
-    next: () => Promise<void>,
-  ): Promise<void>;
-  // TODO: This also needs to be async:
-  /**
-   * Perform validation. Return either undefined or null to signal no validation errors.
-   * Return either an array of Validation Errors, or a single validation error.
-   *
-   * @example
-   * return {
-   *   on: 'name',
-   *   message: 'No name was provided',
-   * }
-   */
-  validate?(
-    obj: RepoType & Partial<Extensions>,
-  ):
-    | void
-    | undefined
-    | null
-    | ValidationError<RepoType & Extensions>
-    | ValidationError<RepoType & Extensions>[];
-}
-
 export class Repository<
-  RepoType = {},
-  SelectionSet = RepoType,
-  RegisteredExtensions = {},
-  QueryType = QueryTypes.MULTIPLE
-> {
+  RepoType = any,
+  SelectionSet = INTERNAL_TYPES.ALL_FIELDS,
+  LoadAssociations extends Associations = {},
+  JoinAssociations extends Associations = {},
+  QueryType extends QueryTypes = any
+> implements CommonQuery<RepoType, LoadAssociations & JoinAssociations> {
+  [INTERNAL_TYPES.INTERNAL_TYPE]: RepoType;
+
   /**
    * Contains symbols that are used to access metadata about the state of models.
    */
@@ -66,6 +42,7 @@ export class Repository<
   private tableName: string;
   private runningQuery?: Select;
   private pipes: Pipe[];
+  private queryType: QueryTypes;
 
   private database: Promise<Database>;
 
@@ -73,10 +50,12 @@ export class Repository<
     tableName: string,
     runningQuery: Select | undefined,
     pipes: Pipe[],
+    queryType: QueryTypes,
   ) {
     this.tableName = tableName;
     this.runningQuery = runningQuery;
     this.pipes = pipes;
+    this.queryType = queryType;
 
     // TODO: It's probably not ideal to create this promise on every chain. We should probably lazily create it.
     // Alternatively, we could consume it from the schema or something like that.
@@ -91,28 +70,41 @@ export class Repository<
     pipe: Pipe<RepoType, Extensions>,
   ): Repository<
     RepoType & Extensions,
-    RegisteredExtensions & Extensions,
     SelectionSet,
+    LoadAssociations,
+    JoinAssociations,
     QueryType
   > {
-    return new Repository(this.tableName, this.runningQuery, [
-      ...this.pipes,
-      pipe,
-    ]);
+    return new Repository(
+      this.tableName,
+      this.runningQuery,
+      [...this.pipes, pipe],
+      this.queryType,
+    );
   }
 
   /**
    * Validates an object.
    */
-  validate<T extends Partial<RepoType> & SymbolProperties<RepoType>>(obj: T) {
-    if (!obj[Symbols.isModel]) {
+  // TODO: Async
+  validate<T extends Partial<RepoType> & SymbolProperties<RepoType>>(model: T) {
+    // Ensure that we're actually working with a model:
+    if (!model[Symbols.isModel]) {
       throw new Error(
         'Attempted to validate an object that was not a fewer model.',
       );
     }
 
-    const errors: ValidationError[] = [];
+    // We clarify the object here to include the internal properties that exist on the model:
+    const obj = model as T & InternalSymbolProperties;
 
+    // If validation has already run, then we can re-use the last result:
+    if (obj[InternalSymbols.hasValidationRun]) {
+      return obj[Symbols.valid];
+    }
+
+    // Run through the error pipes and aggregate the validation errors:
+    const errors: ValidationError[] = [];
     this.pipes.forEach(pipe => {
       if (!pipe.validate) return;
 
@@ -126,46 +118,98 @@ export class Repository<
       }
     });
 
-    // @ts-ignore We intentionally don't include internal symbols in the types:
-    const setErrors: Function = obj[InternalSymbols.setErrors];
-
-    setErrors(errors);
+    // NOTE: This also sets the hasValidationRun flag:
+    obj[InternalSymbols.setErrors](errors);
 
     return errors.length === 0;
   }
 
   /**
-   * TODO: Documentation.
+   * Converts a plain JavaScript object into a Fewer model.
    */
   from<T extends Partial<RepoType>>(obj: T) {
-    return createModel(obj);
+    return createModel<RepoType, T>(obj);
   }
 
   /**
    * TODO: Documentation.
    */
-  async create<T extends Partial<RepoType>>(
-    obj: T,
-  ): Promise<T & Partial<RepoType> & SymbolProperties<RepoType>> {
-    const db = await this.database;
+  async create<T extends Partial<RepoType>>(obj: T) {
+    // Convert the object:
+    const model = this.from(obj);
+
+    const valid = this.validate(model);
+    if (!valid) {
+      throw new Error('model was not valid');
+    }
+
     const query = sq
       .insert()
       .into(this.tableName)
-      .setFields(obj)
+      .setFields(model)
       .toString();
 
-    return db.query(query);
+    const db = await this.database;
+    const [data] = await db.query(query);
+
+    // TODO: Avoid double-creating the model:
+    return this.from(data);
+  }
+
+  /**
+   * Updates a model in the database.
+   */
+  async update<T extends Partial<RepoType> & SymbolProperties<RepoType>>(
+    model: T,
+  ) {
+    // Ensure that we're actually working with a model:
+    if (!model[Symbols.isModel]) {
+      throw new Error(
+        'Attempted to update an object that was not a fewer model.',
+      );
+    }
+
+    const valid = this.validate(model);
+    if (!valid) {
+      throw new Error('model was not valid');
+    }
+
+    // If the model isn't dirty, then we don't need to do anything:
+    if (!model[Symbols.dirty]) {
+      return model;
+    }
+
+    // Generate a map of the properties that have changed:
+    const changedProperties = model[Symbols.changed];
+    const changeSet: Partial<T> = {};
+    for (const property of changedProperties) {
+      changeSet[property] = model[property];
+    }
+
+    const query = sq
+      .update()
+      .table(this.tableName)
+      .setFields(changeSet)
+      // TODO: Make this work:
+      // .where("id = ?", model.id)
+      .toString();
+
+    const db = await this.database;
+    const [data] = await db.query(query);
+
+    return this.from(data);
   }
 
   /**
    * TODO: Documentation.
    */
   where(
-    wheres: WhereType<RepoType>,
+    wheres: WhereType<RepoType, LoadAssociations & JoinAssociations>,
   ): Repository<
     RepoType,
     SelectionSet,
-    RegisteredExtensions,
+    LoadAssociations,
+    JoinAssociations,
     QueryTypes.MULTIPLE
   > {
     const nextQuery = this.selectQuery();
@@ -178,7 +222,12 @@ export class Repository<
       }
     }
 
-    return new Repository(this.tableName, nextQuery, this.pipes);
+    return new Repository(
+      this.tableName,
+      nextQuery,
+      this.pipes,
+      this.queryType,
+    );
   }
 
   /**
@@ -189,13 +238,17 @@ export class Repository<
   ): Repository<
     RepoType,
     SelectionSet,
-    RegisteredExtensions,
+    LoadAssociations,
+    JoinAssociations,
     QueryTypes.SINGLE
   > {
     return new Repository(
       this.tableName,
-      this.selectQuery().where('id = ?', id),
+      this.selectQuery()
+        .where('id = ?', id)
+        .limit(1),
       this.pipes,
+      this.queryType,
     );
   }
 
@@ -206,15 +259,42 @@ export class Repository<
     ...fields: Key[]
   ): Repository<
     RepoType,
-    Subset<RepoType, Key>,
-    RegisteredExtensions,
+    CreateSelectionSet<SelectionSet, Key>,
+    LoadAssociations,
+    JoinAssociations,
     QueryType
   > {
     const nextQuery = this.selectQuery();
     for (const fieldName of fields) {
       nextQuery.field(fieldName as string);
     }
-    return new Repository(this.tableName, nextQuery, this.pipes);
+    return new Repository(
+      this.tableName,
+      nextQuery,
+      this.pipes,
+      this.queryType,
+    );
+  }
+
+  /**
+   * TODO: Documentation
+   */
+  pluckAs<Key extends keyof RepoType, Alias extends string>(
+    name: Key,
+    alias: Alias,
+  ): Repository<
+    RepoType & { [P in Alias]: RepoType[Key] },
+    CreateSelectionSet<SelectionSet, Alias>,
+    LoadAssociations,
+    JoinAssociations,
+    QueryType
+  > {
+    return new Repository(
+      this.tableName,
+      this.selectQuery().field(name as string, alias),
+      this.pipes,
+      this.queryType,
+    );
   }
 
   /**
@@ -229,11 +309,18 @@ export class Repository<
    */
   limit(
     amount: number,
-  ): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryType> {
+  ): Repository<
+    RepoType,
+    SelectionSet,
+    LoadAssociations,
+    JoinAssociations,
+    QueryType
+  > {
     return new Repository(
       this.tableName,
       this.selectQuery().limit(amount),
       this.pipes,
+      this.queryType,
     );
   }
 
@@ -242,13 +329,68 @@ export class Repository<
    */
   offset(
     amount: number,
-  ): Repository<RepoType, SelectionSet, RegisteredExtensions, QueryType> {
+  ): Repository<
+    RepoType,
+    SelectionSet,
+    LoadAssociations,
+    JoinAssociations,
+    QueryType
+  > {
     return new Repository(
       this.tableName,
       this.selectQuery().offset(amount),
       this.pipes,
+      this.queryType,
     );
   }
+
+  /**
+   * Loads an association.
+   */
+  load<Name extends string, LoadAssociation extends Association>(
+    name: Name,
+    association: LoadAssociation,
+  ): Repository<
+    RepoType,
+    SelectionSet,
+    LoadAssociations & { [P in Name]: LoadAssociation },
+    JoinAssociations,
+    QueryType
+  > {
+    return new Repository(
+      this.tableName,
+      this.runningQuery,
+      this.pipes,
+      this.queryType,
+    );
+  }
+
+  /**
+   * Resolves the association, but does not load the records.
+   */
+  join<Name extends string, JoinAssociation extends Association>(
+    name: Name,
+    association: JoinAssociation,
+  ): Repository<
+    RepoType,
+    SelectionSet,
+    LoadAssociations,
+    JoinAssociations & { [P in Name]: JoinAssociation },
+    QueryType
+  > {
+    return new Repository(
+      this.tableName,
+      this.runningQuery,
+      this.pipes,
+      this.queryType,
+    );
+  }
+
+  [INTERNAL_TYPES.RESOLVED_TYPE]: Subset<
+    RepoType & ResolveAssociations<LoadAssociations>,
+    SelectionSet,
+    keyof LoadAssociations
+  >;
 
   /**
    * TODO: Documentation.
@@ -256,15 +398,28 @@ export class Repository<
   async then(
     onFulfilled: (
       value: QueryType extends QueryTypes.SINGLE
-        ? SelectionSet
-        : SelectionSet[],
+        ? Subset<
+            RepoType & ResolveAssociations<LoadAssociations>,
+            SelectionSet,
+            keyof LoadAssociations
+          >
+        : Subset<
+            RepoType & ResolveAssociations<LoadAssociations>,
+            SelectionSet,
+            keyof LoadAssociations
+          >[],
     ) => void,
     onRejected?: (error: Error) => void,
   ) {
     const db = await this.database;
     try {
       const data = await db.query(this.toSQL());
-      return onFulfilled(data);
+
+      if (this.queryType === QueryTypes.SINGLE) {
+        return onFulfilled(data[0]);
+      } else {
+        return onFulfilled(data as any);
+      }
     } catch (error) {
       if (onRejected) {
         return Promise.resolve(onRejected(error));
@@ -292,19 +447,28 @@ export class Repository<
   }
 }
 
-export { ValidationError };
+export { ValidationError, Pipe };
 
 /**
  * TODO: Documentation.
  */
 export function createRepository<Type extends SchemaTable<any>>(
   table: Type,
-): Repository<Type['$$Type']>;
-export function createRepository<Type>(table: string): Repository<Type>;
+): Repository<
+  Type[INTERNAL_TYPES.INTERNAL_TYPE],
+  INTERNAL_TYPES.ALL_FIELDS,
+  {},
+  {},
+  QueryTypes.MULTIPLE
+>;
+export function createRepository<Type>(
+  table: string,
+): Repository<Type, INTERNAL_TYPES.ALL_FIELDS, {}, {}, QueryTypes.MULTIPLE>;
 export function createRepository(table: any): any {
   return new Repository(
     typeof table === 'string' ? table : table.name,
     undefined,
     [],
+    QueryTypes.MULTIPLE,
   );
 }

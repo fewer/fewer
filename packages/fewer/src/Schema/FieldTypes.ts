@@ -1,5 +1,7 @@
+import { INTERNAL_TYPES } from "../types";
+
 export class Type<T = any, CanBeNull = true> {
-  $$Type!: CanBeNull extends true ? T | undefined : T;
+  [INTERNAL_TYPES.INTERNAL_TYPE]: CanBeNull extends true ? T | undefined : T;
 
   constructor(config?: object) {
     // TODO:
