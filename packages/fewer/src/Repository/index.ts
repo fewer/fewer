@@ -25,6 +25,8 @@ export enum QueryTypes {
   MULTIPLE,
 }
 
+const SCHEMA_TYPE = Symbol('schema-type');
+
 export class Repository<
   SchemaType = {},
   RepoType extends SchemaType = any,
@@ -33,8 +35,10 @@ export class Repository<
   JoinAssociations extends Associations = {},
   QueryType extends QueryTypes = any
 > implements CommonQuery<RepoType, LoadAssociations & JoinAssociations> {
+  // Stash the schema type so that the generic can be used as a type constraint.
+  [SCHEMA_TYPE]: SchemaType;
+
   [INTERNAL_TYPES.INTERNAL_TYPE]: RepoType;
-  [INTERNAL_TYPES.SCHEMA_TYPE]: SchemaType;
 
   /**
    * Contains symbols that are used to access metadata about the state of models.
