@@ -16,6 +16,7 @@ export enum AssociationType {
 }
 
 export class Association<
+  FK = any,
   Type extends AssociationType = any,
   RepoType = any,
   SelectionSet = any,
@@ -44,6 +45,7 @@ export class Association<
   pluck<Key extends keyof RepoType>(
     ...fields: Key[]
   ): Association<
+    FK,
     Type,
     RepoType,
     CreateSelectionSet<SelectionSet, Key>,
@@ -58,6 +60,7 @@ export class Association<
     name: Key,
     alias: Alias,
   ): Association<
+    FK,
     Type,
     RepoType & { [P in Alias]: RepoType[Key] },
     CreateSelectionSet<SelectionSet, Alias>,
@@ -89,6 +92,7 @@ export class Association<
     name: string,
     association: LoadAssociation,
   ): Association<
+    FK,
     Type,
     RepoType,
     SelectionSet,
@@ -102,6 +106,7 @@ export class Association<
     name: Name,
     association: JoinAssociation,
   ): Association<
+    FK,
     Type,
     RepoType,
     SelectionSet,
@@ -112,18 +117,57 @@ export class Association<
   }
 }
 
-export function createAssociation<
-  Type extends AssociationType,
-  Associate extends Repository
+export function createBelongsTo<
+  Associate extends Repository,
+  FK extends string
 >(
-  type: Type,
   associate: Associate,
+  foreignKey: FK,
 ): Association<
-  Type,
+  FK,
+  AssociationType.BELONGS_TO,
   Associate[INTERNAL_TYPES.INTERNAL_TYPE],
   INTERNAL_TYPES.ALL_FIELDS,
   {},
   {}
 > {
-  return new Association(type, associate);
+  return new Association(AssociationType.BELONGS_TO, associate);
+}
+
+export function createHasOne<
+  BaseType extends Repository,
+  Associate extends Repository,
+  FK extends keyof Associate[INTERNAL_TYPES.INTERNAL_TYPE]
+>(
+  base: BaseType,
+  associate: Associate,
+  foreignKey: FK,
+): Association<
+  FK,
+  AssociationType.HAS_ONE,
+  Associate[INTERNAL_TYPES.INTERNAL_TYPE],
+  INTERNAL_TYPES.ALL_FIELDS,
+  {},
+  {}
+> {
+  return new Association(AssociationType.HAS_ONE, associate);
+}
+
+export function createHasMany<
+  BaseType extends Repository,
+  Associate extends Repository,
+  FK extends keyof Associate[INTERNAL_TYPES.INTERNAL_TYPE]
+>(
+  base: BaseType,
+  associate: Associate,
+  foreignKey: FK,
+): Association<
+  FK,
+  AssociationType.HAS_MANY,
+  Associate[INTERNAL_TYPES.INTERNAL_TYPE],
+  INTERNAL_TYPES.ALL_FIELDS,
+  {},
+  {}
+> {
+  return new Association(AssociationType.HAS_MANY, associate);
 }

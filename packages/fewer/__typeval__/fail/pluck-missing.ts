@@ -1,7 +1,5 @@
 import {
-  createRepository,
-  createAssociation,
-  AssociationType,
+  createRepository, createHasMany, createBelongsTo,
 } from '../../src';
 
 const Users = createRepository<{
@@ -15,10 +13,11 @@ const Posts = createRepository<{
   title: string;
   subtitle: string;
   content: string;
+  userId: number;
 }>('posts');
 
-const userPosts = createAssociation(AssociationType.HAS_MANY, Posts);
-const postUser = createAssociation(AssociationType.BELONGS_TO, Users);
+const userPosts = createHasMany(Users, Posts, 'userId');
+const postUser = createBelongsTo(Users, 'userId');
 
 async function main() {
   const user = await Users.find(1)

@@ -2,37 +2,37 @@
     {
         "location": {
             "start": {
-                "line": 45,
+                "line": 44,
                 "column": 8
             },
             "end": {
-                "line": 45,
+                "line": 44,
                 "column": 18
             }
         },
-        "errorMessage": "Property 'middleName' does not exist on type '{ posts: ({ title: string; subtitle: string; content: string; } & ResolveAssociations<{}>)[]; firstName: string; lastName: string; bd: Date; }'."
+        "errorMessage": "Property 'middleName' does not exist on type '{ posts: ({ title: string; subtitle: string; content: string; userId: number; } & ResolveAssociations<{}>)[]; firstName: string; lastName: string; bd: Date; }'."
     },
     {
         "location": {
             "start": {
-                "line": 46,
+                "line": 45,
                 "column": 8
             },
             "end": {
-                "line": 46,
+                "line": 45,
                 "column": 16
             }
         },
-        "errorMessage": "Property 'birthday' does not exist on type '{ posts: ({ title: string; subtitle: string; content: string; } & ResolveAssociations<{}>)[]; firstName: string; lastName: string; bd: Date; }'."
+        "errorMessage": "Property 'birthday' does not exist on type '{ posts: ({ title: string; subtitle: string; content: string; userId: number; } & ResolveAssociations<{}>)[]; firstName: string; lastName: string; bd: Date; }'."
     },
     {
         "location": {
             "start": {
-                "line": 47,
+                "line": 46,
                 "column": 19
             },
             "end": {
-                "line": 47,
+                "line": 46,
                 "column": 29
             }
         },
@@ -41,11 +41,11 @@
     {
         "location": {
             "start": {
-                "line": 48,
+                "line": 47,
                 "column": 19
             },
             "end": {
-                "line": 48,
+                "line": 47,
                 "column": 27
             }
         },
@@ -54,11 +54,11 @@
     {
         "location": {
             "start": {
-                "line": 49,
+                "line": 48,
                 "column": 28
             },
             "end": {
-                "line": 49,
+                "line": 48,
                 "column": 36
             }
         },
@@ -67,11 +67,11 @@
     {
         "location": {
             "start": {
-                "line": 50,
+                "line": 49,
                 "column": 28
             },
             "end": {
-                "line": 50,
+                "line": 49,
                 "column": 35
             }
         },
@@ -80,11 +80,11 @@
     {
         "location": {
             "start": {
-                "line": 51,
+                "line": 50,
                 "column": 8
             },
             "end": {
-                "line": 51,
+                "line": 50,
                 "column": 16
             }
         },
@@ -93,11 +93,11 @@
     {
         "location": {
             "start": {
-                "line": 52,
+                "line": 51,
                 "column": 8
             },
             "end": {
-                "line": 52,
+                "line": 51,
                 "column": 15
             }
         },
@@ -106,11 +106,11 @@
     {
         "location": {
             "start": {
-                "line": 53,
+                "line": 52,
                 "column": 19
             },
             "end": {
-                "line": 53,
+                "line": 52,
                 "column": 27
             }
         },
@@ -119,11 +119,11 @@
     {
         "location": {
             "start": {
-                "line": 54,
+                "line": 53,
                 "column": 19
             },
             "end": {
-                "line": 54,
+                "line": 53,
                 "column": 26
             }
         },
@@ -132,11 +132,11 @@
     {
         "location": {
             "start": {
-                "line": 55,
+                "line": 54,
                 "column": 24
             },
             "end": {
-                "line": 55,
+                "line": 54,
                 "column": 34
             }
         },
@@ -145,11 +145,11 @@
     {
         "location": {
             "start": {
-                "line": 56,
+                "line": 55,
                 "column": 24
             },
             "end": {
-                "line": 56,
+                "line": 55,
                 "column": 32
             }
         },
@@ -158,11 +158,11 @@
     {
         "location": {
             "start": {
-                "line": 57,
+                "line": 56,
                 "column": 24
             },
             "end": {
-                "line": 57,
+                "line": 56,
                 "column": 32
             }
         },
