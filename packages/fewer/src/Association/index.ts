@@ -15,14 +15,23 @@ export enum AssociationType {
   BELONGS_TO = 'belongsTo',
 }
 
+// NOTE: We need to stash
+const BASE_TYPE = Symbol('base-type');
+const FK_TYPE = Symbol('fk-type');
+
 export class Association<
-  FK = any,
   Type extends AssociationType = any,
+  Base extends Repository = any,
+  FK = any,
   RepoType = any,
   SelectionSet = any,
   LoadAssociations extends Associations = {},
   JoinAssociations extends Associations = {}
 > implements CommonQuery<RepoType, LoadAssociations & JoinAssociations> {
+  // NOTE: We need to stash the type here otherwise the generic won't become a constraint.
+  [BASE_TYPE]: Base;
+  [FK_TYPE]: FK;
+
   [INTERNAL_TYPES.INTERNAL_TYPE]: RepoType;
   [INTERNAL_TYPES.RESOLVED_TYPE]: Subset<
     RepoType & ResolveAssociations<LoadAssociations>,
@@ -45,8 +54,9 @@ export class Association<
   pluck<Key extends keyof RepoType>(
     ...fields: Key[]
   ): Association<
-    FK,
     Type,
+    Base,
+    FK,
     RepoType,
     CreateSelectionSet<SelectionSet, Key>,
     LoadAssociations,
@@ -60,8 +70,9 @@ export class Association<
     name: Key,
     alias: Alias,
   ): Association<
-    FK,
     Type,
+    Base,
+    FK,
     RepoType & { [P in Alias]: RepoType[Key] },
     CreateSelectionSet<SelectionSet, Alias>,
     LoadAssociations,
@@ -84,6 +95,7 @@ export class Association<
     // return new Association(this.type, this.associate.order());
   }
 
+  // @ts-ignore
   where(wheres: WhereType<RepoType>) {
     return new Association(this.type, this.associate.where(wheres));
   }
@@ -92,8 +104,9 @@ export class Association<
     name: string,
     association: LoadAssociation,
   ): Association<
-    FK,
     Type,
+    Base,
+    FK,
     RepoType,
     SelectionSet,
     LoadAssociations & { [P in Name]: LoadAssociations },
@@ -106,8 +119,9 @@ export class Association<
     name: Name,
     association: JoinAssociation,
   ): Association<
-    FK,
     Type,
+    Base,
+    FK,
     RepoType,
     SelectionSet,
     LoadAssociations,
@@ -124,8 +138,9 @@ export function createBelongsTo<
   associate: Associate,
   foreignKey: FK,
 ): Association<
-  FK,
   AssociationType.BELONGS_TO,
+  any,
+  FK,
   Associate[INTERNAL_TYPES.INTERNAL_TYPE],
   INTERNAL_TYPES.ALL_FIELDS,
   {},
@@ -143,8 +158,9 @@ export function createHasOne<
   associate: Associate,
   foreignKey: FK,
 ): Association<
-  FK,
   AssociationType.HAS_ONE,
+  BaseType,
+  FK,
   Associate[INTERNAL_TYPES.INTERNAL_TYPE],
   INTERNAL_TYPES.ALL_FIELDS,
   {},
@@ -162,8 +178,9 @@ export function createHasMany<
   associate: Associate,
   foreignKey: FK,
 ): Association<
-  FK,
   AssociationType.HAS_MANY,
+  BaseType,
+  FK,
   Associate[INTERNAL_TYPES.INTERNAL_TYPE],
   INTERNAL_TYPES.ALL_FIELDS,
   {},

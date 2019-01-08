@@ -1,9 +1,5 @@
 import * as typeval from '@fewer/typeval';
-import {
-  createRepository,
-  createHasMany,
-  createBelongsTo,
-} from '../../src';
+import { createRepository, createHasMany, createBelongsTo } from '../../src';
 
 interface User {
   firstName: string;
@@ -27,7 +23,12 @@ async function main() {
     .pluck('firstName')
     .load('posts', userPosts);
 
-  const post = await Posts.find(1).load('user', belongsToUser.pluck('firstName'));
+  const post = await Posts.find(1).load(
+    'user',
+    belongsToUser.pluck('firstName'),
+  );
+
+  Users.join('foo', userPosts);
 
   // Query through join:
   Users.find(1)
