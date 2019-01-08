@@ -5,7 +5,7 @@ import { Association, AssociationType } from './Association';
 export const enum INTERNAL_TYPES {
   ALL_FIELDS = '@@ALL_FIELDS',
   RESOLVED_TYPE = '@@RESOLVED_TYPE',
-  INTERNAL_TYPE = '@@INTERNAL_TYPE',
+  INTERNAL_TYPE = '@@INTERNAL_TYPE'
 }
 
 // We default to selecting all fields, but once you pluck one field, we need to remove

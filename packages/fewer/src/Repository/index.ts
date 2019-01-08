@@ -9,7 +9,7 @@ import createModel, {
   InternalSymbolProperties,
 } from './createModel';
 import { Pipe } from './pipe';
-import { Association } from '../Association';
+import { Association, AssociationType } from '../Association';
 import {
   INTERNAL_TYPES,
   CommonQuery,
@@ -25,13 +25,19 @@ export enum QueryTypes {
   MULTIPLE,
 }
 
+const SCHEMA_TYPE = Symbol('schema-type');
+
 export class Repository<
-  RepoType = any,
+  SchemaType = {},
+  RepoType extends SchemaType = any,
   SelectionSet = INTERNAL_TYPES.ALL_FIELDS,
   LoadAssociations extends Associations = {},
   JoinAssociations extends Associations = {},
   QueryType extends QueryTypes = any
 > implements CommonQuery<RepoType, LoadAssociations & JoinAssociations> {
+  // Stash the schema type so that the generic can be used as a type constraint.
+  [SCHEMA_TYPE]: SchemaType;
+
   [INTERNAL_TYPES.INTERNAL_TYPE]: RepoType;
 
   /**
@@ -69,6 +75,7 @@ export class Repository<
   pipe<Extensions>(
     pipe: Pipe<RepoType, Extensions>,
   ): Repository<
+    SchemaType,
     RepoType & Extensions,
     SelectionSet,
     LoadAssociations,
@@ -206,6 +213,7 @@ export class Repository<
   where(
     wheres: WhereType<RepoType, LoadAssociations & JoinAssociations>,
   ): Repository<
+    SchemaType,
     RepoType,
     SelectionSet,
     LoadAssociations,
@@ -236,6 +244,7 @@ export class Repository<
   find(
     id: string | number,
   ): Repository<
+    SchemaType,
     RepoType,
     SelectionSet,
     LoadAssociations,
@@ -258,6 +267,7 @@ export class Repository<
   pluck<Key extends keyof RepoType>(
     ...fields: Key[]
   ): Repository<
+    SchemaType,
     RepoType,
     CreateSelectionSet<SelectionSet, Key>,
     LoadAssociations,
@@ -283,6 +293,7 @@ export class Repository<
     name: Key,
     alias: Alias,
   ): Repository<
+    SchemaType,
     RepoType & { [P in Alias]: RepoType[Key] },
     CreateSelectionSet<SelectionSet, Alias>,
     LoadAssociations,
@@ -310,6 +321,7 @@ export class Repository<
   limit(
     amount: number,
   ): Repository<
+    SchemaType,
     RepoType,
     SelectionSet,
     LoadAssociations,
@@ -330,6 +342,7 @@ export class Repository<
   offset(
     amount: number,
   ): Repository<
+    SchemaType,
     RepoType,
     SelectionSet,
     LoadAssociations,
@@ -347,10 +360,23 @@ export class Repository<
   /**
    * Loads an association.
    */
-  load<Name extends string, LoadAssociation extends Association>(
+  load<
+    Name extends string,
+    LoadAssociation extends Association<
+      AssociationType,
+      Repository<SchemaType>,
+      KeyConstraint
+    >,
+    KeyConstraint = LoadAssociation extends Association<
+      AssociationType.BELONGS_TO
+    >
+      ? keyof RepoType
+      : any
+  >(
     name: Name,
     association: LoadAssociation,
   ): Repository<
+    SchemaType,
     RepoType,
     SelectionSet,
     LoadAssociations & { [P in Name]: LoadAssociation },
@@ -368,10 +394,23 @@ export class Repository<
   /**
    * Resolves the association, but does not load the records.
    */
-  join<Name extends string, JoinAssociation extends Association>(
+  join<
+    Name extends string,
+    JoinAssociation extends Association<
+      AssociationType,
+      Repository<SchemaType>,
+      KeyConstraint
+    >,
+    KeyConstraint = JoinAssociation extends Association<
+      AssociationType.BELONGS_TO
+    >
+      ? keyof RepoType
+      : any
+  >(
     name: Name,
     association: JoinAssociation,
   ): Repository<
+    SchemaType,
     RepoType,
     SelectionSet,
     LoadAssociations,
@@ -456,6 +495,7 @@ export function createRepository<Type extends SchemaTable<any>>(
   table: Type,
 ): Repository<
   Type[INTERNAL_TYPES.INTERNAL_TYPE],
+  Type[INTERNAL_TYPES.INTERNAL_TYPE],
   INTERNAL_TYPES.ALL_FIELDS,
   {},
   {},
@@ -463,7 +503,14 @@ export function createRepository<Type extends SchemaTable<any>>(
 >;
 export function createRepository<Type>(
   table: string,
-): Repository<Type, INTERNAL_TYPES.ALL_FIELDS, {}, {}, QueryTypes.MULTIPLE>;
+): Repository<
+  Type,
+  Type,
+  INTERNAL_TYPES.ALL_FIELDS,
+  {},
+  {},
+  QueryTypes.MULTIPLE
+>;
 export function createRepository(table: any): any {
   return new Repository(
     typeof table === 'string' ? table : table.name,

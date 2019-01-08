@@ -1,9 +1,5 @@
 import * as typeval from '@fewer/typeval';
-import {
-  createRepository,
-  createAssociation,
-  AssociationType,
-} from '../../src';
+import { createRepository, createHasMany, createBelongsTo } from '../../src';
 
 interface User {
   firstName: string;
@@ -13,20 +9,26 @@ interface User {
 interface Post {
   title: string;
   subtitle: string;
+  userId: number;
 }
 
 const Users = createRepository<User>('users');
 const Posts = createRepository<Post>('posts');
 
-const userPosts = createAssociation(AssociationType.HAS_MANY, Posts);
-const postUser = createAssociation(AssociationType.BELONGS_TO, Users);
+const userPosts = createHasMany(Users, Posts, 'userId');
+const belongsToUser = createBelongsTo(Users, 'userId');
 
 async function main() {
   const user = await Users.find(1)
     .pluck('firstName')
     .load('posts', userPosts);
 
-  const post = await Posts.find(1).load('user', postUser.pluck('firstName'));
+  const post = await Posts.find(1).load(
+    'user',
+    belongsToUser.pluck('firstName'),
+  );
+
+  Users.join('foo', userPosts);
 
   // Query through join:
   Users.find(1)
