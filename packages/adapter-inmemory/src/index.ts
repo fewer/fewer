@@ -2,7 +2,7 @@ import { Adapter as BaseAdapter } from 'fewer';
 import sql from 'sql.js';
 import SqlString from 'sqlstring';
 
-export class MySQLAdapter implements BaseAdapter {
+export class InMemoryAdapter implements BaseAdapter {
   private db: sql.Database;
 
   constructor() {
