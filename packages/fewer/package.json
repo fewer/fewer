@@ -1,6 +1,6 @@
 {
   "name": "fewer",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A minimal ORM for Node.js.",
   "keywords": [
     "orm",
@@ -29,7 +29,7 @@
     "url": "https://github.com/fewer/fewer/issues"
   },
   "dependencies": {
-    "@fewer/sq": "^0.0.3"
+    "@fewer/sq": "^0.0.4"
   },
   "devDependencies": {
     "@fewer/typeval": "^0.0.4"

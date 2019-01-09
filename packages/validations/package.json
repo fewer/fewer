@@ -1,6 +1,6 @@
 {
   "name": "@fewer/validations",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A collection of pipes that handle common model validation use-cases for Fewer",
   "keywords": [
     "fewer",
@@ -32,6 +32,6 @@
     "access": "public"
   },
   "devDependencies": {
-    "fewer": "^0.0.5"
+    "fewer": "^0.0.6"
   }
 }
