@@ -1,10 +1,12 @@
 {
-  "name": "@fewer/sq",
-  "version": "0.0.3",
-  "description": "A simple query builder for Fewer.",
+  "name": "@fewer/adapter-browser",
+  "version": "0.0.5",
+  "description": "A Fewer database adapter that uses IndexedDB in the browser",
   "keywords": [
     "fewer",
-    "sql"
+    "adapter",
+    "browser",
+    "indexeddb"
   ],
   "author": "Jordan Gensler <jgensler@netflix.com>",
   "homepage": "https://github.com/fewer/fewer",
@@ -32,6 +34,12 @@
     "access": "public"
   },
   "dependencies": {
-    "squel": "^5.12.2"
+    "jsstore": "^2.9.2",
+    "sqlstring": "^2.3.1",
+    "sqlweb": "^1.2.0"
+  },
+  "devDependencies": {
+    "@types/sqlstring": "^2.2.1",
+    "fewer": "^0.0.5"
   }
 }
