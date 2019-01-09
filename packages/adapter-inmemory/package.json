@@ -1,11 +1,11 @@
 {
-  "name": "@fewer/adapter-browser",
-  "version": "0.0.5",
-  "description": "A Fewer database adapter that uses IndexedDB in the browser",
+  "name": "@fewer/adapter-inmemory",
+  "version": "0.0.5-beta",
+  "description": "A Fewer database adapter that runs in-memory",
   "keywords": [
     "fewer",
     "adapter",
-    "browser",
+    "inmemory",
     "indexeddb"
   ],
   "author": "Jordan Gensler <jgensler@netflix.com>",
@@ -34,11 +34,11 @@
     "access": "public"
   },
   "dependencies": {
-    "jsstore": "^2.9.2",
-    "sqlstring": "^2.3.1",
-    "sqlweb": "^1.2.0"
+    "sql.js": "^0.5.0",
+    "sqlstring": "^2.3.1"
   },
   "devDependencies": {
+    "@types/sql.js": "^0.0.29",
     "@types/sqlstring": "^2.2.1",
     "fewer": "^0.0.5"
   }
