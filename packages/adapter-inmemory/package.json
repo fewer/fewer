@@ -1,6 +1,6 @@
 {
   "name": "@fewer/adapter-inmemory",
-  "version": "0.0.6-alpha.0",
+  "version": "0.0.6-alpha.1",
   "description": "A Fewer database adapter that runs in-memory",
   "keywords": [
     "fewer",
