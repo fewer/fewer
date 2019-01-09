@@ -18,6 +18,8 @@ export class InMemoryAdapter implements BaseAdapter {
       values ? SqlString.format(queryString, values) : queryString,
     );
 
+    if (!result) return [];
+
     return result.values.map(value => {
       const obj: any = {};
 
