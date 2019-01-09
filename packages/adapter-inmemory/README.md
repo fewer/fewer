@@ -1,3 +1,3 @@
-# # `@fewer/adapter-browser`
+# # `@fewer/adapter-inmemory`
 
 > TODO: description
