@@ -1,4 +1,4 @@
-import { Select, Insert } from '@fewer/sq';
+import { Select, Insert, Update } from '@fewer/sq';
 
 export default interface Adapter {
   /**
@@ -13,4 +13,8 @@ export default interface Adapter {
    * Inserts a new record into the database. Returns the id of the newly-inserted item.
    */
   insert(query: Insert): Promise<any>;
+  /**
+   * Updates a record in the database. Returns the id of the updated item.
+   */
+  update(query: Update): Promise<any>;
 }

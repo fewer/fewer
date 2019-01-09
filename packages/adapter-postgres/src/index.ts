@@ -1,7 +1,7 @@
 import { Adapter as BaseAdapter } from 'fewer';
 import { Client, ConnectionConfig } from 'pg';
 import squel from 'squel';
-import { Insert, Select } from '@fewer/sq';
+import { Insert, Select, Update } from '@fewer/sq';
 
 const postgresSquel = squel.useFlavour('postgres');
 
@@ -52,11 +52,24 @@ export class PostgresAdapter implements BaseAdapter {
 
   async insert(query: Insert) {
     const context = query.get();
-    const insert = postgresSquel.insert().into(context.table);
-
-    insert.setFields(context.fields).returning('id');
+    const insert = postgresSquel
+      .insert()
+      .into(context.table)
+      .setFields(context.fields)
+      .returning('id');
 
     const results = await this.client.query(insert.toString());
+    return results.rows;
+  }
+
+  async update(query: Update) {
+    const context = query.get();
+    const update = postgresSquel
+      .update()
+      .table(context.table)
+      .setFields(context.fields);
+
+    const results = await this.client.query(update.toString());
     return results.rows;
   }
 }

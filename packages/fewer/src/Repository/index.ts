@@ -191,17 +191,16 @@ export class Repository<
     }
 
     // TODO: Make update work:
-    // const query = sq
-    //   .update(this.tableNAame)
-    //   .setFields(changeSet)
-    //   // TODO: Make this work:
-    //   // .where("id = ?", model.id)
-    //   .toString();
+    const query = sq
+      .update(this.tableName)
+      // TODO: Make this work:
+      // .id('id', model.id)
+      .set(changeSet);
 
-    // const db = await this.database;
-    // const [data] = await db.query(query);
+    const db = await this.database;
+    const [data] = await db.update(query);
 
-    // return this.from(data);
+    return this.from(data);
   }
 
   /**

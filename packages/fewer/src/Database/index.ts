@@ -1,6 +1,6 @@
 import Adapter from './Adapter';
 import globalDatabase from './globalDatabase';
-import { Select, Insert } from '@fewer/sq';
+import { Select, Insert, Update } from '@fewer/sq';
 
 export interface DatabaseConfig {
   adapter: Adapter;
@@ -29,9 +29,9 @@ export class Database {
     return this.adapter.insert(query);
   }
 
-  // update(query: ): Promise<any> {
-  //   return this.adapter.update(query);
-  // }
+  update(query: Update): Promise<any> {
+    return this.adapter.update(query);
+  }
 }
 
 /**

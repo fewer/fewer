@@ -1,7 +1,7 @@
 import { Adapter as BaseAdapter } from 'fewer';
 import mysql, { Connection, ConnectionConfig } from 'mysql';
 import squel from 'squel';
-import { Insert, Select } from '@fewer/sq';
+import { Insert, Select, Update } from '@fewer/sq';
 
 const mysqlSquel = squel.useFlavour('mysql');
 
@@ -71,6 +71,17 @@ export class MySQLAdapter implements BaseAdapter {
       [insert.toString(), selectId.toString()].join('; '),
     );
 
+    return results;
+  }
+
+  async update(query: Update) {
+    const context = query.get();
+    const update = mysqlSquel
+      .update()
+      .table(context.table)
+      .setFields(context.fields);
+
+    const results = await this.query(update.toString());
     return results;
   }
 
