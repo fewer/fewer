@@ -5,13 +5,47 @@
     "previous": "Previous",
     "tagline": "A minimal ORM for Node.js.",
     "docs": {
+      "adapters/mysql": {
+        "title": "MySQL Adapter",
+        "sidebar_label": "MySQL Adapter"
+      },
+      "adapters/postgres": {
+        "title": "Postgres Adapter",
+        "sidebar_label": "Postgres Adapter"
+      },
       "advanced/multi-db": {
         "title": "Multiple Databases",
         "sidebar_label": "Multiple Databases"
       },
+      "api/associations": {
+        "title": "Associations",
+        "sidebar_label": "Associations"
+      },
+      "api/CustomAdapters": {
+        "title": "api/CustomAdapters"
+      },
+      "api/custom-pipes": {
+        "title": "Custom Pipes",
+        "sidebar_label": "Custom Pipes"
+      },
+      "api/database": {
+        "title": "Database",
+        "sidebar_label": "Database"
+      },
       "api/api-reference": {
         "title": "API Reference",
         "sidebar_label": "API Reference"
+      },
+      "api/repository": {
+        "title": "Repository",
+        "sidebar_label": "Repository"
+      },
+      "api/Schema": {
+        "title": "api/Schema"
+      },
+      "introduction/create-an-association": {
+        "title": "Create an Association",
+        "sidebar_label": "Create an Association"
       },
       "introduction/getting-started": {
         "title": "Getting Started",
@@ -23,9 +57,6 @@
       },
       "pipes": {
         "title": "pipes"
-      },
-      "README": {
-        "title": "README"
       },
       "repository": {
         "title": "repository"
@@ -39,11 +70,9 @@
     },
     "categories": {
       "Introduction": "Introduction",
-      "Basic Tutorial": "Basic Tutorial",
+      "Adapters": "Adapters",
+      "Pipes": "Pipes",
       "Advanced Topics": "Advanced Topics",
-      "Recipes": "Recipes",
-      "FAQ": "FAQ",
-      "Other": "Other",
       "API Reference": "API Reference"
     }
   },
