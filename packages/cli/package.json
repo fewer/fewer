@@ -26,7 +26,8 @@
     "test": "__tests__"
   },
   "files": [
-    "lib"
+    "lib",
+    "templates"
   ],
   "repository": {
     "type": "git",
@@ -48,7 +49,9 @@
     "@oclif/plugin-help": "^2.1.4",
     "@oclif/plugin-not-found": "^1.2.2",
     "@oclif/plugin-warn-if-update-available": "^1.5.4",
+    "@types/ejs": "^2.6.1",
     "cli-ux": "^5.0.0",
+    "ejs": "^2.6.1",
     "enquirer": "^2.3.0",
     "execa": "^1.0.0"
   },
