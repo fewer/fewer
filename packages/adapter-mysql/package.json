@@ -1,6 +1,6 @@
 {
   "name": "@fewer/adapter-mysql",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A Fewer database adapter to connect to MySQL",
   "keywords": [
     "fewer",
@@ -37,6 +37,6 @@
   },
   "devDependencies": {
     "@types/mysql": "^2.15.5",
-    "fewer": "^0.0.6"
+    "fewer": "^0.0.7"
   }
 }
