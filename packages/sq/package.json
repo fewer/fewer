@@ -31,11 +31,6 @@
   "publishConfig": {
     "access": "public"
   },
-  "dependencies": {
-    "sqlstring": "^2.3.1",
-    "squel": "^5.12.2"
-  },
-  "devDependencies": {
-    "@types/sqlstring": "^2.2.0"
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }

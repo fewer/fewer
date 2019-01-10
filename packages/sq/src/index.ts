@@ -1,6 +1,29 @@
-import squel, { QueryBuilder, Select, Insert, Update } from 'squel';
+import Insert from './Insert';
+import Select from './Select';
+import Update from './Update';
 
-// Currently, this just re-exports Squel, but in the future,
-// this will be the central place for modifications to squel.
-export default squel;
-export { QueryBuilder, Select, Insert, Update };
+export { Insert, Select, Update };
+
+export default {
+  select(table: string) {
+    return new Select({
+      table,
+      plucked: [],
+      wheres: [],
+    });
+  },
+
+  insert(table: string) {
+    return new Insert({
+      table,
+      fields: {},
+    });
+  },
+
+  update(table: string) {
+    return new Update({
+      table,
+      fields: {},
+    });
+  },
+};
