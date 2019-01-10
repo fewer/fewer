@@ -8,8 +8,6 @@ const mysqlSquel = squel.useFlavour('mysql');
 export class MySQLAdapter implements BaseAdapter {
   private connection: Connection;
 
-  supportsReturning = false;
-
   constructor(options: ConnectionConfig) {
     this.connection = mysql.createConnection(options);
   }
