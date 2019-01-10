@@ -47,7 +47,7 @@ const siteConfig = {
   */
 
   // This copyright info is used in /core/Footer.js and blog RSS/Atom feeds.
-  copyright: `Copyright © ${new Date().getFullYear()} Jordan Gensler & Emily Dobervich`,
+  copyright: `Copyright © ${new Date().getFullYear()}`,
 
   highlight: {
     // Highlight.js theme to use for syntax highlighting in code blocks.
@@ -57,8 +57,6 @@ const siteConfig = {
   // Add custom scripts here that would be placed in <script> tags.
   scripts: ['https://buttons.github.io/buttons.js', 'https://unpkg.com/quicklink', '/scripts/init.js'],
 
-  // On page navigation for the current documentation page.
-  onPageNav: 'separate',
   // No .html extensions for paths.
   cleanUrl: true,
 

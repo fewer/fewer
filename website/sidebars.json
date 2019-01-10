@@ -7,7 +7,8 @@
       "introduction/creating-a-migration",
       "introduction/generating-the-schema",
       "introduction/repository",
-      "introduction/querying"
+      "introduction/querying",
+      "introduction/create-an-association"
     ],
     "Adapters": [
       "adapters/postgres",
@@ -26,8 +27,9 @@
       "api/api-reference",
       "api/database",
       "api/schema",
-      "api/respository",
-      "api/pipes"
+      "api/repository",
+      "api/associations",
+      "api/custom-pipes"
     ]
   }
 }

@@ -1,0 +1,8 @@
+const { createDatabase } = require('fewer');
+const { <%= adapter %>Adapter: Adapter } = require('@fewer/adapter-<%= adapter.toLowerCase() %>');
+
+module.exports = createDatabase({
+    adapter: new Adapter({
+        // TODO: Put your database connection here!
+    })
+});
