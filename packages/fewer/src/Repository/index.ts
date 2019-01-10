@@ -150,14 +150,11 @@ export class Repository<
       throw new Error('model was not valid');
     }
 
-    const query = sq
-      .insert()
-      .into(this.tableName)
-      .setFields(model)
-      .toString();
-
     const db = await this.database;
-    const [data] = await db.query(query);
+
+    const query = sq.insert(this.tableName).set(model);
+
+    const [data] = await db.insert(query);
 
     // TODO: Avoid double-creating the model:
     return this.from(data);
@@ -193,16 +190,15 @@ export class Repository<
       changeSet[property] = model[property];
     }
 
+    // TODO: Make update work:
     const query = sq
-      .update()
-      .table(this.tableName)
-      .setFields(changeSet)
+      .update(this.tableName)
       // TODO: Make this work:
-      // .where("id = ?", model.id)
-      .toString();
+      // .id('id', model.id)
+      .set(changeSet);
 
     const db = await this.database;
-    const [data] = await db.query(query);
+    const [data] = await db.update(query);
 
     return this.from(data);
   }
@@ -220,19 +216,9 @@ export class Repository<
     JoinAssociations,
     QueryTypes.MULTIPLE
   > {
-    const nextQuery = this.selectQuery();
-
-    for (const [fieldName, matcher] of Object.entries(wheres)) {
-      if (Array.isArray(matcher)) {
-        nextQuery.where(`${fieldName} IN ?`, matcher);
-      } else {
-        nextQuery.where(`${fieldName} = ?`, matcher);
-      }
-    }
-
     return new Repository(
       this.tableName,
-      nextQuery,
+      this.selectQuery().where(wheres),
       this.pipes,
       this.queryType,
     );
@@ -254,7 +240,7 @@ export class Repository<
     return new Repository(
       this.tableName,
       this.selectQuery()
-        .where('id = ?', id)
+        .where({ id })
         .limit(1),
       this.pipes,
       this.queryType,
@@ -274,13 +260,9 @@ export class Repository<
     JoinAssociations,
     QueryType
   > {
-    const nextQuery = this.selectQuery();
-    for (const fieldName of fields) {
-      nextQuery.field(fieldName as string);
-    }
     return new Repository(
       this.tableName,
-      nextQuery,
+      this.selectQuery().pluck(...(fields as string[])),
       this.pipes,
       this.queryType,
     );
@@ -302,7 +284,7 @@ export class Repository<
   > {
     return new Repository(
       this.tableName,
-      this.selectQuery().field(name as string, alias),
+      this.selectQuery().pluck([name as string, alias]),
       this.pipes,
       this.queryType,
     );
@@ -452,7 +434,8 @@ export class Repository<
   ) {
     const db = await this.database;
     try {
-      const data = await db.query(this.toSQL());
+      const query = this.selectQuery();
+      const data = await db.select(query);
 
       if (this.queryType === QueryTypes.SINGLE) {
         return onFulfilled(data[0]);
@@ -468,21 +451,12 @@ export class Repository<
     }
   }
 
-  private toSQL(): string {
-    if (!this.runningQuery) {
-      throw new Error('No query found.');
-    }
-
-    return this.runningQuery.toString();
-  }
-
   private selectQuery(): Select {
     if (!this.runningQuery) {
-      this.runningQuery = sq.select().from(this.tableName);
-      return this.runningQuery;
+      this.runningQuery = sq.select(this.tableName);
     }
 
-    return this.runningQuery.clone();
+    return this.runningQuery;
   }
 }
 
