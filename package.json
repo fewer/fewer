@@ -9,19 +9,16 @@
     "prepare": "yarn run clean && yarn run build",
     "test": "jest",
     "build": "tsc --build packages/*",
-    "clean": "yarn run build --clean",
+    "clean": "yarn run build --clean && rm -rf ./packages/*/lib/",
     "prettier": "prettier --write ./packages/**/* ./docs/**/* *.md"
   },
   "devDependencies": {
     "@types/jest": "^23.3.9",
     "@types/node": "^10.12.7",
     "jest": "^23.6.0",
-    "jest-diff": "^23.6.0",
     "lerna": "^3.5.1",
     "prettier": "^1.15.3",
     "ts-jest": "^23.10.4",
-    "ts-node-dev": "^1.0.0-pre.30",
-    "tsconfig-paths": "^3.7.0",
     "typescript": "^3.2.1"
   }
 }

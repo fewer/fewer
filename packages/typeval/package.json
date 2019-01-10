@@ -4,6 +4,7 @@
   "dependencies": {
     "@babel/code-frame": "^7.0.0",
     "create-jest-runner": "^0.4.1",
+    "jest-diff": "^23.6.0",
     "lodash": "^4.17.11"
   },
   "private": true

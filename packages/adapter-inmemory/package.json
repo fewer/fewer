@@ -35,11 +35,10 @@
   },
   "dependencies": {
     "sql.js": "^0.5.0",
-    "sqlstring": "^2.3.1"
+    "squel": "^5.12.2"
   },
   "devDependencies": {
     "@types/sql.js": "^0.0.29",
-    "@types/sqlstring": "^2.2.1",
     "fewer": "^0.0.7"
   }
 }

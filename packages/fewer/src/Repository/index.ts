@@ -25,6 +25,8 @@ export enum QueryTypes {
   MULTIPLE,
 }
 
+type PrimaryKey = string | number;
+
 const SCHEMA_TYPE = Symbol('schema-type');
 
 export class Repository<
@@ -161,9 +163,9 @@ export class Repository<
   }
 
   /**
-   * Updates a model in the database.
+   * Saves a model in the database.
    */
-  async update<T extends Partial<RepoType> & SymbolProperties<RepoType>>(
+  async save<T extends Partial<RepoType> & SymbolProperties<RepoType>>(
     model: T,
   ) {
     // Ensure that we're actually working with a model:
@@ -228,7 +230,7 @@ export class Repository<
    * TODO: Documentation.
    */
   find(
-    id: string | number,
+    id: PrimaryKey,
   ): Repository<
     SchemaType,
     RepoType,
