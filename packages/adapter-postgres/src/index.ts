@@ -18,6 +18,10 @@ export class PostgresAdapter implements BaseAdapter {
     return this.client.connect();
   }
 
+  disconnect() {
+    return this.client.end();
+  }
+
   async select(query: Select) {
     const context = query.get();
     const select = postgresSquel.select().from(context.table);

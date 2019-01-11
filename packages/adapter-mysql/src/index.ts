@@ -26,6 +26,10 @@ export class MySQLAdapter implements BaseAdapter {
     });
   }
 
+  // TODO actually disconnect
+  async disconnect() {
+  }
+
   async select(query: Select) {
     const context = query.get();
     const select = mysqlSquel.select().from(context.table);

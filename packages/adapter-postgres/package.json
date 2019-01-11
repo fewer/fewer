@@ -24,7 +24,9 @@
     "url": "git+https://github.com/fewer/fewer.git"
   },
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "integration": "../../env.sh yarn run _integration",
+    "_integration": "yarn run _integration:prep && jest --config=../../jest.config.integration.js",
+    "_integration:prep": "ts-node scripts/integrationPrep.ts -P tsconfig.json"
   },
   "bugs": {
     "url": "https://github.com/fewer/fewer/issues"
