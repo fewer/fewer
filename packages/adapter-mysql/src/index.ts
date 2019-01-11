@@ -56,7 +56,7 @@ export class MySQLAdapter implements BaseAdapter {
       }
     }
 
-    const results = await this.query(select.toString());
+    const results = await this.rawQuery(select.toString());
     return results;
   }
 
@@ -67,7 +67,7 @@ export class MySQLAdapter implements BaseAdapter {
 
     insert.setFields(context.fields);
 
-    const results = await this.query(
+    const results = await this.rawQuery(
       [insert.toString(), selectId.toString()].join('; '),
     );
 
@@ -81,11 +81,11 @@ export class MySQLAdapter implements BaseAdapter {
       .table(context.table)
       .setFields(context.fields);
 
-    const results = await this.query(update.toString());
+    const results = await this.rawQuery(update.toString());
     return results;
   }
 
-  private query(queryString: string) {
+  rawQuery(queryString: string) {
     return new Promise<any[]>((resolve, reject) => {
       this.connection.query(queryString, (error, results) => {
         if (error) {

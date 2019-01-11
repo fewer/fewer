@@ -32,6 +32,10 @@ export class Database {
   update(query: Update): Promise<any> {
     return this.adapter.update(query);
   }
+
+  rawQuery(query: string): Promise<any> {
+    return this.adapter.rawQuery(query);
+  }
 }
 
 /**

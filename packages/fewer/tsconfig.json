@@ -6,5 +6,7 @@
     "rootDir": "src"
   },
   "include": ["./src"],
-  "references": [{ "path": "../sq" }]
+  "references": [
+    { "path": "../sq" },
+  ]
 }
