@@ -1,6 +1,7 @@
-import * as FieldTypes from './FieldTypes';
 import { WithUndefinedPropertiesAsOptionals } from './typeHelpers';
 import { INTERNAL_TYPES } from '../types';
+import { Database, Adapter } from '../Database';
+import FieldType from '../FieldType';
 
 type TableOptions =
   | {
@@ -9,33 +10,45 @@ type TableOptions =
   | null
   | undefined;
 
-export interface BaseBuilt {
-  [key: string]: FieldTypes.Type<any, boolean>;
+export interface FieldTypes {
+  [key: string]: FieldType;
 }
 
-type BuiltTable<Built extends BaseBuilt> = {
-  [P in keyof Built]: Built[P][INTERNAL_TYPES.INTERNAL_TYPE]
+type BuiltTable<T extends FieldTypes> = {
+  [P in keyof T]: T[P][INTERNAL_TYPES.INTERNAL_TYPE]
 };
 
-export class SchemaTable<T extends BaseBuilt> {
-  [INTERNAL_TYPES.INTERNAL_TYPE]: WithUndefinedPropertiesAsOptionals<BuiltTable<T>>;
+export class SchemaTable<
+  DBAdapter extends Adapter = any,
+  T extends InstanceType<DBAdapter['FieldTypes']> = any
+> {
+  // TODO: Should we resolve this here, or inside of the repository itself?
+  [INTERNAL_TYPES.INTERNAL_TYPE]: WithUndefinedPropertiesAsOptionals<
+    BuiltTable<T['fields']>
+  >;
 
   name: string;
 
   constructor(
     name: string,
     config: TableOptions,
-    builder: (t: typeof FieldTypes) => T,
+    builder: (t: InstanceType<DBAdapter['FieldTypes']>) => T,
   ) {
     this.name = name;
   }
 }
 
-export class Schema<RegisteredTables = {}> {
-  version: number;
+export class Schema<DBAdapter extends Adapter, RegisteredTables = {}> {
+  database: Database;
+  version: number | undefined;
   tables: RegisteredTables;
 
-  constructor(version: number, tables = {} as RegisteredTables) {
+  constructor(
+    database: Database,
+    version?: number,
+    tables = {} as RegisteredTables,
+  ) {
+    this.database = database;
     this.version = version;
     this.tables = tables;
   }
@@ -43,19 +56,36 @@ export class Schema<RegisteredTables = {}> {
   /**
    * TODO: Documentation.
    */
-  table<TableName extends string, Built extends BaseBuilt>(
+  // TODO: Built is current instance of `FieldTypes`.
+  // I need to probably unroll that type inside of the SchemaTable itself when stashing
+  // the type. Otherwise we can just keep the FieldTypes instance around.
+  table<
+    TableName extends string,
+    Built extends InstanceType<DBAdapter['FieldTypes']>
+  >(
     name: TableName,
     config: TableOptions,
-    builder: (t: typeof FieldTypes) => Built,
-  ): Schema<RegisteredTables & { [P in TableName]: SchemaTable<Built> }> {
+    builder: (t: InstanceType<DBAdapter['FieldTypes']>) => Built,
+  ): Schema<
+    DBAdapter,
+    RegisteredTables & { [P in TableName]: SchemaTable<DBAdapter, Built> }
+  > {
     const table = new SchemaTable(name, config, builder);
-    return new Schema(this.version, { ...this.tables, [name]: table });
+    return new Schema(this.database, this.version, {
+      ...this.tables,
+      [name]: table,
+    });
   }
 }
+
+export { FieldType };
 
 /**
  * TODO: Documentation.
  */
-export function createSchema(version: number) {
-  return new Schema(version);
+export function createSchema<DBAdapter extends Adapter>(
+  database: Database<DBAdapter>,
+  version?: number,
+) {
+  return new Schema<DBAdapter>(database, version);
 }

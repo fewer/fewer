@@ -1,14 +1,18 @@
 import { Adapter as BaseAdapter } from 'fewer';
+import { Insert, Select, Update } from '@fewer/sq';
 import { Client, ConnectionConfig } from 'pg';
 import squel from 'squel';
-import { Insert, Select, Update } from '@fewer/sq';
+import FieldTypes from './FieldTypes';
 
-export { createMigration } from './createMigration';
+// export { createMigration } from './createMigration';
 
 const postgresSquel = squel.useFlavour('postgres');
 
-export class PostgresAdapter implements BaseAdapter {
+class PostgresAdapter implements BaseAdapter {
   private client: Client;
+
+  // Expose the Field Types:
+  FieldTypes = FieldTypes;
 
   constructor(options: ConnectionConfig) {
     this.client = new Client(options);
@@ -84,3 +88,5 @@ export class PostgresAdapter implements BaseAdapter {
     return results.rows;
   }
 }
+
+export { PostgresAdapter as Adapter };

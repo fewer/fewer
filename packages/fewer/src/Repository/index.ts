@@ -19,16 +19,22 @@ import {
   Subset,
   ResolveAssociations,
 } from '../types';
+import FieldType from '../FieldType';
 
 export enum QueryTypes {
   SINGLE,
   MULTIPLE,
 }
 
+// type ExtractSchemaType<T extends SchemaTable> = {
+//   [P in keyof T]: T[P][INTERNAL_TYPES.INTERNAL_TYPE][INTERNAL_TYPES.INTERNAL_TYPE]
+// };
+
 const SCHEMA_TYPE = Symbol('schema-type');
 
 export class Repository<
   SchemaType = {},
+  // TODO: Make this just extensions, not schema + extensions.
   RepoType extends SchemaType = any,
   SelectionSet = INTERNAL_TYPES.ALL_FIELDS,
   LoadAssociations extends Associations = {},
@@ -465,7 +471,7 @@ export { ValidationError, Pipe };
 /**
  * TODO: Documentation.
  */
-export function createRepository<Type extends SchemaTable<any>>(
+export function createRepository<Type extends SchemaTable>(
   table: Type,
 ): Repository<
   Type[INTERNAL_TYPES.INTERNAL_TYPE],

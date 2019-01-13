@@ -1,6 +1,18 @@
 import { Select, Insert, Update } from '@fewer/sq';
+import { FieldType } from '../Schema';
+
+interface Fields {
+  [key: string]: FieldType;
+}
+
+// TODO: Type this better:
+interface FieldTypes {
+  new (): any;
+}
 
 export default interface Adapter {
+  FieldTypes: FieldTypes;
+
   /**
    * Initiate the connection to the Database.
    */
@@ -18,6 +30,4 @@ export default interface Adapter {
    * Updates a record in the database. Returns the id of the updated item.
    */
   update(query: Update): Promise<any>;
-
-  rawQuery(query: String): Promise<any>;
 }

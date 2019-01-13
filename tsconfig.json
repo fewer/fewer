@@ -13,6 +13,7 @@
       "fewer": ["./packages/fewer/src"],
       "@fewer/*": ["./packages/*/src"]
     },
-    "baseUrl": "."
+    "baseUrl": ".",
+    "stripInternal": true
   }
 }
