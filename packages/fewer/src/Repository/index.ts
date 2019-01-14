@@ -1,6 +1,5 @@
 import sq, { Select } from '@fewer/sq';
 import { SchemaTable } from '../Schema';
-import { Database } from '../Database';
 import createModel, {
   SymbolProperties,
   Symbols,
@@ -19,7 +18,6 @@ import {
   Subset,
   ResolveAssociations,
 } from '../types';
-import FieldType from '../FieldType';
 
 export enum QueryTypes {
   SINGLE,
@@ -164,7 +162,7 @@ export class Repository<
       throw new Error('model was not valid');
     }
 
-    const db = await this.database;
+    const db = this.schemaTable.database;
 
     const query = sq.insert(this.schemaTable.name).set(model);
 
@@ -212,7 +210,7 @@ export class Repository<
       // .id('id', model.id)
       .set(changeSet);
 
-    const db = await this.database;
+    const db = this.schemaTable.database;
     const [data] = await db.update(query);
 
     return this.from(data);
@@ -436,7 +434,7 @@ export class Repository<
     ) => void,
     onRejected?: (error: Error) => void,
   ) {
-    const db = await this.database;
+    const db = this.schemaTable.database;
     try {
       const query = this.selectQuery();
       const data = await db.select(query);
