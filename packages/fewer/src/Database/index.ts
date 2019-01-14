@@ -21,6 +21,10 @@ export class Database {
     return this.adapter.connect();
   }
 
+  disconnect(): Promise<void> {
+    return this.adapter.disconnect();
+  }
+
   select(query: Select): Promise<any[]> {
     return this.adapter.select(query);
   }

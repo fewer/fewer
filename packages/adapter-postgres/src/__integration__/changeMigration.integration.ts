@@ -8,11 +8,17 @@ describe('change migration', () => {
 
     beforeAll(async () => {
       database = createDatabase({
-        adapter: new PostgresAdapter({}),
+        adapter: new PostgresAdapter({
+          database: 'fewer_integration_tests'
+        }),
       });
 
       await database.connect();
     });
+
+    afterAll(async () => {
+      await database.disconnect();
+    })
 
     it('can run createTable up and down', async () => {
       const migration = createMigration({
@@ -26,10 +32,8 @@ describe('change migration', () => {
         })
       });
 
-      const result = await database.rawQuery(migration.up.join('\n'));
-      console.log(result);
-
-      expect(true).toEqual(false);
+      await database.rawQuery(migration.up.join('\n'));
+      expect(await database.rawQuery("select table_name, column_name, column_default, is_nullable, data_type, character_maximum_length, is_generated, is_updatable from INFORMATION_SCHEMA.COLUMNS where table_name = 'users';")).toMatchSnapshot();
     });
   });
 });
