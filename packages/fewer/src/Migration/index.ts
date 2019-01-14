@@ -1,10 +1,20 @@
-export interface Migration {
-  up: string[];
-  down?: string[];
+import { Database } from '../Database';
+
+export class Migration {
+  up: any;
+  down: any;
+
+  constructor() {
+    this.up = 'up';
+    this.down = 'down';
+  }
 }
 
+// Default migration type is change migration:
+type DefaultMigration<T> = (m: T) => void;
+
 interface ChangeMigrationDefinition<T> {
-  change: (m: Pick<T, Exclude<keyof T, 'rawsql'>>) => void;
+  change: (m: T) => void;
 }
 
 interface UpDownMigrationDefinition<T> {
@@ -17,12 +27,15 @@ interface IrreversibleMigrationDefinition<T> {
   irreversible: true;
 }
 
-export type MigrationDefinition<T> = ChangeMigrationDefinition<T> | UpDownMigrationDefinition<T> | IrreversibleMigrationDefinition<T>;
+export type MigrationDefinition<T> =
+  | DefaultMigration<T>
+  | ChangeMigrationDefinition<T>
+  | UpDownMigrationDefinition<T>
+  | IrreversibleMigrationDefinition<T>;
 
-export function isChangeMigration<T>(definition: MigrationDefinition<T>): definition is ChangeMigrationDefinition<T> {
-  return (<ChangeMigrationDefinition<T>>definition).change !== undefined;
-}
-
-export function isIrreversibleMigration<T>(definition: MigrationDefinition<T>): definition is IrreversibleMigrationDefinition<T> {
-  return (<IrreversibleMigrationDefinition<T>>definition).irreversible === true;
+export function createMigration(
+  db: Database,
+  definition: MigrationDefinition<any>,
+) {
+  return new Migration();
 }
