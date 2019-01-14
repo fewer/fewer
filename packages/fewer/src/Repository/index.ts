@@ -35,23 +35,28 @@ const SCHEMA_TYPE = Symbol('schema-type');
 export class Repository<
   SchemaType = {},
   // TODO: Make this just extensions, not schema + extensions.
-  RepoType extends SchemaType = any,
+  RegisteredExtensions = {},
   SelectionSet = INTERNAL_TYPES.ALL_FIELDS,
   LoadAssociations extends Associations = {},
   JoinAssociations extends Associations = {},
   QueryType extends QueryTypes = any,
   // NOTE: This generic should never explicitly be passed.
   ResolvedType = Subset<
-    RepoType & ResolveAssociations<LoadAssociations>,
+    SchemaType & RegisteredExtensions & ResolveAssociations<LoadAssociations>,
     SelectionSet,
     keyof LoadAssociations
   >
-> implements CommonQuery<RepoType, LoadAssociations & JoinAssociations> {
+>
+  implements
+    CommonQuery<
+      SchemaType & RegisteredExtensions,
+      LoadAssociations & JoinAssociations
+    > {
   // Stash the schema type so that the generic can be used as a type constraint.
   [SCHEMA_TYPE]: SchemaType;
 
   [INTERNAL_TYPES.RESOLVED_TYPE]: ResolvedType;
-  [INTERNAL_TYPES.INTERNAL_TYPE]: RepoType;
+  [INTERNAL_TYPES.INTERNAL_TYPE]: SchemaType & RegisteredExtensions;
 
   /**
    * Contains symbols that are used to access metadata about the state of models.
@@ -79,10 +84,10 @@ export class Repository<
    * TODO: Documentation.
    */
   pipe<Extensions>(
-    pipe: Pipe<RepoType, Extensions>,
+    pipe: Pipe<SchemaType & RegisteredExtensions, Extensions>,
   ): Repository<
     SchemaType,
-    RepoType & Extensions,
+    RegisteredExtensions & Extensions,
     SelectionSet,
     LoadAssociations,
     JoinAssociations,
@@ -100,7 +105,10 @@ export class Repository<
    * Validates an object.
    */
   // TODO: Async
-  validate<T extends Partial<RepoType> & SymbolProperties<RepoType>>(model: T) {
+  validate<
+    T extends Partial<SchemaType & RegisteredExtensions> &
+      SymbolProperties<SchemaType & RegisteredExtensions>
+  >(model: T) {
     // Ensure that we're actually working with a model:
     if (!model[Symbols.isModel]) {
       throw new Error(
@@ -140,14 +148,14 @@ export class Repository<
   /**
    * Converts a plain JavaScript object into a Fewer model.
    */
-  from<T extends Partial<RepoType>>(obj: T) {
-    return createModel<RepoType, T>(obj);
+  from<T extends Partial<SchemaType & RegisteredExtensions>>(obj: T) {
+    return createModel<SchemaType & RegisteredExtensions, T>(obj);
   }
 
   /**
    * TODO: Documentation.
    */
-  async create<T extends Partial<RepoType>>(obj: T) {
+  async create<T extends Partial<SchemaType & RegisteredExtensions>>(obj: T) {
     // Convert the object:
     const model = this.from(obj);
 
@@ -169,9 +177,10 @@ export class Repository<
   /**
    * Updates a model in the database.
    */
-  async update<T extends Partial<RepoType> & SymbolProperties<RepoType>>(
-    model: T,
-  ) {
+  async update<
+    T extends Partial<SchemaType & RegisteredExtensions> &
+      SymbolProperties<SchemaType & RegisteredExtensions>
+  >(model: T) {
     // Ensure that we're actually working with a model:
     if (!model[Symbols.isModel]) {
       throw new Error(
@@ -213,10 +222,13 @@ export class Repository<
    * TODO: Documentation.
    */
   where(
-    wheres: WhereType<RepoType, LoadAssociations & JoinAssociations>,
+    wheres: WhereType<
+      SchemaType & RegisteredExtensions,
+      LoadAssociations & JoinAssociations
+    >,
   ): Repository<
     SchemaType,
-    RepoType,
+    RegisteredExtensions,
     SelectionSet,
     LoadAssociations,
     JoinAssociations,
@@ -237,7 +249,7 @@ export class Repository<
     id: string | number,
   ): Repository<
     SchemaType,
-    RepoType,
+    RegisteredExtensions,
     SelectionSet,
     LoadAssociations,
     JoinAssociations,
@@ -256,11 +268,11 @@ export class Repository<
   /**
    * TODO: Documentation.
    */
-  pluck<Key extends keyof RepoType>(
+  pluck<Key extends keyof SchemaType>(
     ...fields: Key[]
   ): Repository<
     SchemaType,
-    RepoType,
+    RegisteredExtensions,
     CreateSelectionSet<SelectionSet, Key>,
     LoadAssociations,
     JoinAssociations,
@@ -277,12 +289,12 @@ export class Repository<
   /**
    * TODO: Documentation
    */
-  pluckAs<Key extends keyof RepoType, Alias extends string>(
+  pluckAs<Key extends keyof SchemaType, Alias extends string>(
     name: Key,
     alias: Alias,
   ): Repository<
     SchemaType,
-    RepoType & { [P in Alias]: RepoType[Key] },
+    RegisteredExtensions & { [P in Alias]: SchemaType[Key] },
     CreateSelectionSet<SelectionSet, Alias>,
     LoadAssociations,
     JoinAssociations,
@@ -310,7 +322,7 @@ export class Repository<
     amount: number,
   ): Repository<
     SchemaType,
-    RepoType,
+    RegisteredExtensions,
     SelectionSet,
     LoadAssociations,
     JoinAssociations,
@@ -331,7 +343,7 @@ export class Repository<
     amount: number,
   ): Repository<
     SchemaType,
-    RepoType,
+    RegisteredExtensions,
     SelectionSet,
     LoadAssociations,
     JoinAssociations,
@@ -358,14 +370,14 @@ export class Repository<
     KeyConstraint = LoadAssociation extends Association<
       AssociationType.BELONGS_TO
     >
-      ? keyof RepoType
+      ? keyof SchemaType
       : any
   >(
     name: Name,
     association: LoadAssociation,
   ): Repository<
     SchemaType,
-    RepoType,
+    RegisteredExtensions,
     SelectionSet,
     LoadAssociations & { [P in Name]: LoadAssociation },
     JoinAssociations,
@@ -392,14 +404,14 @@ export class Repository<
     KeyConstraint = JoinAssociation extends Association<
       AssociationType.BELONGS_TO
     >
-      ? keyof RepoType
+      ? keyof SchemaType
       : any
   >(
     name: Name,
     association: JoinAssociation,
   ): Repository<
     SchemaType,
-    RepoType,
+    RegisteredExtensions,
     SelectionSet,
     LoadAssociations,
     JoinAssociations & { [P in Name]: JoinAssociation },
