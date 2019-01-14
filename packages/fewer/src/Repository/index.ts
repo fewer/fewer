@@ -63,18 +63,18 @@ export class Repository<
    */
   readonly symbols = Symbols;
 
-  private tableName: string;
+  private schemaTable: SchemaTable;
   private runningQuery?: Select;
   private pipes: Pipe[];
   private queryType: QueryTypes;
 
   constructor(
-    tableName: string,
+    schemaTable: SchemaTable,
     runningQuery: Select | undefined,
     pipes: Pipe[],
     queryType: QueryTypes,
   ) {
-    this.tableName = tableName;
+    this.schemaTable = schemaTable;
     this.runningQuery = runningQuery;
     this.pipes = pipes;
     this.queryType = queryType;
@@ -94,7 +94,7 @@ export class Repository<
     QueryType
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.runningQuery,
       [...this.pipes, pipe],
       this.queryType,
@@ -166,7 +166,7 @@ export class Repository<
 
     const db = await this.database;
 
-    const query = sq.insert(this.tableName).set(model);
+    const query = sq.insert(this.schemaTable.name).set(model);
 
     const [data] = await db.insert(query);
 
@@ -207,7 +207,7 @@ export class Repository<
 
     // TODO: Make update work:
     const query = sq
-      .update(this.tableName)
+      .update(this.schemaTable.name)
       // TODO: Make this work:
       // .id('id', model.id)
       .set(changeSet);
@@ -235,7 +235,7 @@ export class Repository<
     QueryTypes.MULTIPLE
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.selectQuery().where(wheres),
       this.pipes,
       this.queryType,
@@ -256,7 +256,7 @@ export class Repository<
     QueryTypes.SINGLE
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.selectQuery()
         .where({ id })
         .limit(1),
@@ -279,7 +279,7 @@ export class Repository<
     QueryType
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.selectQuery().pluck(...(fields as string[])),
       this.pipes,
       this.queryType,
@@ -301,7 +301,7 @@ export class Repository<
     QueryType
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.selectQuery().pluck([name as string, alias]),
       this.pipes,
       this.queryType,
@@ -329,7 +329,7 @@ export class Repository<
     QueryType
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.selectQuery().limit(amount),
       this.pipes,
       this.queryType,
@@ -350,7 +350,7 @@ export class Repository<
     QueryType
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.selectQuery().offset(amount),
       this.pipes,
       this.queryType,
@@ -384,7 +384,7 @@ export class Repository<
     QueryType
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.runningQuery,
       this.pipes,
       this.queryType,
@@ -418,7 +418,7 @@ export class Repository<
     QueryType
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.runningQuery,
       this.pipes,
       this.queryType,
@@ -457,7 +457,7 @@ export class Repository<
 
   private selectQuery(): Select {
     if (!this.runningQuery) {
-      this.runningQuery = sq.select(this.tableName);
+      this.runningQuery = sq.select(this.schemaTable.name);
     }
 
     return this.runningQuery;
@@ -470,30 +470,14 @@ export { ValidationError, Pipe };
  * TODO: Documentation.
  */
 export function createRepository<Type extends SchemaTable>(
-  table: Type,
+  schemaTable: Type,
 ): Repository<
   Type[INTERNAL_TYPES.INTERNAL_TYPE],
-  Type[INTERNAL_TYPES.INTERNAL_TYPE],
+  {},
   INTERNAL_TYPES.ALL_FIELDS,
   {},
   {},
   QueryTypes.MULTIPLE
->;
-export function createRepository<Type>(
-  table: string,
-): Repository<
-  Type,
-  Type,
-  INTERNAL_TYPES.ALL_FIELDS,
-  {},
-  {},
-  QueryTypes.MULTIPLE
->;
-export function createRepository(table: any): any {
-  return new Repository(
-    typeof table === 'string' ? table : table.name,
-    undefined,
-    [],
-    QueryTypes.MULTIPLE,
-  );
+> {
+  return new Repository(schemaTable, undefined, [], QueryTypes.MULTIPLE);
 }
