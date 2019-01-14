@@ -1,6 +1,6 @@
 import sq, { Select } from '@fewer/sq';
 import { SchemaTable } from '../Schema';
-import { Database, globalDatabase } from '../Database';
+import { Database } from '../Database';
 import createModel, {
   SymbolProperties,
   Symbols,
@@ -39,11 +39,18 @@ export class Repository<
   SelectionSet = INTERNAL_TYPES.ALL_FIELDS,
   LoadAssociations extends Associations = {},
   JoinAssociations extends Associations = {},
-  QueryType extends QueryTypes = any
+  QueryType extends QueryTypes = any,
+  // NOTE: This generic should never explicitly be passed.
+  ResolvedType = Subset<
+    RepoType & ResolveAssociations<LoadAssociations>,
+    SelectionSet,
+    keyof LoadAssociations
+  >
 > implements CommonQuery<RepoType, LoadAssociations & JoinAssociations> {
   // Stash the schema type so that the generic can be used as a type constraint.
   [SCHEMA_TYPE]: SchemaType;
 
+  [INTERNAL_TYPES.RESOLVED_TYPE]: ResolvedType;
   [INTERNAL_TYPES.INTERNAL_TYPE]: RepoType;
 
   /**
@@ -56,8 +63,6 @@ export class Repository<
   private pipes: Pipe[];
   private queryType: QueryTypes;
 
-  private database: Promise<Database>;
-
   constructor(
     tableName: string,
     runningQuery: Select | undefined,
@@ -68,11 +73,6 @@ export class Repository<
     this.runningQuery = runningQuery;
     this.pipes = pipes;
     this.queryType = queryType;
-
-    // TODO: It's probably not ideal to create this promise on every chain. We should probably lazily create it.
-    // Alternatively, we could consume it from the schema or something like that.
-    // Probably the schema, with a default on the global database if none from schema is provided.
-    this.database = globalDatabase.waitFor();
   }
 
   /**
@@ -413,28 +413,14 @@ export class Repository<
     );
   }
 
-  [INTERNAL_TYPES.RESOLVED_TYPE]: Subset<
-    RepoType & ResolveAssociations<LoadAssociations>,
-    SelectionSet,
-    keyof LoadAssociations
-  >;
-
   /**
    * TODO: Documentation.
    */
   async then(
     onFulfilled: (
       value: QueryType extends QueryTypes.SINGLE
-        ? Subset<
-            RepoType & ResolveAssociations<LoadAssociations>,
-            SelectionSet,
-            keyof LoadAssociations
-          >
-        : Subset<
-            RepoType & ResolveAssociations<LoadAssociations>,
-            SelectionSet,
-            keyof LoadAssociations
-          >[],
+        ? ResolvedType
+        : ResolvedType[],
     ) => void,
     onRejected?: (error: Error) => void,
   ) {

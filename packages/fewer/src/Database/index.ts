@@ -1,5 +1,4 @@
-import Adapter, { FieldTypes } from './Adapter';
-import globalDatabase from './globalDatabase';
+import { Adapter } from '../Adapter';
 import { Select, Insert, Update } from '@fewer/sq';
 
 export interface DatabaseConfig<DBAdapter extends Adapter = Adapter> {
@@ -11,7 +10,6 @@ export class Database<DBAdapter extends Adapter = Adapter> {
 
   constructor({ adapter }: DatabaseConfig<DBAdapter>) {
     this.adapter = adapter;
-    globalDatabase.set(this);
   }
 
   /**
@@ -55,5 +53,3 @@ export function createDatabase<DBAdapter extends Adapter>(
 ) {
   return new Database<DBAdapter>(options);
 }
-
-export { Adapter, FieldTypes, globalDatabase };
