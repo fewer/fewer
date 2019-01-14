@@ -1,4 +1,4 @@
-import Adapter from './Adapter';
+import Adapter, { FieldTypes } from './Adapter';
 import globalDatabase from './globalDatabase';
 import { Select, Insert, Update } from '@fewer/sq';
 
@@ -56,4 +56,4 @@ export function createDatabase<DBAdapter extends Adapter>(
   return new Database<DBAdapter>(options);
 }
 
-export { Adapter, globalDatabase };
+export { Adapter, FieldTypes, globalDatabase };

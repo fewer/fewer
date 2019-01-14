@@ -1,4 +1,4 @@
-import { FieldType } from 'fewer';
+import { FieldType, FieldTypes as BaseFieldTypes } from 'fewer';
 
 interface TypeConfig {
   nonNull?: boolean;
@@ -6,45 +6,39 @@ interface TypeConfig {
   autoIncrement?: boolean;
 }
 
-function field<Obj, T>(name: string) {
-  return function<Name extends string, Config extends TypeConfig>(
-    this: FieldTypes,
-    name: Name,
-    config?: Config,
-  ): FieldTypes<
-    Obj &
-      {
-        [P in Name]: FieldType<
-          Config['nonNull'] extends true ? T : T | undefined
-        >
-      }
-  > {
-    // @ts-ignore TS does not understand this:
-    // TODO: Put this as a helper in the class itself:
-    return new FieldTypes({
-      ...this.fields,
-      [name]: new FieldType(name),
-    });
-  };
+interface Fields {
+  [key: string]: FieldType;
 }
 
-export default class FieldTypes<Obj = {}> {
-  fields: Obj;
-
-  constructor(fields: Obj = {} as Obj) {
-    this.fields = fields;
+export default class FieldTypes<Obj extends Fields = {}> extends BaseFieldTypes<
+  Obj
+> {
+  private columnType<T>(columnName: string) {
+    return <Name extends string, Config extends TypeConfig>(
+      name: Name,
+      config?: Config,
+    ): FieldTypes<
+      Obj &
+        {
+          [P in Name]: FieldType<
+            Config['nonNull'] extends true ? T : T | undefined
+          >
+        }
+    > => {
+      return this.addField(name, new FieldType(name));
+    };
   }
 
-  boolean = field<Obj, boolean>('boolean');
+  boolean = this.columnType<boolean>('boolean');
   // Numeric Types:
-  int = field<Obj, number>('int');
-  smallint = field<Obj, number>('smallint');
-  integer = field<Obj, number>('integer');
-  bigint = field<Obj, number>('bigint');
-  double = field<Obj, number>('double precision');
-  real = field<Obj, number>('real');
+  int = this.columnType<number>('int');
+  smallint = this.columnType<number>('smallint');
+  integer = this.columnType<number>('integer');
+  bigint = this.columnType<number>('bigint');
+  double = this.columnType<number>('double precision');
+  real = this.columnType<number>('real');
   // String types:
-  char = field<Obj, string>('char');
-  varchar = field<Obj, string>('varchar');
-  text = field<Obj, string>('text');
+  char = this.columnType<string>('char');
+  varchar = this.columnType<string>('varchar');
+  text = this.columnType<string>('text');
 }

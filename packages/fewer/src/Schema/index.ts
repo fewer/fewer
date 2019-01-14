@@ -24,7 +24,7 @@ export class SchemaTable<
 > {
   // TODO: Should we resolve this here, or inside of the repository itself?
   [INTERNAL_TYPES.INTERNAL_TYPE]: WithUndefinedPropertiesAsOptionals<
-    BuiltTable<T['fields']>
+    BuiltTable<T[INTERNAL_TYPES.INTERNAL_TYPE]>
   >;
 
   name: string;
@@ -32,7 +32,7 @@ export class SchemaTable<
   constructor(
     name: string,
     config: TableOptions,
-    builder: (t: InstanceType<DBAdapter['FieldTypes']>) => T,
+    builder: (t: DBAdapter['FieldTypes']) => T,
   ) {
     this.name = name;
   }

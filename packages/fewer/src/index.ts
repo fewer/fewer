@@ -1,6 +1,6 @@
 import { createSchema } from './Schema';
 import { createRepository, ValidationError, Pipe } from './Repository';
-import { createDatabase, Adapter, Database } from './Database';
+import { createDatabase, Adapter, FieldTypes, Database } from './Database';
 import { createBelongsTo, createHasOne, createHasMany } from './Association';
 import { Migration, MigrationDefinition, isChangeMigration, isIrreversibleMigration } from './Migration';
 import FieldType from './FieldType';
@@ -17,6 +17,7 @@ export {
   // Exports for adapter implementations:
   Adapter,
   FieldType,
+  FieldTypes,
   Migration,
   MigrationDefinition,
   isChangeMigration,

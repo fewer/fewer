@@ -1,17 +1,29 @@
 import { Select, Insert, Update } from '@fewer/sq';
 import { FieldType } from '../Schema';
+import { INTERNAL_TYPES } from '../types';
 
 interface Fields {
   [key: string]: FieldType;
 }
 
-// TODO: Type this better:
-interface FieldTypes {
-  new (): any;
+export class FieldTypes<Obj extends Fields = {}> {
+  [INTERNAL_TYPES.INTERNAL_TYPE]: Obj;
+
+  fields: Fields;
+
+  constructor(fields = {}) {
+    this.fields = fields;
+  }
+
+  // TODO: Should this be immutable, or should this just add to fields?
+  addField(name: string, type: FieldType) {
+    this.fields[name] = type;
+    return this;
+  }
 }
 
 export default interface Adapter {
-  FieldTypes: FieldTypes;
+  FieldTypes: typeof FieldTypes;
 
   /**
    * Initiate the connection to the Database.

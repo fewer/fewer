@@ -9,9 +9,12 @@
     "preinstall": "npx yarn-only",
     "prepare": "yarn run clean && yarn run build",
     "test": "jest",
-    "build": "tsc --build packages/*",
-    "clean": "yarn run build --clean",
-    "prettier": "prettier --write ./packages/**/* ./docs/**/* *.md"
+    "build": "yarn run clean && tsc --build packages/*",
+    "clean": "rm -rf ./packages/*/lib/",
+    "prettier": "prettier --write ./packages/**/* ./docs/**/* *.md",
+    "integration:local": "./env.sh yarn run _integration:local",
+    "_integration:local": "yarn run _integration:prep && jest --config=jest.config.integration.js",
+    "_integration:prep": "ts-node scripts/integrationPrep.ts"
   },
   "devDependencies": {
     "@types/jest": "^23.3.9",
