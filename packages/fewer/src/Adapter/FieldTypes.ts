@@ -14,8 +14,7 @@ export default class FieldTypes<Obj extends Fields = {}> {
     this.fields = fields;
   }
 
-  // TODO: Should this be immutable, or should this just add to fields?
-  addField(name: string, type: FieldType) {
+  protected addField(name: string, type: FieldType) {
     this.fields[name] = type;
     return this;
   }

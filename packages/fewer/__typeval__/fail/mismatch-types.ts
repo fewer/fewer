@@ -1,13 +1,12 @@
 import * as typeval from '@fewer/typeval';
-import { createSchema, FieldTypes } from '../../src';
-import { INTERNAL_TYPES } from '../../src/types';
+import { createSchema } from '../../src';
+import { database } from '../mocks';
 
-const db = {} as any;
-
-const schema = createSchema(db, 20080906171750).table(
+const schema = createSchema(20080906171750).table(
+  database,
   'users',
   null,
-  t => new FieldTypes(),
+  t => t,
 );
 
 // Test individual properties:
