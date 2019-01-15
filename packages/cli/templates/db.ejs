@@ -1,5 +1,5 @@
 import { createDatabase } from 'fewer';
-import { <%= adapter %>Adapter as Adapter } from '@fewer/adapter-<%= adapter.toLowerCase() %>';
+import { Adapter } from '@fewer/adapter-<%= adapter.toLowerCase() %>';
 
 export default createDatabase({
     adapter: new Adapter({

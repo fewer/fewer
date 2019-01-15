@@ -1,38 +1,68 @@
 import path from 'path';
 import cli from 'cli-ux';
-import { Command, flags } from '@oclif/command';
-import { ensureProject, npmInstall, createFile, prompt } from '../utils';
+import { Command } from '@oclif/command';
+import {
+  npmInstall,
+  createFile,
+  prompt,
+  createDirectory,
+  createFileWithContents,
+} from '../utils';
+import commonFlags from '../commonFlags';
+import { FewerConfigurationFile } from '../config';
 
-export default class Hello extends Command {
-  static description = 'Initializes fewer into an existing project';
+export default class Init extends Command {
+  static description = 'Initializes fewer into an existing project.';
 
   static flags = {
-    help: flags.help({ char: 'h' }),
-    js: flags.boolean({
-      description: 'Force using JavaScript instead of TypeScript',
-    }),
-    cjs: flags.boolean({
-      description: 'use CommonJS modules instead of standard ES modules',
-    }),
-    src: flags.string({
-      required: true,
-      default: 'src',
-      description: 'the source directory where project files will be generated',
-    }),
+    ...commonFlags,
   };
 
   static args = [];
 
   async run() {
-    const { flags } = this.parse(Hello);
-
-    const useTypeScript = await ensureProject(flags, this.warn, this.error);
-
     const adapter = await prompt({
       type: 'select',
       message: 'Which database will you be connecting to?',
-      choices: ['Postgres', 'MySQL'],
+      choices: ['postgres', 'mysql'],
     });
+
+    const src = await prompt({
+      type: 'input',
+      message: 'Where will your source files be located?',
+      default: 'src',
+    });
+
+    const migrations = await prompt({
+      type: 'input',
+      message: 'Where would you like your migrations to be stored?',
+      default: path.join(src, 'migrations/'),
+    });
+
+    const repositories = await prompt({
+      type: 'input',
+      message: 'Where would you like your repositories to be stored?',
+      default: path.join(src, 'repositories/'),
+    });
+
+    const sourceType = await prompt({
+      type: 'select',
+      message: 'Will your project be written in TypeScript or JavaScript?',
+      choices: ['TypeScript', 'JavaScript'],
+      default: 'TypeScript',
+    });
+
+    const useTypeScript = sourceType === 'TypeScript';
+
+    let cjs = false;
+    if (!useTypeScript) {
+      cjs = await prompt({
+        type: 'select',
+        message: 'Will your project use ES Modules, or CommonJS?',
+        choices: ['ES Modules', 'CommonJS'],
+        default: 'ES Modules',
+      });
+    }
 
     cli.action.start('Installing npm dependencies');
     await npmInstall('fewer', `@fewer/adapter-${adapter.toLowerCase()}`);
@@ -41,11 +71,34 @@ export default class Hello extends Command {
     cli.action.start('Creating files');
     const extension = useTypeScript ? 'ts' : 'js';
     await createFile(
-      flags.cjs ? 'db.cjs' : 'db',
-      path.join(flags.src, `db.${extension}`),
+      cjs ? 'db.cjs' : 'db',
+      path.join(src, `database.${extension}`),
       {
         adapter,
       },
+    );
+
+    await createDirectory(migrations);
+    await createDirectory(repositories);
+
+    const fewerConfig: Partial<FewerConfigurationFile> = {
+      src,
+      migrations,
+      repositories,
+      databases: [path.join(src, `database.${extension}`)],
+    };
+
+    if (!useTypeScript) {
+      fewerConfig.typescript = false;
+    }
+
+    if (cjs) {
+      fewerConfig.cjs = true;
+    }
+
+    await createFileWithContents(
+      '.fewerrc.json',
+      JSON.stringify(fewerConfig, null, 2),
     );
     cli.action.stop();
   }

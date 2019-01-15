@@ -1,13 +1,16 @@
-import fs, { writeFile } from 'fs';
+import fs from 'fs';
 import path from 'path';
 import execa from 'execa';
 import ejs from 'ejs';
 import { promisify } from 'util';
 import enquirer from 'enquirer';
+import config from './config';
 
 const cwd = process.cwd();
+
 const statAsync = promisify(fs.stat);
 const writeFileAsync = promisify(fs.writeFile);
+const mkdirAsync = promisify(fs.mkdir);
 
 async function hasFileOrDir(filename: string) {
   try {
@@ -22,15 +25,9 @@ const isProject = () => hasFileOrDir('package.json');
 const isTSProject = () => hasFileOrDir('tsconfig.json');
 
 export async function ensureProject(
-  flags: {
-    js: boolean;
-    src: string;
-  },
   warn: (message: string) => void,
   error: (message: string, config: object) => void,
 ) {
-  let useTypeScript = !flags.js;
-
   if (!(await isProject())) {
     error(
       'We were not able to resolve the current project. Ensure that you are in a directory containing a "package.json" file and try again.',
@@ -38,19 +35,18 @@ export async function ensureProject(
     );
   }
 
-  if (!(await hasFileOrDir(flags.src))) {
+  // TODO: Add flags on the command to optionally validate this stuff.
+  if (!(await hasFileOrDir(config.src))) {
     error(
       `We were not able to find the source directory "${
-        flags.src
-      }". You can use the --src flag to tell the CLI where your source files are located.`,
+        config.src
+      }". You can use the "src" parameter in your Fewer configuration file to tell the CLI where your source files are located.`,
       { exit: 1 },
     );
   }
 
-  if (!flags.js) {
+  if (config.typescript) {
     if (!(await isTSProject())) {
-      useTypeScript = false;
-
       warn(
         'We did not detect a TypeScript configuration file (tsconfig.json). TypeScript is recommend.',
       );
@@ -68,8 +64,6 @@ export async function ensureProject(
       }
     }
   }
-
-  return useTypeScript;
 }
 
 export function hasDependency(dep: string) {
@@ -85,6 +79,7 @@ export async function prompt(options: {
   type: string;
   message: string;
   choices?: string[];
+  default?: string | boolean;
 }) {
   try {
     const responses = await enquirer.prompt({
@@ -98,13 +93,24 @@ export async function prompt(options: {
   }
 }
 
+export async function createDirectory(directory: string) {
+  await mkdirAsync(directory, { recursive: true });
+}
+
+export async function createFileWithContents(
+  fileName: string,
+  contents: string,
+) {
+  await writeFileAsync(path.join(cwd, fileName), contents);
+}
+
 export async function createFile(
   template: string,
   fileName: string,
   data: object,
 ) {
   const fileContents = await ejs.renderFile(
-    path.join(__dirname, '..', 'templates', `${template}.hbs`),
+    path.join(__dirname, '..', 'templates', `${template}.ejs`),
     data,
     { async: true },
   );

@@ -1,5 +1,5 @@
 const { createDatabase } = require('fewer');
-const { <%= adapter %>Adapter: Adapter } = require('@fewer/adapter-<%= adapter.toLowerCase() %>');
+const { Adapter } = require('@fewer/adapter-<%= adapter.toLowerCase() %>');
 
 module.exports = createDatabase({
     adapter: new Adapter({
