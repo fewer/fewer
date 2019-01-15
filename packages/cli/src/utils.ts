@@ -1,4 +1,5 @@
 import fs from 'fs';
+import mkdirp from 'mkdirp';
 import path from 'path';
 import execa from 'execa';
 import ejs from 'ejs';
@@ -10,7 +11,7 @@ const cwd = process.cwd();
 
 const statAsync = promisify(fs.stat);
 const writeFileAsync = promisify(fs.writeFile);
-const mkdirAsync = promisify(fs.mkdir);
+const mkdirpAsync = promisify(mkdirp);
 
 async function hasFileOrDir(filename: string) {
   try {
@@ -94,7 +95,7 @@ export async function prompt(options: {
 }
 
 export async function createDirectory(directory: string) {
-  await mkdirAsync(directory, { recursive: true });
+  await mkdirpAsync(path.join(cwd, directory));
 }
 
 export async function createFileWithContents(

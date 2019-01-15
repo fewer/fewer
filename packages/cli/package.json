@@ -58,10 +58,12 @@
     "cosmiconfig": "^5.0.7",
     "ejs": "^2.6.1",
     "enquirer": "^2.3.0",
-    "execa": "^1.0.0"
+    "execa": "^1.0.0",
+    "mkdirp": "^0.5.1"
   },
   "devDependencies": {
     "@types/cosmiconfig": "^5.0.3",
-    "@types/execa": "^0.9.0"
+    "@types/execa": "^0.9.0",
+    "@types/mkdirp": "^0.5.2"
   }
 }

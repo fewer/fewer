@@ -18,6 +18,20 @@
     esutils "^2.0.2"
     js-tokens "^4.0.0"
 
+"@fewer/adapter-postgres@0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@fewer/adapter-postgres/-/adapter-postgres-0.0.7.tgz#45716632207588749ec6e853a629422fca0ae1f0"
+  integrity sha512-yvYu/ar6BnI976L6+5d97Epg+xMYlw1IQr1xzPIuanUBjYQjmQFonB0DKEccMB5FOf6WeD2eov5MguXrg1vazQ==
+  dependencies:
+    pg "^7.7.1"
+
+"@fewer/sq@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@fewer/sq/-/sq-0.0.4.tgz#e7f32f97ff321adbf7206dd7ba69066efdf72332"
+  integrity sha512-DpQhpaSDqII0RQJYbBWDoVoULSvQYC5UV6ukifW5TuTxjQ9DW6I8BJJaaal+FY9D7i0gLE5Y4TyqzTpGb5jPeA==
+  dependencies:
+    squel "^5.12.2"
+
 "@lerna/add@3.10.2":
   version "3.10.2"
   resolved "https://registry.yarnpkg.com/@lerna/add/-/add-3.10.2.tgz#586a2db4f3e53c47390c9cd3c59a1925f75760f1"
@@ -747,6 +761,13 @@
   version "0.0.29"
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
   integrity sha1-7ihweulOEdK4J7y+UnC86n8+ce4=
+
+"@types/mkdirp@^0.5.2":
+  version "0.5.2"
+  resolved "https://registry.yarnpkg.com/@types/mkdirp/-/mkdirp-0.5.2.tgz#503aacfe5cc2703d5484326b1b27efa67a339c1f"
+  integrity sha512-U5icWpv7YnZYGsN4/cmh3WD2onMY0aJIiTE6+51TwJCttdHvtCYmkBNOobHlXwrJRL0nkH9jH4kD+1FAdMN4Tg==
+  dependencies:
+    "@types/node" "*"
 
 "@types/node@*", "@types/node@^10.12.7":
   version "10.12.18"
@@ -2445,6 +2466,13 @@ fb-watchman@^2.0.0:
   integrity sha1-VOmr99+i8mzZsWNsWIwa/AXeXVg=
   dependencies:
     bser "^2.0.0"
+
+fewer@0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/fewer/-/fewer-0.0.7.tgz#e0676bc7a6cfbcb02faa594658a010e713b132da"
+  integrity sha512-MGjffPOWk7wob7orjYmm50JD02CVeWSw0o7ABM8AVSwScz2YbVjyzqmVwwvm3+GvSU5WS1lWgYHMmdjj589BnA==
+  dependencies:
+    "@fewer/sq" "^0.0.4"
 
 figgy-pudding@^3.4.1, figgy-pudding@^3.5.1:
   version "3.5.1"
