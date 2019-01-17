@@ -5,8 +5,14 @@ export interface FieldTypes {
   [key: string]: (...args: any[]) => FieldType;
 }
 
+export interface TableTypes {};
+
 export interface Adapter {
   FieldTypes: FieldTypes;
+  // TODO: This is really weird because you don't actually provide anything here.
+  // We need a better way to let adapter implementaitons provide this information.
+  // Maybe a createAdapter() that can have a generic for the table options.
+  TableTypes: TableTypes;
 
   /**
    * Initiate the connection to the Database.

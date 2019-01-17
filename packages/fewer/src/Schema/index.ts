@@ -24,7 +24,7 @@ export class SchemaTable<
   T extends TableProperties = any
 > {
   // TODO: Should we resolve this here, or inside of the repository itself?
-  [INTERNAL_TYPES.INTERNAL_TYPE]: WithUndefinedPropertiesAsOptionals<
+  readonly [INTERNAL_TYPES.INTERNAL_TYPE]: WithUndefinedPropertiesAsOptionals<
     BuiltTable<T>
   >;
 

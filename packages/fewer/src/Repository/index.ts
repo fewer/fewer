@@ -51,10 +51,10 @@ export class Repository<
       LoadAssociations & JoinAssociations
     > {
   // Stash the schema type so that the generic can be used as a type constraint.
-  [SCHEMA_TYPE]: SchemaType;
+  readonly [SCHEMA_TYPE]: SchemaType;
 
-  [INTERNAL_TYPES.RESOLVED_TYPE]: ResolvedType;
-  [INTERNAL_TYPES.INTERNAL_TYPE]: SchemaType & RegisteredExtensions;
+  readonly [INTERNAL_TYPES.RESOLVED_TYPE]: ResolvedType;
+  readonly [INTERNAL_TYPES.INTERNAL_TYPE]: SchemaType & RegisteredExtensions;
 
   /**
    * Contains symbols that are used to access metadata about the state of models.

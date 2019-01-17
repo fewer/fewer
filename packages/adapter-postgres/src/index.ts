@@ -2,12 +2,16 @@ import { Adapter as BaseAdapter } from 'fewer';
 import { Insert, Select, Update } from '@fewer/sq';
 import { Client, ConnectionConfig } from 'pg';
 import squel from 'squel';
+import TableTypes from './TableTypes';
 import FieldTypes from './FieldTypes';
 
 const postgresSquel = squel.useFlavour('postgres');
 
 class PostgresAdapter implements BaseAdapter {
   private client: Client;
+
+  // Expose the Table Types:
+  TableTypes!: TableTypes;
 
   // Expose the Field Types:
   FieldTypes = FieldTypes;

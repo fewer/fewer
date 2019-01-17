@@ -11,7 +11,12 @@ const FieldTypes = {
   maybeNumber: () => new FieldType<number | undefined>('maybeNumber'),
 };
 
+interface TableTypes {
+  handlesOptions?: boolean;
+}
+
 export class Adapter implements BaseAdapter {
+  TableTypes!: TableTypes;
   FieldTypes = FieldTypes;
   async connect() {}
   async select() {
