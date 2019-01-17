@@ -1,6 +1,6 @@
 import { FieldType } from 'fewer';
 
-interface TypeConfig {
+export interface TypeConfig {
   nonNull?: boolean;
   unique?: boolean;
   autoIncrement?: boolean;

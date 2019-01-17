@@ -4,8 +4,6 @@ import { Client, ConnectionConfig } from 'pg';
 import squel from 'squel';
 import FieldTypes from './FieldTypes';
 
-// export { createMigration } from './createMigration';
-
 const postgresSquel = squel.useFlavour('postgres');
 
 class PostgresAdapter implements BaseAdapter {
