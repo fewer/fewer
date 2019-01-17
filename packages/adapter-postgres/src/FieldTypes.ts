@@ -1,4 +1,4 @@
-import { FieldType, FieldTypes as BaseFieldTypes } from 'fewer';
+import { FieldType } from 'fewer';
 
 interface TypeConfig {
   nonNull?: boolean;
@@ -6,39 +6,25 @@ interface TypeConfig {
   autoIncrement?: boolean;
 }
 
-interface Fields {
-  [key: string]: FieldType;
+function columnType<T, AdditionalConfig extends TypeConfig = TypeConfig>(name: string) {
+  return function<Config extends AdditionalConfig>(
+    config: Config,
+  ): FieldType<Config['nonNull'] extends true ? T : T | undefined> {
+    return new FieldType(name);
+  };
 }
 
-export default class FieldTypes<Obj extends Fields = {}> extends BaseFieldTypes<
-  Obj
-> {
-  private columnType<T>(columnName: string) {
-    return <Name extends string, Config extends TypeConfig>(
-      name: Name,
-      config?: Config,
-    ): FieldTypes<
-      Obj &
-        {
-          [P in Name]: FieldType<
-            Config['nonNull'] extends true ? T : T | undefined
-          >
-        }
-    > => {
-      return this.addField(name, new FieldType(name));
-    };
-  }
-
-  boolean = this.columnType<boolean>('boolean');
+export default {
+  boolean: columnType<boolean>('boolean'),
   // Numeric Types:
-  int = this.columnType<number>('int');
-  smallint = this.columnType<number>('smallint');
-  integer = this.columnType<number>('integer');
-  bigint = this.columnType<number>('bigint');
-  double = this.columnType<number>('double precision');
-  real = this.columnType<number>('real');
+  int: columnType<number>('int'),
+  smallint: columnType<number>('smallint'),
+  integer: columnType<number>('integer'),
+  bigint: columnType<number>('bigint'),
+  double: columnType<number>('double'),
+  real: columnType<number>('real'),
   // String types:
-  char = this.columnType<string>('char');
-  varchar = this.columnType<string>('varchar');
-  text = this.columnType<string>('text');
-}
+  char: columnType<string>('char'),
+  varchar: columnType<string>('varchar'),
+  text: columnType<string>('text'),
+};

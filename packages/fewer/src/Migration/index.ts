@@ -1,10 +1,7 @@
 import { Database } from '../Database';
 import { Adapter, FieldTypes } from '../Adapter';
-import { INTERNAL_TYPES } from '../types';
 
-export class Migration<Built extends FieldTypes> {
-  [INTERNAL_TYPES.INTERNAL_TYPE]: Built;
-
+export class Migration {
   up: any;
   down: any;
 
@@ -14,45 +11,30 @@ export class Migration<Built extends FieldTypes> {
   }
 }
 
-type ChangeMigrationDefinition<
-  FT extends FieldTypes,
-  Built extends FieldTypes
-> =
-  | ((m: FT) => Built)
+type ChangeMigrationDefinition<FT extends FieldTypes> =
+  | ((m: FT) => any)
   | {
-      change: (m: FT) => Built;
+      change: (m: FT) => any;
     };
 
-interface UpDownMigrationDefinition<
-  FT extends FieldTypes,
-  Built extends FieldTypes
-> {
-  up: (m: FT) => Built;
-  down: (m: FT) => Built;
+interface UpDownMigrationDefinition<FT extends FieldTypes> {
+  up: (m: FT) => any;
+  down: (m: FT) => any;
 }
 
-interface IrreversibleMigrationDefinition<
-  FT extends FieldTypes,
-  Built extends FieldTypes
-> {
-  up: (m: FT) => Built;
+interface IrreversibleMigrationDefinition<FT extends FieldTypes> {
+  up: (m: FT) => any;
   irreversible: true;
 }
 
-export type MigrationDefinition<
-  FT extends FieldTypes,
-  Built extends FieldTypes
-> =
-  | ChangeMigrationDefinition<FT, Built>
-  | UpDownMigrationDefinition<FT, Built>
-  | IrreversibleMigrationDefinition<FT, Built>;
+export type MigrationDefinition<FT extends FieldTypes> =
+  | ChangeMigrationDefinition<FT>
+  | UpDownMigrationDefinition<FT>
+  | IrreversibleMigrationDefinition<FT>;
 
-export function createMigration<
-  DBAdapter extends Adapter,
-  Built extends InstanceType<DBAdapter['FieldTypes']>
->(
+export function createMigration<DBAdapter extends Adapter>(
   db: Database<DBAdapter>,
-  definition: MigrationDefinition<InstanceType<DBAdapter['FieldTypes']>, Built>,
-): Migration<Built> {
+  definition: MigrationDefinition<DBAdapter['FieldTypes']>,
+): Migration {
   return new Migration();
 }

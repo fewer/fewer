@@ -1,10 +1,12 @@
 import { Select, Insert, Update } from '@fewer/sq';
-import FieldTypes from './FieldTypes';
+import FieldType from '../FieldType';
 
-export { FieldTypes };
+export interface FieldTypes {
+  [key: string]: (...args: any[]) => FieldType;
+}
 
 export interface Adapter {
-  FieldTypes: typeof FieldTypes;
+  FieldTypes: FieldTypes;
 
   /**
    * Initiate the connection to the Database.

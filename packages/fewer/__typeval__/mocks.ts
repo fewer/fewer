@@ -1,21 +1,15 @@
 import {
   createDatabase,
   Adapter as BaseAdapter,
-  FieldTypes as BaseFieldTypes,
   FieldType,
 } from '../src';
 
-interface Fields {
-  [name: string]: FieldType;
-}
-
-class FieldTypes<Obj extends Fields = {}> extends BaseFieldTypes<Obj> {
-  field<Name extends string>(
-    name: Name,
-  ): FieldTypes<Obj & { [P in Name]: FieldType<string> }> {
-    return this.addField(name, new FieldType('string'));
-  }
-}
+const FieldTypes = {
+  string: () => new FieldType<string>('string'),
+  number: () => new FieldType<number>('number'),
+  maybeString: () => new FieldType<string | undefined>('maybeString'),
+  maybeNumber: () => new FieldType<number | undefined>('maybeNumber'),
+};
 
 export class Adapter implements BaseAdapter {
   FieldTypes = FieldTypes;

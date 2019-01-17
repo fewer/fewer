@@ -11,21 +11,21 @@ type TableOptions =
   | null
   | undefined;
 
-export interface FieldTypes {
+interface TableProperties {
   [key: string]: FieldType;
 }
 
-type BuiltTable<T extends FieldTypes> = {
+type BuiltTable<T extends TableProperties> = {
   [P in keyof T]: T[P][INTERNAL_TYPES.INTERNAL_TYPE]
 };
 
 export class SchemaTable<
   DBAdapter extends Adapter = any,
-  T extends InstanceType<DBAdapter['FieldTypes']> = any
+  T extends TableProperties = any
 > {
   // TODO: Should we resolve this here, or inside of the repository itself?
   [INTERNAL_TYPES.INTERNAL_TYPE]: WithUndefinedPropertiesAsOptionals<
-    BuiltTable<T[INTERNAL_TYPES.INTERNAL_TYPE]>
+    BuiltTable<T>
   >;
 
   database: Database<DBAdapter>;
@@ -35,7 +35,7 @@ export class SchemaTable<
     database: Database<DBAdapter>,
     name: string,
     config: TableOptions,
-    builder: (t: InstanceType<DBAdapter['FieldTypes']>) => T,
+    builder: (t: DBAdapter['FieldTypes']) => T,
   ) {
     this.database = database;
     this.name = name;
@@ -60,12 +60,12 @@ export class Schema<RegisteredTables = {}> {
   table<
     DBAdapter extends Adapter,
     TableName extends string,
-    Built extends InstanceType<DBAdapter['FieldTypes']>
+    Built extends TableProperties
   >(
     database: Database<DBAdapter>,
     name: TableName,
     config: TableOptions,
-    builder: (t: InstanceType<DBAdapter['FieldTypes']>) => Built,
+    builder: (t: DBAdapter['FieldTypes']) => Built,
   ): Schema<
     RegisteredTables & { [P in TableName]: SchemaTable<DBAdapter, Built> }
   > {
