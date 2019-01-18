@@ -1,6 +1,6 @@
 version: '3'
 services:
-    db:
+    postgres:
         image: postgres
         restart: always
         environment:
@@ -13,4 +13,4 @@ services:
         working_dir: /app/packages/adapter-postgres/
         command: yarn run integration
         depends_on:
-            - db
+            - postgres
