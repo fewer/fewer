@@ -28,10 +28,33 @@ class CreateFieldBlock extends baseSquel.cls.Block {
     });
   }
 
+  _columnModifiers(options?: ColumnOptions): string[] {
+    if (!options) return [];
+    const modifiers: string[] = [];
+
+    if (options.nonNull) {
+      modifiers.push('NOT NULL');
+    }
+
+    if (options.primaryKey) {
+      modifiers.push('PRIMARY KEY');
+    }
+
+    if (options.unique) {
+      modifiers.push('UNIQUE');
+    }
+
+    if (options.default) {
+      modifiers.push(`DEFAULT ${options.default}`);
+    }
+
+    return modifiers;
+  }
+
   _toParamString() {
     let str = this._fields
       .map(f => {
-        return `${f.name} ${f.type.toUpperCase()}`;
+        return [f.name, f.type.toUpperCase(), ...this._columnModifiers(f.options)].join(' ');
       })
       .join(', ');
 

@@ -48,7 +48,7 @@ Array [
     "column_name": "email",
     "data_type": "character varying",
     "is_generated": "NEVER",
-    "is_nullable": "YES",
+    "is_nullable": "NO",
     "is_updatable": "YES",
     "table_name": "users",
   },
