@@ -3,6 +3,9 @@ import squel from './squel';
 import { CharacterOptions, NumericOptions } from './FieldTypes';
 
 function getTypeName(type: FieldType): string {
+  // If there is no config, then we only have the name:
+  if (!type.config) return type.name;
+
   switch (type.name) {
     case 'char':
     case 'varchar': {

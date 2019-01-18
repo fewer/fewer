@@ -3,7 +3,7 @@
   "compilerOptions": {
     "composite": true,
     "outDir": "lib",
-    "rootDirs": ["src", "__integration__"]
+    "rootDir": "src"
   },
   "exclude": ["**/__integration__"],
   "references": [{ "path": "../fewer" }]

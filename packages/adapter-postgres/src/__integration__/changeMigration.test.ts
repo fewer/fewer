@@ -1,5 +1,6 @@
 import { createMigration, createDatabase, Database } from 'fewer';
-import { Adapter } from '../';
+import { Adapter } from '..';
+import config from './config';
 
 describe('change migration', () => {
   describe('postgres', () => {
@@ -7,9 +8,7 @@ describe('change migration', () => {
     let adapter: Adapter;
 
     beforeAll(async () => {
-      adapter = new Adapter({
-        database: 'fewer_integration_tests',
-      });
+      adapter = new Adapter(config);
 
       database = createDatabase({ adapter });
 
@@ -27,6 +26,7 @@ describe('change migration', () => {
             id: t.bigserial({ primaryKey: true }),
             firstName: t.string(),
             lastName: t.string(),
+            unbounded: t.varchar(),
             email: t.string({ nonNull: true }),
           }),
       });

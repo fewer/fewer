@@ -12,9 +12,8 @@
     "build": "yarn run clean && tsc --build packages/*",
     "clean": "rm -rf ./packages/*/lib/",
     "prettier": "prettier --write ./packages/**/* ./docs/**/* *.md",
-    "integration:local": "./env.sh yarn run _integration:local",
-    "_integration:local": "yarn run _integration:prep && jest --config=jest.config.integration.js",
-    "_integration:prep": "ts-node scripts/integrationPrep.ts"
+    "integration": "yarn lerna run integration",
+    "integration:local": "yarn lerna run integration:local"
   },
   "devDependencies": {
     "@types/jest": "^23.3.9",
