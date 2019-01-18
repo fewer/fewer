@@ -1,21 +1,52 @@
 import { Database } from '../Database';
-import { Adapter, FieldTypes } from '../Adapter';
+import { Adapter } from '../Adapter';
 import FieldType from '../FieldType';
 
+// TODO: Enum?
+type MigrationType = 'change' | 'updown' | 'irreversible';
+
+interface ColumnTypes {
+  [columnName: string]: FieldType;
+}
+
+type Operation = {
+  type: 'createTable';
+  name: string;
+  options: any;
+  fields: ColumnTypes;
+};
+
 export class Migration<DBAdapter extends Adapter = any> {
+  direction: 'up' | 'down';
+  type: MigrationType;
   database: Database;
   definition: MigrationDefinition;
+  operations: Operation[];
 
-  constructor(database: Database, definition: MigrationDefinition) {
+  constructor(
+    type: MigrationType,
+    database: Database,
+    definition: MigrationDefinition,
+  ) {
+    this.direction = 'up';
+    this.type = type;
     this.database = database;
     this.definition = definition;
+    this.operations = [];
   }
 
   createTable(
     name: string,
     options: DBAdapter['TableTypes'] | null | undefined,
-    types: { [columnName: string]: FieldType },
+    fields: ColumnTypes,
   ) {
+    this.operations.push({
+      type: 'createTable',
+      name,
+      options,
+      fields,
+    });
+
     return this;
   }
 }
@@ -45,5 +76,10 @@ export function createMigration<DBAdapter extends Adapter>(
   db: Database<DBAdapter>,
   definition: MigrationDefinition<DBAdapter>,
 ): Migration<DBAdapter> {
-  return new Migration(db, definition);
+  const type = definition.hasOwnProperty('change')
+    ? 'change'
+    : definition.hasOwnProperty('down')
+    ? 'updown'
+    : 'irreversible';
+  return new Migration(type, db, definition);
 }

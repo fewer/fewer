@@ -1,11 +1,10 @@
-import { Adapter as BaseAdapter } from 'fewer';
+import { Adapter as BaseAdapter, Migration } from 'fewer';
 import { Insert, Select, Update } from '@fewer/sq';
 import { Client, ConnectionConfig } from 'pg';
-import squel from 'squel';
+import squel from './squel';
 import TableTypes from './TableTypes';
 import FieldTypes from './FieldTypes';
-
-const postgresSquel = squel.useFlavour('postgres');
+import migrate from './migrate';
 
 class PostgresAdapter implements BaseAdapter {
   private client: Client;
@@ -28,9 +27,15 @@ class PostgresAdapter implements BaseAdapter {
     return this.client.end();
   }
 
+  async migrate(migration: Migration) {
+    const query = migrate(migration);
+    const results = await this.client.query(query);
+    return results;
+  }
+
   async select(query: Select) {
     const context = query.get();
-    const select = postgresSquel.select().from(context.table);
+    const select = squel.select().from(context.table);
 
     if (context.limit) {
       select.limit(context.limit);
@@ -64,7 +69,7 @@ class PostgresAdapter implements BaseAdapter {
 
   async insert(query: Insert) {
     const context = query.get();
-    const insert = postgresSquel
+    const insert = squel
       .insert()
       .into(context.table)
       .setFields(context.fields)
@@ -76,7 +81,7 @@ class PostgresAdapter implements BaseAdapter {
 
   async update(query: Update) {
     const context = query.get();
-    const update = postgresSquel
+    const update = squel
       .update()
       .table(context.table)
       .setFields(context.fields);
