@@ -1,9 +1,7 @@
 import { Database } from '../Database';
 import { Adapter } from '../Adapter';
 import FieldType from '../FieldType';
-
-// TODO: Enum?
-type MigrationType = 'change' | 'updown' | 'irreversible';
+import { MigrationDefinition, ChangeMigrationShorthand, TaggedMigrationDefinition } from './Definition';
 
 interface ColumnTypes {
   [columnName: string]: FieldType;
@@ -16,24 +14,8 @@ type Operation = {
   fields: ColumnTypes;
 };
 
-export class Migration<DBAdapter extends Adapter = any> {
-  direction: 'up' | 'down';
-  type: MigrationType;
-  database: Database;
-  definition: MigrationDefinition;
-  operations: Operation[];
-
-  constructor(
-    type: MigrationType,
-    database: Database,
-    definition: MigrationDefinition,
-  ) {
-    this.direction = 'up';
-    this.type = type;
-    this.database = database;
-    this.definition = definition;
-    this.operations = [];
-  }
+export class MigrationBuilder<DBAdapter extends Adapter = any> {
+  operations: Operation[] = [];
 
   createTable(
     name: string,
@@ -51,35 +33,62 @@ export class Migration<DBAdapter extends Adapter = any> {
   }
 }
 
-type ChangeMigrationDefinition<DBAdapter extends Adapter> =
-  | ((m: Migration<DBAdapter>, t: DBAdapter['FieldTypes']) => any)
-  | {
-      change: (m: Migration<DBAdapter>, t: DBAdapter['FieldTypes']) => any;
-    };
+export class Migration<DBAdapter extends Adapter = any> {
+  database: Database;
+  definition: TaggedMigrationDefinition<DBAdapter>;
+  operations: Operation[];
 
-interface UpDownMigrationDefinition<DBAdapter extends Adapter> {
-  up: (m: Migration<DBAdapter>, t: DBAdapter['FieldTypes']) => any;
-  down: (m: Migration<DBAdapter>, t: DBAdapter['FieldTypes']) => any;
+  constructor(
+    database: Database,
+    definition: TaggedMigrationDefinition<DBAdapter>,
+  ) {
+    this.database = database;
+    this.definition = definition;
+    this.operations = [];
+  }
+
+  run(direction: 'up' | 'down') {
+    const builder = new MigrationBuilder();
+    const fieldTypes = this.database.getAdapter().FieldTypes;
+
+    if (this.definition.type === 'change') {
+      this.definition.change(builder, fieldTypes);
+    } else if (this.definition.type === 'irreversible') {
+      if (direction === 'down') {
+        throw new Error('Attempting to rollback an irreversible migration.');
+      }
+      this.definition.up(builder, fieldTypes);
+    } else {
+      this.definition[direction](builder, fieldTypes);
+    }
+
+    this.operations.push(...builder.operations);
+  }
 }
 
-interface IrreversibleMigrationDefinition<DBAdapter extends Adapter> {
-  up: (m: Migration<DBAdapter>, t: DBAdapter['FieldTypes']) => any;
-  irreversible: true;
-}
-
-export type MigrationDefinition<DBAdapter extends Adapter = any> =
-  | ChangeMigrationDefinition<DBAdapter>
-  | UpDownMigrationDefinition<DBAdapter>
-  | IrreversibleMigrationDefinition<DBAdapter>;
+export { MigrationDefinition };
 
 export function createMigration<DBAdapter extends Adapter>(
   db: Database<DBAdapter>,
-  definition: MigrationDefinition<DBAdapter>,
+  definition:
+    | MigrationDefinition<DBAdapter>
+    | ChangeMigrationShorthand<DBAdapter>,
 ): Migration<DBAdapter> {
+  // Accept shorthand to define change migraitons:
+  if (typeof definition === 'function') {
+    const change = definition;
+    definition = {
+      change,
+    };
+  }
+
   const type = definition.hasOwnProperty('change')
     ? 'change'
     : definition.hasOwnProperty('down')
     ? 'updown'
     : 'irreversible';
-  return new Migration(type, db, definition);
+
+  const taggedDefinition = { ...definition, type } as TaggedMigrationDefinition;
+
+  return new Migration(db, taggedDefinition);
 }

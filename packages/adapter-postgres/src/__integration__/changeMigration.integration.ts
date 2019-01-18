@@ -1,6 +1,6 @@
 import { createMigration } from '../index';
 import { createDatabase, Database } from 'fewer';
-import { PostgresAdapter } from '../index';
+import { Adapter } from '../index';
 
 describe('change migration', () => {
   describe('postgres', () => {
@@ -8,7 +8,7 @@ describe('change migration', () => {
 
     beforeAll(async () => {
       database = createDatabase({
-        adapter: new PostgresAdapter({
+        adapter: new Adapter({
           database: 'fewer_integration_tests'
         }),
       });

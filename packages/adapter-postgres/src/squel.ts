@@ -110,8 +110,8 @@ interface SquelWithCreateTable extends PostgresSquel {
 
 const squel: SquelWithCreateTable = baseSquel.useFlavour('postgres') as any;
 
-squel.create = function(options: TableTypes) {
-  return new CreateTableQuery(options) as any;
+squel.create = function(options?: TableTypes) {
+  return new CreateTableQuery(options || {}) as any;
 };
 
 export default squel;

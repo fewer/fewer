@@ -21,6 +21,8 @@ export class Adapter implements BaseAdapter {
   TableTypes!: TableTypes;
   FieldTypes = FieldTypes;
   async connect() {}
+  async disconnect() {}
+  async migrate() {}
   async select() {
     return [];
   }

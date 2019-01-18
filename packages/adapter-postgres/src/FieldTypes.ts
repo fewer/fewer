@@ -24,7 +24,7 @@ function columnType<T, AdditionalConfig extends ColumnOptions = ColumnOptions>(
   name: string,
 ) {
   return function<Config extends AdditionalConfig>(
-    config: Config,
+    config?: Config,
   ): FieldType<Config['nonNull'] extends true ? T : T | undefined> {
     return new FieldType(name, config);
   };

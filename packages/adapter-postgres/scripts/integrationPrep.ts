@@ -1,9 +1,9 @@
 import { createDatabase } from 'fewer';
-import { PostgresAdapter } from '../src';
+import { Adapter } from '../src';
 
 async function prepare() {
   const database = createDatabase({
-    adapter: new PostgresAdapter({
+    adapter: new Adapter({
       database: 'postgres'
     })
   });

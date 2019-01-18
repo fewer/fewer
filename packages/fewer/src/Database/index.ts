@@ -14,8 +14,6 @@ export class Database<DBAdapter extends Adapter = Adapter> {
 
   /**
    * Retrieve the underlying adapter.
-   *
-   * @internal Only for internal use, generally should not be consumed.
    */
   getAdapter() {
     return this.adapter;
