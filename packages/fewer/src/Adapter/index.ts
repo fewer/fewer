@@ -12,9 +12,12 @@ export interface Adapter {
   TableTypes: {};
 
   /**
-   * Initiate the connection to the Database.
+   * Initiate the connection to the database.
    */
   connect(): Promise<void>;
+  /**
+   * Disconnect the current connection to the database.
+   */
   disconnect(): Promise<void>;
   /**
    * Perform a migration.
