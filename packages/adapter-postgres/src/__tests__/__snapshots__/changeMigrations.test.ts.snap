@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`migration createTable Down generates drop table sql 1`] = `"CREATE TABLE ()"`;
+exports[`migration createTable Down generates drop table sql 1`] = `"CREATE TABLE users (id BIGSERIAL, firstName VARCHAR(255), lastName VARCHAR(255), email VARCHAR(255))"`;
 
-exports[`migration createTable Up generates create table sql 1`] = `"CREATE TABLE ()"`;
+exports[`migration createTable Up generates create table sql 1`] = `"CREATE TABLE users (id BIGSERIAL, firstName VARCHAR(255), lastName VARCHAR(255), email VARCHAR(255))"`;
 
-exports[`migration createTable Up supports compound primary key 1`] = `"CREATE TABLE ()"`;
+exports[`migration createTable Up supports compound primary key 1`] = `"CREATE TABLE users (id BIGSERIAL, firstName VARCHAR(255), lastName VARCHAR(255), email VARCHAR(255))"`;
 
-exports[`migration createTable Up supports unique constraint 1`] = `"CREATE TABLE ()"`;
+exports[`migration createTable Up supports unique constraint 1`] = `"CREATE TABLE users (id BIGSERIAL, firstName VARCHAR(255), lastName VARCHAR(255), email VARCHAR(255))"`;

@@ -1,39 +1,45 @@
-import { createMigration } from '../index';
-import { createDatabase, Database } from 'fewer';
-import { Adapter } from '../index';
+import { createMigration, createDatabase, Database } from 'fewer';
+import { Adapter } from '../';
 
 describe('change migration', () => {
   describe('postgres', () => {
-    let database: Database;
+    let database: Database<Adapter>;
+    let adapter: Adapter;
 
     beforeAll(async () => {
-      database = createDatabase({
-        adapter: new Adapter({
-          database: 'fewer_integration_tests'
-        }),
+      adapter = new Adapter({
+        database: 'fewer_integration_tests',
       });
+
+      database = createDatabase({ adapter });
 
       await database.connect();
     });
 
     afterAll(async () => {
       await database.disconnect();
-    })
+    });
 
     it('can run createTable up and down', async () => {
-      const migration = createMigration({
-        change: (m) => m.createTable('users', { primaryKey: ['id'] }, (t) => {
-          return {
-            id: t.bigint({ autoIncrement: true }),
+      const migration = createMigration(database, {
+        change: (m, t) =>
+          m.createTable('users', null, {
+            id: t.bigserial({ primaryKey: true }),
             firstName: t.string(),
             lastName: t.string(),
-            email: t.nonNull(t.string())
-          }
-        })
+            email: t.string({ nonNull: true }),
+          }),
       });
 
-      await database.rawQuery(migration.up.join('\n'));
-      expect(await database.rawQuery("select table_name, column_name, column_default, is_nullable, data_type, character_maximum_length, is_generated, is_updatable from INFORMATION_SCHEMA.COLUMNS where table_name = 'users';")).toMatchSnapshot();
+      migration.run('up');
+
+      await adapter.migrate(migration);
+
+      expect(
+        await adapter.rawQuery(
+          "select table_name, column_name, column_default, is_nullable, data_type, character_maximum_length, is_generated, is_updatable from INFORMATION_SCHEMA.COLUMNS where table_name = 'users';",
+        ),
+      ).toMatchSnapshot();
     });
   });
 });
