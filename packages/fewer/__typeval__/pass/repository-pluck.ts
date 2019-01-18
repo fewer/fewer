@@ -1,12 +1,15 @@
 import * as typeval from '@fewer/typeval';
-import { createRepository } from '../../src';
+import { createRepository, createSchema } from '../../src';
+import { database } from '../mocks';
 
-const Users = createRepository<{
-  firstName: string;
-  middleName: string;
-  lastName: string;
-  birthday: Date;
-}>('users');
+const schema = createSchema().table(database, 'users', (t) => ({
+  firstName: t.string(),
+  middleName: t.string(),
+  lastName: t.string(),
+  birthday: t.required<Date>(),
+}))
+
+const Users = createRepository(schema.tables.users);
 
 async function main() {
   const user = await Users.find(1)

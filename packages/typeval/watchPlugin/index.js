@@ -1,5 +1,8 @@
 const fs = require('fs');
 const path = require('path');
+const util = require('util');
+
+const writeFileAsync = util.promisify(fs.writeFile);
 
 class WatchPlugin {
   apply(jestHooks) {
@@ -12,7 +15,7 @@ class WatchPlugin {
   getUsageInfo(globalConfig) {
     return {
       key: 'e',
-      prompt: 'Update TypeVal error snapshots',
+      prompt: 'update TypeVal error snapshots',
     };
   }
 
@@ -24,7 +27,7 @@ class WatchPlugin {
 
     for (const testResult of this._lastResults.testResults) {
       if (testResult.errorsSnapshot) {
-        await fs.promises.writeFile(
+        await writeFileAsync(
           path.join(
             path.dirname(testResult.testFilePath),
             path.basename(testResult.testFilePath, '.ts') + '.errors.json',

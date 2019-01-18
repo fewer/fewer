@@ -4,13 +4,6 @@ import { Database } from '../Database';
 import { Adapter } from '../Adapter';
 import FieldType from '../FieldType';
 
-type TableOptions =
-  | {
-      force?: boolean;
-    }
-  | null
-  | undefined;
-
 interface TableProperties {
   [key: string]: FieldType;
 }
@@ -34,7 +27,6 @@ export class SchemaTable<
   constructor(
     database: Database<DBAdapter>,
     name: string,
-    config: TableOptions,
     builder: (t: DBAdapter['FieldTypes']) => T,
   ) {
     this.database = database;
@@ -64,12 +56,11 @@ export class Schema<RegisteredTables = {}> {
   >(
     database: Database<DBAdapter>,
     name: TableName,
-    config: TableOptions,
     builder: (t: DBAdapter['FieldTypes']) => Built,
   ): Schema<
     RegisteredTables & { [P in TableName]: SchemaTable<DBAdapter, Built> }
   > {
-    const table = new SchemaTable(database, name, config, builder);
+    const table = new SchemaTable(database, name, builder);
     return new Schema(this.version, {
       ...this.tables,
       [name]: table,

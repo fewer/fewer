@@ -18,7 +18,7 @@ module.exports = {
       runner: '@fewer/typeval/runner',
       displayName: 'typeval',
       moduleFileExtensions: ['ts'],
-      testMatch: ['<rootDir>/**/__typeval__/**/*.ts'],
+      testMatch: ['<rootDir>/**/__typeval__/(pass|fail)/*.ts'],
     },
   ],
   watchPlugins: ['@fewer/typeval/watchPlugin'],

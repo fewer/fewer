@@ -9,6 +9,8 @@ const FieldTypes = {
   number: () => new FieldType<number>('number'),
   maybeString: () => new FieldType<string | undefined>('maybeString'),
   maybeNumber: () => new FieldType<number | undefined>('maybeNumber'),
+  required: <T>() => new FieldType<T>('requiredGenericType'),
+  maybe: <T>() => new FieldType<T | undefined>('maybeGenericType'),
 };
 
 interface TableTypes {

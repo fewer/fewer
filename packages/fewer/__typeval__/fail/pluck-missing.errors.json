@@ -2,63 +2,63 @@
     {
         "location": {
             "start": {
-                "line": 44,
+                "line": 51,
                 "column": 8
             },
             "end": {
-                "line": 44,
+                "line": 51,
                 "column": 18
             }
         },
-        "errorMessage": "Property 'middleName' does not exist on type '{ posts: ({ title: string; subtitle: string; content: string; userId: number; } & ResolveAssociations<{}>)[]; firstName: string; lastName: string; bd: Date; }'."
+        "errorMessage": "Property 'middleName' does not exist on type '{ posts: (Pick<BuiltTable<{ title: FieldType<string>; subtitle: FieldType<string>; content: FieldType<string>; userId: FieldType<number>; }>, \"title\" | \"subtitle\" | \"content\" | \"userId\"> & Partial<...> & ResolveAssociations<...>)[]; firstName: string; lastName: string; bd: Date | undefined; }'."
     },
     {
         "location": {
             "start": {
-                "line": 45,
+                "line": 52,
                 "column": 8
             },
             "end": {
-                "line": 45,
+                "line": 52,
                 "column": 16
             }
         },
-        "errorMessage": "Property 'birthday' does not exist on type '{ posts: ({ title: string; subtitle: string; content: string; userId: number; } & ResolveAssociations<{}>)[]; firstName: string; lastName: string; bd: Date; }'."
+        "errorMessage": "Property 'birthday' does not exist on type '{ posts: (Pick<BuiltTable<{ title: FieldType<string>; subtitle: FieldType<string>; content: FieldType<string>; userId: FieldType<number>; }>, \"title\" | \"subtitle\" | \"content\" | \"userId\"> & Partial<...> & ResolveAssociations<...>)[]; firstName: string; lastName: string; bd: Date | undefined; }'."
     },
     {
         "location": {
             "start": {
-                "line": 46,
+                "line": 53,
                 "column": 19
             },
             "end": {
-                "line": 46,
+                "line": 53,
                 "column": 29
             }
         },
-        "errorMessage": "Property 'middleName' does not exist on type '{ posts: { title: string; details: string; }[]; firstName: string; lastName: string; bd: Date; }'."
+        "errorMessage": "Property 'middleName' does not exist on type '{ posts: { title: string; details: string; }[]; firstName: string; lastName: string; bd: Date | undefined; }'."
     },
     {
         "location": {
             "start": {
-                "line": 47,
+                "line": 54,
                 "column": 19
             },
             "end": {
-                "line": 47,
+                "line": 54,
                 "column": 27
             }
         },
-        "errorMessage": "Property 'birthday' does not exist on type '{ posts: { title: string; details: string; }[]; firstName: string; lastName: string; bd: Date; }'."
+        "errorMessage": "Property 'birthday' does not exist on type '{ posts: { title: string; details: string; }[]; firstName: string; lastName: string; bd: Date | undefined; }'."
     },
     {
         "location": {
             "start": {
-                "line": 48,
+                "line": 55,
                 "column": 28
             },
             "end": {
-                "line": 48,
+                "line": 55,
                 "column": 36
             }
         },
@@ -67,11 +67,11 @@
     {
         "location": {
             "start": {
-                "line": 49,
+                "line": 56,
                 "column": 28
             },
             "end": {
-                "line": 49,
+                "line": 56,
                 "column": 35
             }
         },
@@ -80,92 +80,92 @@
     {
         "location": {
             "start": {
-                "line": 50,
+                "line": 57,
                 "column": 8
             },
             "end": {
-                "line": 50,
+                "line": 57,
                 "column": 16
             }
         },
-        "errorMessage": "Property 'subtitle' does not exist on type '{ title: string; details: string; user: { firstName: string; middleName: string; lastName: string; birthday: Date; } & ResolveAssociations<{}>; }'."
+        "errorMessage": "Property 'subtitle' does not exist on type '{ title: string; details: string; user: Pick<BuiltTable<{ firstName: FieldType<string>; middleName: FieldType<string>; lastName: FieldType<string>; birthday: FieldType<Date | undefined>; }>, \"firstName\" | ... 1 more ... | \"lastName\"> & Partial<...> & ResolveAssociations<...>; }'."
     },
     {
         "location": {
             "start": {
-                "line": 51,
+                "line": 58,
                 "column": 8
             },
             "end": {
-                "line": 51,
+                "line": 58,
                 "column": 15
             }
         },
-        "errorMessage": "Property 'content' does not exist on type '{ title: string; details: string; user: { firstName: string; middleName: string; lastName: string; birthday: Date; } & ResolveAssociations<{}>; }'."
+        "errorMessage": "Property 'content' does not exist on type '{ title: string; details: string; user: Pick<BuiltTable<{ firstName: FieldType<string>; middleName: FieldType<string>; lastName: FieldType<string>; birthday: FieldType<Date | undefined>; }>, \"firstName\" | ... 1 more ... | \"lastName\"> & Partial<...> & ResolveAssociations<...>; }'."
     },
     {
         "location": {
             "start": {
-                "line": 52,
+                "line": 59,
                 "column": 19
             },
             "end": {
-                "line": 52,
+                "line": 59,
                 "column": 27
             }
         },
-        "errorMessage": "Property 'subtitle' does not exist on type '{ title: string; details: string; user: { firstName: string; bd: Date; }; }'."
+        "errorMessage": "Property 'subtitle' does not exist on type '{ title: string; details: string; user: { firstName: string; bd: Date | undefined; }; }'."
     },
     {
         "location": {
             "start": {
-                "line": 53,
+                "line": 60,
                 "column": 19
             },
             "end": {
-                "line": 53,
+                "line": 60,
                 "column": 26
             }
         },
-        "errorMessage": "Property 'content' does not exist on type '{ title: string; details: string; user: { firstName: string; bd: Date; }; }'."
+        "errorMessage": "Property 'content' does not exist on type '{ title: string; details: string; user: { firstName: string; bd: Date | undefined; }; }'."
     },
     {
         "location": {
             "start": {
-                "line": 54,
+                "line": 61,
                 "column": 24
             },
             "end": {
-                "line": 54,
+                "line": 61,
                 "column": 34
             }
         },
-        "errorMessage": "Property 'middleName' does not exist on type '{ firstName: string; bd: Date; }'."
+        "errorMessage": "Property 'middleName' does not exist on type '{ firstName: string; bd: Date | undefined; }'."
     },
     {
         "location": {
             "start": {
-                "line": 55,
+                "line": 62,
                 "column": 24
             },
             "end": {
-                "line": 55,
+                "line": 62,
                 "column": 32
             }
         },
-        "errorMessage": "Property 'lastName' does not exist on type '{ firstName: string; bd: Date; }'."
+        "errorMessage": "Property 'lastName' does not exist on type '{ firstName: string; bd: Date | undefined; }'."
     },
     {
         "location": {
             "start": {
-                "line": 56,
+                "line": 63,
                 "column": 24
             },
             "end": {
-                "line": 56,
+                "line": 63,
                 "column": 32
             }
         },
-        "errorMessage": "Property 'birthday' does not exist on type '{ firstName: string; bd: Date; }'."
+        "errorMessage": "Property 'birthday' does not exist on type '{ firstName: string; bd: Date | undefined; }'."
     }
 ]
