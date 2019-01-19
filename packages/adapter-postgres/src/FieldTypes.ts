@@ -43,10 +43,12 @@ const fieldTypes = {
   bigint: columnType<number>('bigint'),
   double: columnType<number>('double precision'),
   real: columnType<number>('real'),
-  // Numeric Serial Types:
-  smallserial: columnType<number>('smallserial'),
-  serial: columnType<number>('serial'),
-  bigserial: columnType<number>('bigserial'),
+  // Numeric Serial Types (automatiocally non null):
+  smallserial: (options?: ColumnOptions) =>
+    new FieldType<number>('smallserial', options),
+  serial: (options?: ColumnOptions) => new FieldType<number>('serial', options),
+  bigserial: (options?: ColumnOptions) =>
+    new FieldType<number>('bigserial', options),
 
   // Character Types:
   char: columnType<string, CharacterOptions>('char'),

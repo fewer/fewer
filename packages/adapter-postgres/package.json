@@ -24,7 +24,7 @@
     "url": "git+https://github.com/fewer/fewer.git"
   },
   "scripts": {
-    "integration:local": "docker-compose up --abort-on-container-exit || docker-compose down",
+    "integration:local": "docker-compose up --abort-on-container-exit; docker-compose down",
     "preintegration": "ts-node src/__integration__/setup.ts",
     "integration": "jest --config=../../jest.config.integration.js"
   },
