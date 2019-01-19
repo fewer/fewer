@@ -32,17 +32,19 @@ function getTypeName(type: FieldType): string {
 }
 
 export default function migrate(migration: Migration) {
-  const create = squel.create();
+  const sqls: string[] = [];
 
   migration.operations.forEach(operation => {
     if (operation.type === 'createTable') {
+      const create = squel.create(operation.options);
       create.table(operation.name);
       for (const [columnName, columnType] of Object.entries(operation.fields)) {
         const typeName = getTypeName(columnType);
         create.field(columnName, typeName, columnType.config);
       }
+      sqls.push(create.toString());
     }
   });
 
-  return create.toString();
+  return sqls.join('; ');
 }

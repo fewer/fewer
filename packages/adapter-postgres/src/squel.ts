@@ -54,12 +54,16 @@ class CreateFieldBlock extends baseSquel.cls.Block {
   _toParamString() {
     let str = this._fields
       .map(f => {
-        return [f.name, f.type.toUpperCase(), ...this._columnModifiers(f.options)].join(' ');
+        return [
+          f.name,
+          f.type.toUpperCase(),
+          ...this._columnModifiers(f.options),
+        ].join(' ');
       })
       .join(', ');
 
     return {
-      text: `(${str})`,
+      text: str,
       values: [],
     };
   }
@@ -88,8 +92,25 @@ class CreateTableQuery extends baseSquel.cls.QueryBuilder {
 
     blocks.push(
       new CreateTableBlock(BLOCK_OPTIONS),
+      new squel.cls.StringBlock(BLOCK_OPTIONS, `(`),
       new CreateFieldBlock(BLOCK_OPTIONS),
     );
+
+    if (options.primaryKey) {
+      blocks.push(
+        new squel.cls.StringBlock(BLOCK_OPTIONS, `,`),
+        new squel.cls.StringBlock(
+          BLOCK_OPTIONS,
+          `PRIMARY KEY (${
+            Array.isArray(options.primaryKey)
+              ? options.primaryKey.join(', ')
+              : options.primaryKey
+          })`,
+        ),
+      );
+    }
+
+    blocks.push(new squel.cls.StringBlock(BLOCK_OPTIONS, `)`));
 
     if (options.inherits) {
       blocks.push(

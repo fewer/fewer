@@ -7,5 +7,5 @@ export default interface TableTypes {
   inherits?: string[];
   onCommit?: 'PRESERVE ROWS' | 'DELETE ROWS' | 'DROP';
   tablespace?: string;
-  primaryKey?: (string | string[])[];
+  primaryKey?: string | string[];
 }
