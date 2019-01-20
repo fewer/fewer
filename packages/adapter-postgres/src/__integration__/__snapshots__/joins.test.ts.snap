@@ -1,0 +1,30 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`load associations postgres can join users <-> posts 1`] = `
+Array [
+  Object {
+    "first_name": "Emily",
+    "id": "1",
+    "last_name": "Dobervich",
+    "subtitle": null,
+    "title": "How to use Fewer",
+    "user_id": "1",
+  },
+  Object {
+    "first_name": "Jordan",
+    "id": "2",
+    "last_name": "Gensler",
+    "subtitle": null,
+    "title": "Abusing Typescript",
+    "user_id": "2",
+  },
+  Object {
+    "first_name": "Jordan",
+    "id": "3",
+    "last_name": "Gensler",
+    "subtitle": null,
+    "title": "Ten Typescript Type Tricks",
+    "user_id": "2",
+  },
+]
+`;

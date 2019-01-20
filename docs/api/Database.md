@@ -26,6 +26,7 @@ Fewer currently provides the following adapters:
 Attempts to establish a connection to the underlying database via the provided adapter. It returns a promise that is resolved once the connection is established. If the adapter is unable to successfully connect to the database, then the promise will be rejected.
 
 #### Example
+
 ```ts
 import { createDatabase } from 'fewer';
 

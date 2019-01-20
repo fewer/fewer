@@ -1,11 +1,13 @@
 import { Association, AssociationType } from './Association';
+import { Select } from '@fewer/sq';
 
 // TODO: Move this back into unique symbols once this bug is resolved:
 // https://github.com/Microsoft/TypeScript/issues/29108
 export const enum INTERNAL_TYPES {
   ALL_FIELDS = '@@ALL_FIELDS',
   RESOLVED_TYPE = '@@RESOLVED_TYPE',
-  INTERNAL_TYPE = '@@INTERNAL_TYPE'
+  INTERNAL_TYPE = '@@INTERNAL_TYPE',
+  SCHEMA_TYPE = '@@SCHEMA_TYPE',
 }
 
 // We default to selecting all fields, but once you pluck one field, we need to remove
@@ -23,16 +25,18 @@ export interface Associations {
 
 type UnrollAssociation<
   T extends Association
-> = T[INTERNAL_TYPES.INTERNAL_TYPE][INTERNAL_TYPES.INTERNAL_TYPE];
+> = T[INTERNAL_TYPES.SCHEMA_TYPE];
 
 type WhereForType<T> = {
   [P in keyof T]?: NonNullable<T[P]> | NonNullable<T[P]>[]
 };
 
-export type WhereType<Root, Assoc extends Associations = {}> = WhereForType<
+type Merge<T extends object> = { [K in keyof T]: T[K] };
+
+export type WhereType<Root, Assoc extends Associations = {}> = Merge<WhereForType<
   Root
 > &
-  { [P in keyof Assoc]?: WhereForType<UnrollAssociation<Assoc[P]>> };
+  { [P in keyof Assoc]?: WhereForType<UnrollAssociation<Assoc[P]>> }>;
 
 export type Subset<Root, Keys, AssociationKeys extends keyof Root> = [
   Keys
@@ -55,4 +59,5 @@ export interface CommonQuery<Type, Assoc extends Associations> {
   order(): any;
   load(name: string, association: Association): any;
   join(name: string, association: Association): any;
+  toSqSelect(): Select;
 }

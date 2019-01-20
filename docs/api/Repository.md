@@ -50,6 +50,7 @@ Performs validation on the model by running the model through all of the `valida
 ---
 
 ### `load(name, association): Repository`
+
 ### `join(name, association): Repository`
 
 ## Model Properties

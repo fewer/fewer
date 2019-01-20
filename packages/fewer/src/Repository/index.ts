@@ -24,11 +24,7 @@ export enum QueryTypes {
   MULTIPLE,
 }
 
-// type ExtractSchemaType<T extends SchemaTable> = {
-//   [P in keyof T]: T[P][INTERNAL_TYPES.INTERNAL_TYPE][INTERNAL_TYPES.INTERNAL_TYPE]
-// };
-
-const SCHEMA_TYPE = Symbol('schema-type');
+type CheckUsedKeys<T, K> = T extends K ? 'This key is already in use.' : T;
 
 export class Repository<
   SchemaType = {},
@@ -51,7 +47,7 @@ export class Repository<
       LoadAssociations & JoinAssociations
     > {
   // Stash the schema type so that the generic can be used as a type constraint.
-  readonly [SCHEMA_TYPE]: SchemaType;
+  readonly [INTERNAL_TYPES.SCHEMA_TYPE]: SchemaType;
 
   readonly [INTERNAL_TYPES.RESOLVED_TYPE]: ResolvedType;
   readonly [INTERNAL_TYPES.INTERNAL_TYPE]: SchemaType & RegisteredExtensions;
@@ -76,6 +72,14 @@ export class Repository<
     this.runningQuery = runningQuery;
     this.pipes = pipes;
     this.queryType = queryType;
+  }
+
+  toSqSelect(): Select {
+    return this.selectQuery();
+  }
+
+  getTableName(): string {
+    return this.schemaTable.name;
   }
 
   /**
@@ -222,7 +226,7 @@ export class Repository<
   where(
     wheres: WhereType<
       SchemaType & RegisteredExtensions,
-      LoadAssociations & JoinAssociations
+      JoinAssociations
     >,
   ): Repository<
     SchemaType,
@@ -371,7 +375,7 @@ export class Repository<
       ? keyof SchemaType
       : any
   >(
-    name: Name,
+    name: Name & CheckUsedKeys<Name, keyof LoadAssociations>,
     association: LoadAssociation,
   ): Repository<
     SchemaType,
@@ -383,7 +387,7 @@ export class Repository<
   > {
     return new Repository(
       this.schemaTable,
-      this.runningQuery,
+      this.selectQuery().load(name, ['id', association.foreignKey], association.toSqSelect()),
       this.pipes,
       this.queryType,
     );
@@ -397,7 +401,12 @@ export class Repository<
     JoinAssociation extends Association<
       AssociationType,
       Repository<SchemaType>,
-      KeyConstraint
+      KeyConstraint,
+      any,
+      any,
+      any,
+      any,
+      false
     >,
     KeyConstraint = JoinAssociation extends Association<
       AssociationType.BELONGS_TO
@@ -405,7 +414,7 @@ export class Repository<
       ? keyof SchemaType
       : any
   >(
-    name: Name,
+    name: Name & CheckUsedKeys<Name, keyof JoinAssociations>,
     association: JoinAssociation,
   ): Repository<
     SchemaType,
@@ -417,7 +426,7 @@ export class Repository<
   > {
     return new Repository(
       this.schemaTable,
-      this.runningQuery,
+      this.selectQuery().join(name, ['id', association.foreignKey], association.getTableName()),
       this.pipes,
       this.queryType,
     );

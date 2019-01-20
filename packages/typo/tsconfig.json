@@ -3,7 +3,7 @@
   "compilerOptions": {
     "composite": true,
     "outDir": "lib",
-    "rootDir": "src"
+    "noEmit": true
   },
   "include": ["./src"],
   "references": [{ "path": "../fewer" }]

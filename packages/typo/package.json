@@ -1,0 +1,13 @@
+{
+  "name": "@fewer/typo",
+  "version": "0.0.1",
+  "description": "Jest runner that checks runtime type for mistyping.",
+  "author": "Emily Dobervich <emily@dobervich.com>",
+  "private": true,
+  "devDependencies": {
+    "@babel/code-frame": "^7.0.0",
+    "@types/babel__code-frame": "^7.0.0",
+    "create-jest-runner": "^0.4.1",
+    "ts-node": "^8.0.1"
+  }
+}

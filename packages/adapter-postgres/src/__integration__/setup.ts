@@ -2,8 +2,8 @@ import { createDatabase } from 'fewer';
 import { Adapter, rawQuery } from '../';
 import config from './config';
 
-async function prepare() {
-  const adapter = new Adapter(config);
+export async function prepare() {
+  const adapter = new Adapter({...config, database: 'postgres'});
 
   const database = createDatabase({ adapter });
 
@@ -18,4 +18,4 @@ async function prepare() {
   await database.disconnect();
 }
 
-prepare();
+// prepare();
