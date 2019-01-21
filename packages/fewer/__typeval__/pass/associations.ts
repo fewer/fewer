@@ -1,19 +1,25 @@
 import * as typeval from '@fewer/typeval';
-import { createRepository, createHasMany, createBelongsTo } from '../../src';
+import {
+  createRepository,
+  createHasMany,
+  createBelongsTo,
+  createSchema,
+} from '../../src';
+import { database } from '../mocks';
 
-interface User {
-  firstName: string;
-  lastName: string;
-}
+const schema = createSchema()
+  .table(database, 'users', t => ({
+    firstName: t.string(),
+    lastName: t.string(),
+  }))
+  .table(database, 'posts', t => ({
+    title: t.string(),
+    subtitle: t.maybeString(),
+    userId: t.number(),
+  }));
 
-interface Post {
-  title: string;
-  subtitle: string;
-  userId: number;
-}
-
-const Users = createRepository<User>('users');
-const Posts = createRepository<Post>('posts');
+const Users = createRepository(schema.tables.users);
+const Posts = createRepository(schema.tables.posts);
 
 const userPosts = createHasMany(Users, Posts, 'userId');
 const belongsToUser = createBelongsTo(Users, 'userId');
@@ -49,6 +55,8 @@ async function main() {
     });
 
   typeval.acceptsString(user.firstName);
-  typeval.accepts<Post[]>(user.posts);
+  typeval.accepts<{ title: string; subtitle?: string; userId: number }[]>(
+    user.posts,
+  );
   typeval.accepts<{ firstName: string; lastName?: never }>(post.user);
 }

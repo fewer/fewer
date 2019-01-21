@@ -16,7 +16,7 @@ npm install @fewer/adapter-postgres
 
 ```ts
 import { createDatabase } from 'fewer';
-import { PostgresAdapter as Adapter } from '@fewer/adapter-postgres';
+import { Adapter } from '@fewer/adapter-postgres';
 
 createDatabase({
   adapter: new Adapter({

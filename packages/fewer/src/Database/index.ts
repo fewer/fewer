@@ -1,17 +1,22 @@
-import Adapter from './Adapter';
-import globalDatabase from './globalDatabase';
+import { Adapter } from '../Adapter';
 import { Select, Insert, Update } from '@fewer/sq';
 
-export interface DatabaseConfig {
-  adapter: Adapter;
+export interface DatabaseConfig<DBAdapter extends Adapter = Adapter> {
+  adapter: DBAdapter;
 }
 
-export class Database {
-  private adapter: Adapter;
+export class Database<DBAdapter extends Adapter = Adapter> {
+  private adapter: DBAdapter;
 
-  constructor({ adapter }: DatabaseConfig) {
+  constructor({ adapter }: DatabaseConfig<DBAdapter>) {
     this.adapter = adapter;
-    globalDatabase.set(this);
+  }
+
+  /**
+   * Retrieve the underlying adapter.
+   */
+  getAdapter() {
+    return this.adapter;
   }
 
   /**
@@ -36,17 +41,13 @@ export class Database {
   update(query: Update): Promise<any> {
     return this.adapter.update(query);
   }
-
-  rawQuery(query: string): Promise<any> {
-    return this.adapter.rawQuery(query);
-  }
 }
 
 /**
  * TODO: Documentation.
  */
-export function createDatabase(options: DatabaseConfig) {
-  return new Database(options);
+export function createDatabase<DBAdapter extends Adapter>(
+  options: DatabaseConfig<DBAdapter>,
+) {
+  return new Database<DBAdapter>(options);
 }
-
-export { Adapter, globalDatabase };

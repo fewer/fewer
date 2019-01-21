@@ -1,20 +1,27 @@
 import {
-  createRepository, createHasMany, createBelongsTo,
+  createRepository,
+  createHasMany,
+  createBelongsTo,
+  createSchema,
 } from '../../src';
+import { database } from '../mocks';
 
-const Users = createRepository<{
-  firstName: string;
-  middleName: string;
-  lastName: string;
-  birthday: Date;
-}>('users');
+const schema = createSchema()
+  .table(database, 'users', t => ({
+    firstName: t.string(),
+    middleName: t.string(),
+    lastName: t.string(),
+    birthday: t.maybe<Date>(),
+  }))
+  .table(database, 'posts', t => ({
+    title: t.string(),
+    subtitle: t.string(),
+    content: t.string(),
+    userId: t.number(),
+  }));
 
-const Posts = createRepository<{
-  title: string;
-  subtitle: string;
-  content: string;
-  userId: number;
-}>('posts');
+const Users = createRepository(schema.tables.users);
+const Posts = createRepository(schema.tables.posts);
 
 const userPosts = createHasMany(Users, Posts, 'userId');
 const postUser = createBelongsTo(Users, 'userId');

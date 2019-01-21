@@ -1,6 +1,5 @@
 import sq, { Select } from '@fewer/sq';
 import { SchemaTable } from '../Schema';
-import { Database, globalDatabase } from '../Database';
 import createModel, {
   SymbolProperties,
   Symbols,
@@ -25,65 +24,75 @@ export enum QueryTypes {
   MULTIPLE,
 }
 
+// type ExtractSchemaType<T extends SchemaTable> = {
+//   [P in keyof T]: T[P][INTERNAL_TYPES.INTERNAL_TYPE][INTERNAL_TYPES.INTERNAL_TYPE]
+// };
+
 const SCHEMA_TYPE = Symbol('schema-type');
 
 export class Repository<
   SchemaType = {},
-  RepoType extends SchemaType = any,
+  // TODO: Make this just extensions, not schema + extensions.
+  RegisteredExtensions = {},
   SelectionSet = INTERNAL_TYPES.ALL_FIELDS,
   LoadAssociations extends Associations = {},
   JoinAssociations extends Associations = {},
-  QueryType extends QueryTypes = any
-> implements CommonQuery<RepoType, LoadAssociations & JoinAssociations> {
+  QueryType extends QueryTypes = any,
+  // NOTE: This generic should never explicitly be passed.
+  ResolvedType = Subset<
+    SchemaType & RegisteredExtensions & ResolveAssociations<LoadAssociations>,
+    SelectionSet,
+    keyof LoadAssociations
+  >
+>
+  implements
+    CommonQuery<
+      SchemaType & RegisteredExtensions,
+      LoadAssociations & JoinAssociations
+    > {
   // Stash the schema type so that the generic can be used as a type constraint.
-  [SCHEMA_TYPE]: SchemaType;
+  readonly [SCHEMA_TYPE]: SchemaType;
 
-  [INTERNAL_TYPES.INTERNAL_TYPE]: RepoType;
+  readonly [INTERNAL_TYPES.RESOLVED_TYPE]: ResolvedType;
+  readonly [INTERNAL_TYPES.INTERNAL_TYPE]: SchemaType & RegisteredExtensions;
 
   /**
    * Contains symbols that are used to access metadata about the state of models.
    */
   readonly symbols = Symbols;
 
-  private tableName: string;
+  private schemaTable: SchemaTable;
   private runningQuery?: Select;
   private pipes: Pipe[];
   private queryType: QueryTypes;
 
-  private database: Promise<Database>;
-
   constructor(
-    tableName: string,
+    schemaTable: SchemaTable,
     runningQuery: Select | undefined,
     pipes: Pipe[],
     queryType: QueryTypes,
   ) {
-    this.tableName = tableName;
+    this.schemaTable = schemaTable;
     this.runningQuery = runningQuery;
     this.pipes = pipes;
     this.queryType = queryType;
-
-    // TODO: It's probably not ideal to create this promise on every chain. We should probably lazily create it.
-    // Alternatively, we could consume it from the schema or something like that.
-    // Probably the schema, with a default on the global database if none from schema is provided.
-    this.database = globalDatabase.waitFor();
   }
 
   /**
    * TODO: Documentation.
    */
   pipe<Extensions>(
-    pipe: Pipe<RepoType, Extensions>,
+    pipe: Pipe<SchemaType & RegisteredExtensions, Extensions>,
   ): Repository<
     SchemaType,
-    RepoType & Extensions,
+    RegisteredExtensions & Extensions,
     SelectionSet,
     LoadAssociations,
     JoinAssociations,
     QueryType
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.runningQuery,
       [...this.pipes, pipe],
       this.queryType,
@@ -94,7 +103,10 @@ export class Repository<
    * Validates an object.
    */
   // TODO: Async
-  validate<T extends Partial<RepoType> & SymbolProperties<RepoType>>(model: T) {
+  validate<
+    T extends Partial<SchemaType & RegisteredExtensions> &
+      SymbolProperties<SchemaType & RegisteredExtensions>
+  >(model: T) {
     // Ensure that we're actually working with a model:
     if (!model[Symbols.isModel]) {
       throw new Error(
@@ -134,14 +146,14 @@ export class Repository<
   /**
    * Converts a plain JavaScript object into a Fewer model.
    */
-  from<T extends Partial<RepoType>>(obj: T) {
-    return createModel<RepoType, T>(obj);
+  from<T extends Partial<SchemaType & RegisteredExtensions>>(obj: T) {
+    return createModel<SchemaType & RegisteredExtensions, T>(obj);
   }
 
   /**
    * TODO: Documentation.
    */
-  async create<T extends Partial<RepoType>>(obj: T) {
+  async create<T extends Partial<SchemaType & RegisteredExtensions>>(obj: T) {
     // Convert the object:
     const model = this.from(obj);
 
@@ -150,9 +162,9 @@ export class Repository<
       throw new Error('model was not valid');
     }
 
-    const db = await this.database;
+    const db = this.schemaTable.database;
 
-    const query = sq.insert(this.tableName).set(model);
+    const query = sq.insert(this.schemaTable.name).set(model);
 
     const [data] = await db.insert(query);
 
@@ -163,9 +175,10 @@ export class Repository<
   /**
    * Updates a model in the database.
    */
-  async update<T extends Partial<RepoType> & SymbolProperties<RepoType>>(
-    model: T,
-  ) {
+  async update<
+    T extends Partial<SchemaType & RegisteredExtensions> &
+      SymbolProperties<SchemaType & RegisteredExtensions>
+  >(model: T) {
     // Ensure that we're actually working with a model:
     if (!model[Symbols.isModel]) {
       throw new Error(
@@ -192,12 +205,12 @@ export class Repository<
 
     // TODO: Make update work:
     const query = sq
-      .update(this.tableName)
+      .update(this.schemaTable.name)
       // TODO: Make this work:
       // .id('id', model.id)
       .set(changeSet);
 
-    const db = await this.database;
+    const db = this.schemaTable.database;
     const [data] = await db.update(query);
 
     return this.from(data);
@@ -207,17 +220,20 @@ export class Repository<
    * TODO: Documentation.
    */
   where(
-    wheres: WhereType<RepoType, LoadAssociations & JoinAssociations>,
+    wheres: WhereType<
+      SchemaType & RegisteredExtensions,
+      LoadAssociations & JoinAssociations
+    >,
   ): Repository<
     SchemaType,
-    RepoType,
+    RegisteredExtensions,
     SelectionSet,
     LoadAssociations,
     JoinAssociations,
     QueryTypes.MULTIPLE
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.selectQuery().where(wheres),
       this.pipes,
       this.queryType,
@@ -231,14 +247,14 @@ export class Repository<
     id: string | number,
   ): Repository<
     SchemaType,
-    RepoType,
+    RegisteredExtensions,
     SelectionSet,
     LoadAssociations,
     JoinAssociations,
     QueryTypes.SINGLE
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.selectQuery()
         .where({ id })
         .limit(1),
@@ -250,18 +266,18 @@ export class Repository<
   /**
    * TODO: Documentation.
    */
-  pluck<Key extends keyof RepoType>(
+  pluck<Key extends keyof SchemaType>(
     ...fields: Key[]
   ): Repository<
     SchemaType,
-    RepoType,
+    RegisteredExtensions,
     CreateSelectionSet<SelectionSet, Key>,
     LoadAssociations,
     JoinAssociations,
     QueryType
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.selectQuery().pluck(...(fields as string[])),
       this.pipes,
       this.queryType,
@@ -271,19 +287,19 @@ export class Repository<
   /**
    * TODO: Documentation
    */
-  pluckAs<Key extends keyof RepoType, Alias extends string>(
+  pluckAs<Key extends keyof SchemaType, Alias extends string>(
     name: Key,
     alias: Alias,
   ): Repository<
     SchemaType,
-    RepoType & { [P in Alias]: RepoType[Key] },
+    RegisteredExtensions & { [P in Alias]: SchemaType[Key] },
     CreateSelectionSet<SelectionSet, Alias>,
     LoadAssociations,
     JoinAssociations,
     QueryType
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.selectQuery().pluck([name as string, alias]),
       this.pipes,
       this.queryType,
@@ -304,14 +320,14 @@ export class Repository<
     amount: number,
   ): Repository<
     SchemaType,
-    RepoType,
+    RegisteredExtensions,
     SelectionSet,
     LoadAssociations,
     JoinAssociations,
     QueryType
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.selectQuery().limit(amount),
       this.pipes,
       this.queryType,
@@ -325,14 +341,14 @@ export class Repository<
     amount: number,
   ): Repository<
     SchemaType,
-    RepoType,
+    RegisteredExtensions,
     SelectionSet,
     LoadAssociations,
     JoinAssociations,
     QueryType
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.selectQuery().offset(amount),
       this.pipes,
       this.queryType,
@@ -352,21 +368,21 @@ export class Repository<
     KeyConstraint = LoadAssociation extends Association<
       AssociationType.BELONGS_TO
     >
-      ? keyof RepoType
+      ? keyof SchemaType
       : any
   >(
     name: Name,
     association: LoadAssociation,
   ): Repository<
     SchemaType,
-    RepoType,
+    RegisteredExtensions,
     SelectionSet,
     LoadAssociations & { [P in Name]: LoadAssociation },
     JoinAssociations,
     QueryType
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.runningQuery,
       this.pipes,
       this.queryType,
@@ -386,32 +402,26 @@ export class Repository<
     KeyConstraint = JoinAssociation extends Association<
       AssociationType.BELONGS_TO
     >
-      ? keyof RepoType
+      ? keyof SchemaType
       : any
   >(
     name: Name,
     association: JoinAssociation,
   ): Repository<
     SchemaType,
-    RepoType,
+    RegisteredExtensions,
     SelectionSet,
     LoadAssociations,
     JoinAssociations & { [P in Name]: JoinAssociation },
     QueryType
   > {
     return new Repository(
-      this.tableName,
+      this.schemaTable,
       this.runningQuery,
       this.pipes,
       this.queryType,
     );
   }
-
-  [INTERNAL_TYPES.RESOLVED_TYPE]: Subset<
-    RepoType & ResolveAssociations<LoadAssociations>,
-    SelectionSet,
-    keyof LoadAssociations
-  >;
 
   /**
    * TODO: Documentation.
@@ -419,20 +429,12 @@ export class Repository<
   async then(
     onFulfilled: (
       value: QueryType extends QueryTypes.SINGLE
-        ? Subset<
-            RepoType & ResolveAssociations<LoadAssociations>,
-            SelectionSet,
-            keyof LoadAssociations
-          >
-        : Subset<
-            RepoType & ResolveAssociations<LoadAssociations>,
-            SelectionSet,
-            keyof LoadAssociations
-          >[],
+        ? ResolvedType
+        : ResolvedType[],
     ) => void,
     onRejected?: (error: Error) => void,
   ) {
-    const db = await this.database;
+    const db = this.schemaTable.database;
     try {
       const query = this.selectQuery();
       const data = await db.select(query);
@@ -453,7 +455,7 @@ export class Repository<
 
   private selectQuery(): Select {
     if (!this.runningQuery) {
-      this.runningQuery = sq.select(this.tableName);
+      this.runningQuery = sq.select(this.schemaTable.name);
     }
 
     return this.runningQuery;
@@ -465,31 +467,15 @@ export { ValidationError, Pipe };
 /**
  * TODO: Documentation.
  */
-export function createRepository<Type extends SchemaTable<any>>(
-  table: Type,
+export function createRepository<Type extends SchemaTable>(
+  schemaTable: Type,
 ): Repository<
   Type[INTERNAL_TYPES.INTERNAL_TYPE],
-  Type[INTERNAL_TYPES.INTERNAL_TYPE],
+  {},
   INTERNAL_TYPES.ALL_FIELDS,
   {},
   {},
   QueryTypes.MULTIPLE
->;
-export function createRepository<Type>(
-  table: string,
-): Repository<
-  Type,
-  Type,
-  INTERNAL_TYPES.ALL_FIELDS,
-  {},
-  {},
-  QueryTypes.MULTIPLE
->;
-export function createRepository(table: any): any {
-  return new Repository(
-    typeof table === 'string' ? table : table.name,
-    undefined,
-    [],
-    QueryTypes.MULTIPLE,
-  );
+> {
+  return new Repository(schemaTable, undefined, [], QueryTypes.MULTIPLE);
 }

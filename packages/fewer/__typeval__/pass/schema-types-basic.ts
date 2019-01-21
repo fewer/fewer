@@ -1,30 +1,31 @@
 import * as typeval from '@fewer/typeval';
 import { createSchema } from '../../src';
 import { INTERNAL_TYPES } from 'packages/fewer/src/types';
+import { database } from '../mocks';
 
-const schema = createSchema(20080906171750).table('users', {}, t => ({
-  firstName: t.nonNull(t.string()),
-  lastName: t.string(),
-  deleted: t.boolean(),
-  createdAt: t.datetime(),
+const schema = createSchema().table(database, 'users', t => ({
+  firstName: t.string(),
+  lastName: t.maybeString(),
+  deleted: t.maybe<boolean>(),
+  createdAt: t.required<Date>(),
 }));
 
 type User = typeof schema.tables.users[INTERNAL_TYPES.INTERNAL_TYPE];
 const user = typeval.as<User>();
 
 // Test individual properties:
-typeval.acceptsNumber(schema.version);
+typeval.optional.acceptsNumber(schema.version);
 typeval.acceptsString(user.firstName);
 typeval.optional.acceptsString(user.lastName);
 typeval.optional.acceptsBoolean(user.deleted);
-typeval.optional.acceptsString(user.createdAt);
+typeval.accepts<Date>(user.createdAt);
 
 // Test the minimal model:
-typeval.accepts<User>({ firstName: 'jordan' });
+typeval.accepts<User>({ firstName: 'jordan', createdAt: new Date() });
 // Test all fields:
 typeval.accepts<User>({
   firstName: 'jordan',
   lastName: 'gensler',
   deleted: false,
-  createdAt: '',
+  createdAt: new Date(),
 });

@@ -13,7 +13,7 @@ Array [
     "table_name": "users",
   },
   Object {
-    "character_maximum_length": null,
+    "character_maximum_length": 255,
     "column_default": null,
     "column_name": "firstname",
     "data_type": "character varying",
@@ -23,7 +23,7 @@ Array [
     "table_name": "users",
   },
   Object {
-    "character_maximum_length": null,
+    "character_maximum_length": 255,
     "column_default": null,
     "column_name": "lastname",
     "data_type": "character varying",
@@ -34,6 +34,16 @@ Array [
   },
   Object {
     "character_maximum_length": null,
+    "column_default": null,
+    "column_name": "unbounded",
+    "data_type": "character varying",
+    "is_generated": "NEVER",
+    "is_nullable": "YES",
+    "is_updatable": "YES",
+    "table_name": "users",
+  },
+  Object {
+    "character_maximum_length": 255,
     "column_default": null,
     "column_name": "email",
     "data_type": "character varying",

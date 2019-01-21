@@ -1,9 +1,14 @@
 import * as typeval from '@fewer/typeval';
-import { createRepository, ValidationError } from '../../src';
+import { createRepository, ValidationError, createSchema } from '../../src';
+import { database } from '../mocks';
 
-const Users = createRepository<{ firstName: string; lastName: string }>(
-  'users',
-);
+const schema = createSchema().table(database, 'users', (t) => ({
+  firstName: t.string(),
+  lastName: t.string(),
+}));
+
+const Users = createRepository(schema.tables.users);
+
 const user = Users.from({});
 
 typeval.accepts<true>(user[Users.symbols.isModel]);

@@ -24,9 +24,9 @@
     "url": "git+https://github.com/fewer/fewer.git"
   },
   "scripts": {
-    "integration": "../../env.sh yarn run _integration",
-    "_integration": "yarn run _integration:prep && jest --config=../../jest.config.integration.js",
-    "_integration:prep": "ts-node scripts/integrationPrep.ts -P tsconfig.json"
+    "integration:local": "docker-compose up --abort-on-container-exit; docker-compose down",
+    "preintegration": "ts-node src/__integration__/setup.ts",
+    "integration": "jest --config=../../jest.config.integration.js"
   },
   "bugs": {
     "url": "https://github.com/fewer/fewer/issues"

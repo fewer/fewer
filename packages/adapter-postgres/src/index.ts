@@ -1,14 +1,19 @@
-import { Adapter as BaseAdapter } from 'fewer';
-import { Client, ConnectionConfig } from 'pg';
-import squel from 'squel';
+import { Adapter as BaseAdapter, Migration } from 'fewer';
 import { Insert, Select, Update } from '@fewer/sq';
+import { Client, ConnectionConfig } from 'pg';
+import squel from './squel';
+import TableTypes from './TableTypes';
+import FieldTypes from './FieldTypes';
+import migrate from './migrate';
 
-export { createMigration } from './createMigration';
-
-const postgresSquel = squel.useFlavour('postgres');
-
-export class PostgresAdapter implements BaseAdapter {
+class PostgresAdapter implements BaseAdapter {
   private client: Client;
+
+  // Expose the Table Types:
+  TableTypes!: TableTypes;
+
+  // Expose the Field Types:
+  FieldTypes = FieldTypes;
 
   constructor(options: ConnectionConfig) {
     this.client = new Client(options);
@@ -22,9 +27,15 @@ export class PostgresAdapter implements BaseAdapter {
     return this.client.end();
   }
 
+  async migrate(migration: Migration) {
+    const query = migrate(migration);
+    const results = await this.client.query(query);
+    return results;
+  }
+
   async select(query: Select) {
     const context = query.get();
-    const select = postgresSquel.select().from(context.table);
+    const select = squel.select().from(context.table);
 
     if (context.limit) {
       select.limit(context.limit);
@@ -58,7 +69,7 @@ export class PostgresAdapter implements BaseAdapter {
 
   async insert(query: Insert) {
     const context = query.get();
-    const insert = postgresSquel
+    const insert = squel
       .insert()
       .into(context.table)
       .setFields(context.fields)
@@ -70,7 +81,7 @@ export class PostgresAdapter implements BaseAdapter {
 
   async update(query: Update) {
     const context = query.get();
-    const update = postgresSquel
+    const update = squel
       .update()
       .table(context.table)
       .setFields(context.fields);
@@ -84,3 +95,5 @@ export class PostgresAdapter implements BaseAdapter {
     return results.rows;
   }
 }
+
+export { PostgresAdapter as Adapter };

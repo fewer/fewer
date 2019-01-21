@@ -2,9 +2,9 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "composite": true,
-    "outDir": "lib"
+    "outDir": "lib",
+    "rootDir": "src"
   },
-  "include": ["./src"],
   "exclude": ["**/__integration__"],
   "references": [{ "path": "../fewer" }]
 }

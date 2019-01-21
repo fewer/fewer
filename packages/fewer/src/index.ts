@@ -1,25 +1,34 @@
 import { createSchema } from './Schema';
 import { createRepository, ValidationError, Pipe } from './Repository';
-import { createDatabase, Adapter, Database } from './Database';
+import { createDatabase, Database } from './Database';
 import { createBelongsTo, createHasOne, createHasMany } from './Association';
-import { Migration, MigrationDefinition, isChangeMigration, isIrreversibleMigration } from './Migration';
+import { createMigration, Migration, MigrationDefinition } from './Migration';
+import { Adapter } from './Adapter';
+import FieldType from './FieldType';
 
+// Export the main API:
 export {
-  // The create helpers are what should be used to create instances:
   createDatabase,
+  createMigration,
   createSchema,
   createRepository,
   createBelongsTo,
   createHasOne,
   createHasMany,
+}
+
+// Exports for adapter implementations:
+// TODO: Move into a `forAdapters` file?
+export {
   Database,
-  // Exports for adapter implementations:
   Adapter,
+  FieldType,
   Migration,
-  MigrationDefinition,
-  isChangeMigration,
-  isIrreversibleMigration,
-  // Export types:
+}
+
+// Export types:
+export {
   ValidationError,
+  MigrationDefinition,
   Pipe,
 };

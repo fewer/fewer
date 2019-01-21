@@ -1,0 +1,16 @@
+version: '3'
+services:
+    postgres:
+        image: postgres
+        restart: always
+        environment:
+            - POSTGRES_PASSWORD=password
+
+    app:
+        volumes:
+            - ../../:/app
+        build: ../../
+        working_dir: /app/packages/adapter-postgres/
+        command: yarn run integration
+        depends_on:
+            - postgres

@@ -6,7 +6,10 @@
       "@oclif/plugin-help",
       "@oclif/plugin-not-found",
       "@oclif/plugin-warn-if-update-available"
-    ]
+    ],
+    "hooks": {
+      "prerun": "./lib/hooks/ensureProject"
+    }
   },
   "name": "@fewer/cli",
   "version": "0.0.3",
@@ -46,16 +49,21 @@
     "@oclif/command": "^1.5.6",
     "@oclif/config": "^1.9.0",
     "@oclif/errors": "^1.2.2",
+    "@oclif/parser": "^3.7.2",
     "@oclif/plugin-help": "^2.1.4",
     "@oclif/plugin-not-found": "^1.2.2",
     "@oclif/plugin-warn-if-update-available": "^1.5.4",
     "@types/ejs": "^2.6.1",
     "cli-ux": "^5.0.0",
+    "cosmiconfig": "^5.0.7",
     "ejs": "^2.6.1",
     "enquirer": "^2.3.0",
-    "execa": "^1.0.0"
+    "execa": "^1.0.0",
+    "mkdirp": "^0.5.1"
   },
   "devDependencies": {
-    "@types/execa": "^0.9.0"
+    "@types/cosmiconfig": "^5.0.3",
+    "@types/execa": "^0.9.0",
+    "@types/mkdirp": "^0.5.2"
   }
 }

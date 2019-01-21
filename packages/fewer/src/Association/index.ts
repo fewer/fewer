@@ -29,11 +29,11 @@ export class Association<
   JoinAssociations extends Associations = {}
 > implements CommonQuery<RepoType, LoadAssociations & JoinAssociations> {
   // NOTE: We need to stash the type here otherwise the generic won't become a constraint.
-  [BASE_TYPE]: Base;
-  [FK_TYPE]: FK;
+  readonly [BASE_TYPE]: Base;
+  readonly [FK_TYPE]: FK;
 
-  [INTERNAL_TYPES.INTERNAL_TYPE]: RepoType;
-  [INTERNAL_TYPES.RESOLVED_TYPE]: Subset<
+  readonly [INTERNAL_TYPES.INTERNAL_TYPE]: RepoType;
+  readonly [INTERNAL_TYPES.RESOLVED_TYPE]: Subset<
     RepoType & ResolveAssociations<LoadAssociations>,
     SelectionSet,
     keyof LoadAssociations

@@ -1,54 +1,87 @@
-export class Type<T = any, CanBeNull = true> {
-  $$Type!: CanBeNull extends true ? T | undefined : T;
-  name: string;
-  config: TypeConfig;
+import { FieldType } from 'fewer';
 
-  constructor(name: string, config?: TypeConfig) {
-    this.name = name;
-    this.config = config || {};
-  }
-}
-
-interface TypeConfig {
+export interface ColumnOptions {
   nonNull?: boolean;
   unique?: boolean;
-  autoIncrement?: boolean;
+  default?: any;
+  primaryKey?: boolean;
 }
 
-function type<T>(name: string) {
-  return (config?: TypeConfig) => new Type<T>(name, config);
+export interface NumericOptions extends ColumnOptions {
+  precision?: number;
+  scale?: number;
 }
 
-export function nonNull<T extends Type>(type: T)  {
-  type SubType = T extends Type<infer U> ? U : never;
-  return new Type<SubType, false>(type.name, {
-    ...type.config,
-    nonNull: true,
-  });
+export interface CharacterOptions extends ColumnOptions {
+  length?: number;
 }
 
-// NUMBER TYPES:
-export const integer = type<number>('integer');
-export const smallint = type<number>('smallint');
-export const bigint = type<number>('bigint');
-export const int = integer;
+export interface PathOptions extends ColumnOptions {
+  open?: boolean;
+}
 
-export const decimal = type<number>('decimal');
-export const numeric = type<number>('numeric');
-export const float = type<number>('float');
-export const double = type<number>('double');
-export const bit = type<number>('bit');
-export const boolean = type<boolean>('boolean');
+function columnType<T, AdditionalConfig extends ColumnOptions = ColumnOptions>(
+  name: string,
+) {
+  return function<Config extends AdditionalConfig>(
+    config?: Config,
+  ): FieldType<Config['nonNull'] extends true ? T : T | undefined> {
+    return new FieldType(name, config);
+  };
+}
 
-// STRING TYPES:
-export const varchar = type<string>('varchar');
-export const char = type<string>('char');
-export const binary = type<string>('binary');
-export const varbinary = type<string>('varbinary');
-export const blob = type<string>('blob');
-export const text = type<string>('text');
-export const string = varchar;
+const fieldTypes = {
+  // Boolean Type:
+  boolean: columnType<boolean>('boolean'),
 
-// DATE TYPES:
-// TODO: ADD MORE:
-export const datetime = type<string>('datetime');
+  // Numeric Types:
+  numeric: columnType<number, NumericOptions>('numeric'),
+  decimal: columnType<number, NumericOptions>('decimal'),
+  smallint: columnType<number>('smallint'),
+  integer: columnType<number>('integer'),
+  int: columnType<number>('int'),
+  bigint: columnType<number>('bigint'),
+  double: columnType<number>('double precision'),
+  real: columnType<number>('real'),
+  // Numeric Serial Types (automatiocally non null):
+  smallserial: (options?: ColumnOptions) =>
+    new FieldType<number>('smallserial', options),
+  serial: (options?: ColumnOptions) => new FieldType<number>('serial', options),
+  bigserial: (options?: ColumnOptions) =>
+    new FieldType<number>('bigserial', options),
+
+  // Character Types:
+  char: columnType<string, CharacterOptions>('char'),
+  varchar: columnType<string, CharacterOptions>('varchar'),
+  text: columnType<string>('text'),
+  string: (options?: CharacterOptions) =>
+    fieldTypes.varchar({ length: 255, ...options }),
+
+  // Binary Data Types:
+  bytea: columnType<string>('bytea'),
+
+  // TODO: Date/Time Types, Monetary Types, Network Address Types, Bit String Types, Text Search Types, XML Type, Range Types, Custom Types
+
+  // Geometric Types:
+  point: columnType<[number, number]>('point'),
+  line: columnType<{ A: number; B: number; C: number }>('line'),
+  lseg: columnType<[[number, number], [number, number]]>('lseg'),
+  box: columnType<[[number, number], [number, number]]>('box'),
+  path: columnType<[number, number][], PathOptions>('path'),
+  polygon: columnType<[number, number][], PathOptions>('polygon'),
+  circle: columnType<[[number, number], number]>('circle'),
+
+  // UUID Type:
+  uuid: columnType<string>('uuid'),
+
+  // JSON Types:
+  json: columnType<object>('json'),
+  jsonb: columnType<object>('jsonb'),
+
+  // Array Types:
+  array: <SubType extends FieldType>(
+    subtype: SubType,
+  ): FieldType<Array<SubType['$$type']>> => new FieldType('array', { subtype }),
+};
+
+export default fieldTypes;

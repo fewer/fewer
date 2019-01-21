@@ -6,22 +6,22 @@ services:
     alias: postgres
 
 variables:
-  POSTGRES_DB: fewer-test
-  POSTGRES_USER: fewer-test
-  POSTGRES_PASSWORD: ""
+  POSTGRES_DB: postgres
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: password
   IN_CI: "true"
 
 node8:
   image: node:8-alpine
   script:
     - yarn test
-    - PGHOST=postgres PGDATABASE=fewer-test PGUSER=fewer-test PGPASSWORD="" yarn lerna run integration
+    - PGHOST=postgres PGDATABASE=postgres PGUSER=postgres PGPASSWORD=password yarn lerna run integration
 
 node10:
   image: node:10-alpine
   script:
     - yarn test
-    - PGHOST=postgres PGDATABASE=fewer-test PGUSER=fewer-test PGPASSWORD="" yarn lerna run integration
+    - PGHOST=postgres PGDATABASE=postgres PGUSER=postgres PGPASSWORD=password yarn lerna run integration
 
 latest:
   stage: test
@@ -29,4 +29,4 @@ latest:
   allow_failure: true
   script:
     - yarn test
-    - PGHOST=postgres PGDATABASE=fewer-test PGUSER=fewer-test PGPASSWORD="" yarn lerna run integration
+    - PGHOST=postgres PGDATABASE=postgres PGUSER=postgres PGPASSWORD=password yarn lerna run integration
