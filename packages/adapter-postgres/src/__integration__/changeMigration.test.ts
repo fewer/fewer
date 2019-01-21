@@ -31,9 +31,7 @@ describe('change migration', () => {
           }),
       });
 
-      migration.run('up');
-
-      await adapter.migrate(migration);
+      await migration.run('up');
 
       expect(
         await adapter.rawQuery(

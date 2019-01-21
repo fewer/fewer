@@ -6,17 +6,13 @@ export interface DatabaseConfig<DBAdapter extends Adapter = Adapter> {
 }
 
 export class Database<DBAdapter extends Adapter = Adapter> {
-  private adapter: DBAdapter;
+  /**
+   * The registered underlying adapter.
+   */
+  readonly adapter: DBAdapter;
 
   constructor({ adapter }: DatabaseConfig<DBAdapter>) {
     this.adapter = adapter;
-  }
-
-  /**
-   * Retrieve the underlying adapter.
-   */
-  getAdapter() {
-    return this.adapter;
   }
 
   /**

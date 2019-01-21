@@ -27,7 +27,7 @@ class PostgresAdapter implements BaseAdapter {
     return this.client.end();
   }
 
-  async migrate(migration: Migration) {
+  async migrate(direction: 'up' | 'down', migration: Migration) {
     const query = migrate(migration);
     const results = await this.client.query(query);
     return results;

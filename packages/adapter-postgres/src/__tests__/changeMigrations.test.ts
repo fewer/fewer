@@ -19,7 +19,7 @@ describe('migration', () => {
           }),
       });
 
-      migration.run('up');
+      migration.prepare('up');
 
       const sql = migrate(migration);
       expect(sql).toMatchSnapshot();
@@ -38,7 +38,7 @@ describe('migration', () => {
           }),
       });
 
-      migration.run('up');
+      migration.prepare('up');
 
       const sql = migrate(migration);
       expect(sql).toMatchSnapshot();
@@ -55,7 +55,7 @@ describe('migration', () => {
           }),
       });
 
-      migration.run('up');
+      migration.prepare('up');
 
       const sql = migrate(migration);
       expect(sql).toMatchSnapshot();
@@ -76,7 +76,7 @@ describe('migration', () => {
           ),
       });
 
-      migration.run('up');
+      migration.prepare('up');
 
       const sql = migrate(migration);
       expect(sql).toMatchSnapshot();
