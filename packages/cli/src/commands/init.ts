@@ -9,7 +9,7 @@ import {
   createFileWithContents,
 } from '../utils';
 import commonFlags from '../commonFlags';
-import { FewerConfigurationFile } from '../config';
+import { FewerConfigurationFile } from '../getConfig';
 
 export default class Init extends Command {
   static description = 'Initializes fewer into an existing project.';
@@ -71,11 +71,12 @@ export default class Init extends Command {
     cli.action.start('Creating files');
     const extension = useTypeScript ? 'ts' : 'js';
     await createFile(
-      cjs ? 'db.cjs' : 'db',
+      'db',
       path.join(src, `database.${extension}`),
       {
         adapter,
       },
+      cjs
     );
 
     await createDirectory(migrations);

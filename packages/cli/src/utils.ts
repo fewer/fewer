@@ -5,7 +5,7 @@ import execa from 'execa';
 import ejs from 'ejs';
 import { promisify } from 'util';
 import enquirer from 'enquirer';
-import config from './config';
+import getConfig from './getConfig';
 
 const cwd = process.cwd();
 
@@ -29,6 +29,8 @@ export async function ensureProject(
   warn: (message: string) => void,
   error: (message: string, config: object) => void,
 ) {
+  const config = await getConfig();
+
   if (!(await isProject())) {
     error(
       'We were not able to resolve the current project. Ensure that you are in a directory containing a "package.json" file and try again.',
@@ -109,11 +111,25 @@ export async function createFile(
   template: string,
   fileName: string,
   data: object,
+  cjs?: boolean,
 ) {
-  const fileContents = await ejs.renderFile(
+  let fileContents = await ejs.renderFile<string>(
     path.join(__dirname, '..', 'templates', `${template}.ejs`),
     data,
     { async: true },
   );
+
+  if (cjs) {
+    fileContents = toCJS(fileContents);
+  }
+
   await writeFileAsync(path.join(cwd, fileName), fileContents);
+}
+
+// A quick-and-dirty way to convert a file to from ESM to CJS. This is intentionally
+// not perfect, and only is designed to work with the templates included here.
+export function toCJS(contents: string) {
+  return contents
+    .replace('export default', 'module.exports =')
+    .replace(/import (.*?) from (.*?);/g, 'const $1 = require($2);');
 }

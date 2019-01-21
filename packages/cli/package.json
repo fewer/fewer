@@ -59,11 +59,13 @@
     "ejs": "^2.6.1",
     "enquirer": "^2.3.0",
     "execa": "^1.0.0",
+    "joi": "^14.3.1",
     "mkdirp": "^0.5.1"
   },
   "devDependencies": {
     "@types/cosmiconfig": "^5.0.3",
     "@types/execa": "^0.9.0",
+    "@types/joi": "^14.0.1",
     "@types/mkdirp": "^0.5.2"
   }
 }
