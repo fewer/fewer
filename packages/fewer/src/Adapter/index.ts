@@ -22,7 +22,7 @@ export interface Adapter {
   /**
    * Perform a migration.
    */
-  migrate(migration: Migration): Promise<any>;
+  migrate(direction: 'up' | 'down', migration: Migration): Promise<any>;
   /**
    * Performs a query against the database. Returns an array of results from the database.
    */

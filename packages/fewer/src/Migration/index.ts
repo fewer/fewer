@@ -1,18 +1,27 @@
 import { Database } from '../Database';
 import { Adapter } from '../Adapter';
 import FieldType from '../FieldType';
-import { MigrationDefinition, ChangeMigrationShorthand, TaggedMigrationDefinition } from './Definition';
+import {
+  MigrationDefinition,
+  ChangeMigrationShorthand,
+  TaggedMigrationDefinition,
+} from './Definition';
 
 interface ColumnTypes {
   [columnName: string]: FieldType;
 }
 
-type Operation = {
-  type: 'createTable';
-  name: string;
-  options: any;
-  fields: ColumnTypes;
-};
+type Operation =
+  | {
+      type: 'createTable';
+      name: string;
+      options: any;
+      fields: ColumnTypes;
+    }
+  | {
+      type: 'dropTable';
+      name: string;
+    };
 
 export class MigrationBuilder<DBAdapter extends Adapter = any> {
   operations: Operation[] = [];
@@ -27,6 +36,15 @@ export class MigrationBuilder<DBAdapter extends Adapter = any> {
       name,
       options,
       fields,
+    });
+
+    return this;
+  }
+
+  dropTable(name: string) {
+    this.operations.push({
+      type: 'dropTable',
+      name,
     });
 
     return this;
@@ -47,9 +65,12 @@ export class Migration<DBAdapter extends Adapter = any> {
     this.operations = [];
   }
 
-  run(direction: 'up' | 'down') {
+  /**
+   * Prepares the migration to be run. Populates the operations.
+   */
+  prepare(direction: 'up' | 'down') {
     const builder = new MigrationBuilder();
-    const fieldTypes = this.database.getAdapter().FieldTypes;
+    const fieldTypes = this.database.adapter.FieldTypes;
 
     if (this.definition.type === 'change') {
       this.definition.change(builder, fieldTypes);
@@ -63,6 +84,15 @@ export class Migration<DBAdapter extends Adapter = any> {
     }
 
     this.operations.push(...builder.operations);
+  }
+
+  /**
+   * Runs the migration against the underlying adapter.
+   */
+  async run(direction: 'up' | 'down') {
+    this.prepare(direction);
+
+    await this.database.adapter.migrate(direction, this);
   }
 }
 

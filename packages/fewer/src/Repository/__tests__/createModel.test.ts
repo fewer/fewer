@@ -1,4 +1,4 @@
-import createModel, { Symbols, InternalSymbols } from '../../src/Repository/createModel';
+import createModel, { Symbols, InternalSymbols } from '../createModel';
 
 describe('createModel', () => {
   it('returns a new object', () => {
