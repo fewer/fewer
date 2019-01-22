@@ -52,6 +52,14 @@ class PostgresAdapter implements BaseAdapter {
     return await this.rawQuery('SELECT * FROM _fewer_version ORDER BY id ASC');
   }
 
+  async migrateHasVersion(version: string) {
+    const versions = await this.rawQuery(
+      'SELECT id FROM _fewer_version WHERE version=$1',
+      [version],
+    );
+    return !!versions.length;
+  }
+
   async migrate(_direction: 'up' | 'down', migration: Migration) {
     const query = migrate(migration);
     const results = await this.client.query(query);

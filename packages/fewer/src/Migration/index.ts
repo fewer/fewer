@@ -12,7 +12,13 @@ interface ColumnTypes {
   [columnName: string]: FieldType;
 }
 
-export class MigrationBuilder<DBAdapter extends Adapter = any> {
+const CONTAINS_IRREVERSIBLE = Symbol('irreversible');
+
+export class MigrationBuilder<
+  DBAdapter extends Adapter = any,
+  ContainsIrreversibleOperation extends boolean = false
+> {
+  [CONTAINS_IRREVERSIBLE]: ContainsIrreversibleOperation;
   operations: Operation[] = [];
   direction: 'up' | 'down';
   isChangeMigration: boolean;
@@ -35,7 +41,7 @@ export class MigrationBuilder<DBAdapter extends Adapter = any> {
     name: string,
     options: DBAdapter['TableTypes'] | null | undefined,
     fields: ColumnTypes,
-  ): this {
+  ): MigrationBuilder<DBAdapter, ContainsIrreversibleOperation> {
     if (this.flipped) {
       return this.addOperation({
         type: 'dropTable',
@@ -53,11 +59,13 @@ export class MigrationBuilder<DBAdapter extends Adapter = any> {
     }
   }
 
+  dropTable(name: string): MigrationBuilder<DBAdapter, true>;
   dropTable(
     name: string,
     options?: DBAdapter['TableTypes'] | null | undefined,
     fields?: ColumnTypes,
-  ): this {
+  ): MigrationBuilder<DBAdapter, ContainsIrreversibleOperation>;
+  dropTable(name: string, options?: any, fields?: any): any {
     if (this.flipped) {
       if (options && fields) {
         return this.addOperation({

@@ -41,4 +41,5 @@ export interface Adapter {
   migrateAddVersion(version: string): Promise<void>;
   migrateRemoveVersion(version: string): Promise<void>;
   migrateGetVersions(): Promise<any>;
+  migrateHasVersion(version: string): Promise<boolean>;
 }
