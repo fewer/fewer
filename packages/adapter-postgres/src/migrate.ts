@@ -1,6 +1,6 @@
 import { Migration, FieldType, Operations } from 'fewer';
 import squel from './squel';
-import { CharacterOptions, NumericOptions } from './FieldTypes';
+import { CharacterOptions, NumericOptions } from './fieldTypes';
 
 function getTypeName(type: FieldType): string {
   // If there is no config, then we only have the name:

@@ -1,6 +1,6 @@
 import baseSquel, { PostgresSquel, Block, QueryBuilder } from 'squel';
 import TableTypes from './TableTypes';
-import { ColumnOptions } from './FieldTypes';
+import { ColumnOptions } from './fieldTypes';
 
 class CreateTableBlock extends baseSquel.cls.Block {
   _name: string = '';

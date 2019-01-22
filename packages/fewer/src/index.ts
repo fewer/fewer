@@ -3,7 +3,7 @@ import { createRepository, ValidationError, Pipe } from './Repository';
 import { createDatabase, Database } from './Database';
 import { createBelongsTo, createHasOne, createHasMany } from './Association';
 import { createMigration, Migration, MigrationDefinition } from './Migration';
-import { Adapter } from './Adapter';
+import { createAdapter, Adapter } from './Adapter';
 import FieldType from './FieldType';
 
 import * as Operations from './Migration/Operations';
@@ -23,6 +23,7 @@ export {
 // Exports for adapter implementations:
 // TODO: Move into a `forAdapters` file?
 export {
+  createAdapter,
   Database,
   Adapter,
   FieldType,

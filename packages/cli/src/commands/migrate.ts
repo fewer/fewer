@@ -3,10 +3,9 @@ import path from 'path';
 import { promisify } from 'util';
 import { Command, flags } from '@oclif/command';
 import sortBy from 'lodash/sortBy';
-import takeWhile from 'lodash/takeWhile';
 import commonFlags from '../commonFlags';
 import getConfig from '../getConfig';
-import MigrationRunner from '../migrationRunner/Class';
+import MigrationRunner from '../MigrationRunner';
 
 const readdirAsync = promisify(fs.readdir);
 
@@ -48,7 +47,6 @@ export default class Migrate extends Command {
     }),
   };
 
-  // TODO: Move more of this into the migration runner.
   async run() {
     const { flags } = this.parse(Migrate);
     const config = await getConfig();
@@ -64,20 +62,22 @@ export default class Migrate extends Command {
 
     const runner = new MigrationRunner(migrations);
 
-    if (flags.redo) {
-      runner.redo(flags.steps);
-    } else if (flags.version) {
-      if (flags.direction === 'down') {
-        runner.down(flags.version!);
+    try {
+      if (flags.redo) {
+        await runner.redo(flags.steps);
+      } else if (flags.version) {
+        if (flags.direction === 'down') {
+          await runner.down(flags.version!);
+        } else {
+          await runner.up(flags.version!);
+        }
+      } else if (flags.rollback) {
+        await runner.rollback(flags.steps);
       } else {
-        runner.up(flags.version!);
+        await runner.latest();
       }
-    } else if (flags.rollback) {
-      runner.rollback(flags.steps);
-    } else {
-      runner.latest();
+    } finally {
+      await runner.cleanup();
     }
-
-    await runner.go();
   }
 }
