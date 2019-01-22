@@ -1,13 +1,13 @@
 import { createMigration } from '../../src';
 import { database } from '../mocks';
 
-createMigration(database, (m, t) =>
+createMigration(1, database, (m, t) =>
   m
     .createTable('users', null, { name: t.string() })
     .createTable('products', { handlesOptions: true }, { id: t.number() }),
 );
 
-createMigration(database, {
+createMigration(2, database, {
   change: (m, t) =>
     m
       .createTable('users', null, { name: t.string() })

@@ -93,14 +93,17 @@ export class MigrationBuilder<
 export class Migration<DBAdapter extends Adapter = any> {
   private definition: TaggedMigrationDefinition<DBAdapter>;
 
+  readonly version: number;
   readonly type: 'change' | 'updown' | 'irreversible';
   readonly database: Database;
   readonly operations: Operation[];
 
   constructor(
+    version: number,
     database: Database,
     definition: TaggedMigrationDefinition<DBAdapter>,
   ) {
+    this.version = version;
     this.database = database;
     this.definition = definition;
     this.type = definition.type;
@@ -138,13 +141,28 @@ export class Migration<DBAdapter extends Adapter = any> {
   async run(direction: 'up' | 'down') {
     this.prepare(direction);
 
+    const hasVersion = await this.database.adapter.migrateHasVersion(String(this.version));
+
+    if (direction === 'up' && hasVersion) {
+      throw new Error('This migration has already been run on the database.');
+    } else if (direction === 'down' && !hasVersion) {
+      throw new Error('This migration has not yet been run, it cannot be run down.');
+    }
+
     await this.database.adapter.migrate(direction, this);
+
+    if (direction === 'up') {
+      await this.database.adapter.migrateAddVersion(String(this.version));
+    } else {
+      await this.database.adapter.migrateRemoveVersion(String(this.version));
+    }
   }
 }
 
 export { MigrationDefinition };
 
 export function createMigration<DBAdapter extends Adapter>(
+  version: number,
   db: Database<DBAdapter>,
   definition:
     | MigrationDefinition<DBAdapter>
@@ -166,5 +184,5 @@ export function createMigration<DBAdapter extends Adapter>(
 
   const taggedDefinition = { ...definition, type } as TaggedMigrationDefinition;
 
-  return new Migration(db, taggedDefinition);
+  return new Migration(version, db, taggedDefinition);
 }

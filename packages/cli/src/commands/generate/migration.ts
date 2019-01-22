@@ -9,7 +9,7 @@ function pad(num: number) {
 }
 
 // Gets a UTC date formatted YYYYMMDDHHMMSS
-function getMigrationTimestamp() {
+function getMigrationVersion() {
   const now = new Date();
   const year = now.getUTCFullYear();
   const month = pad(now.getUTCMonth() + 1);
@@ -53,15 +53,15 @@ export default class GenerateMigration extends Command {
       });
     }
 
+    const version = getMigrationVersion();
+
     const migrationFileName = path.join(
       config.migrations,
-      `${getMigrationTimestamp()}_${args.name}.${
-        config.typescript ? 'ts' : 'js'
-      }`,
+      `${version}_${args.name}.${config.typescript ? 'ts' : 'js'}`,
     );
 
     const databaseImportPath = path.relative(
-      migrationFileName,
+      path.dirname(migrationFileName),
       path.join(
         path.dirname(database),
         path.basename(database, path.extname(database)),
@@ -72,6 +72,7 @@ export default class GenerateMigration extends Command {
       'migration',
       migrationFileName,
       {
+        version,
         database: databaseImportPath,
       },
       config.cjs,

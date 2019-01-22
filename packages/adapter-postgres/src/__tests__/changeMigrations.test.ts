@@ -6,10 +6,12 @@ const database = createDatabase({
   adapter: new Adapter({}),
 });
 
+const VERSION = 1;
+
 describe('migration', () => {
   describe('createTable Down', () => {
     it('generates drop table sql', () => {
-      const migration = createMigration(database, {
+      const migration = createMigration(VERSION, database, {
         change: (m, t) =>
           m.createTable('users', null, {
             id: t.bigserial({ primaryKey: true }),
@@ -28,7 +30,7 @@ describe('migration', () => {
 
   describe('createTable Up', () => {
     it('generates create table sql', () => {
-      const migration = createMigration(database, {
+      const migration = createMigration(VERSION, database, {
         change: (m, t) =>
           m.createTable('users', null, {
             id: t.bigserial({ primaryKey: true }),
@@ -45,7 +47,7 @@ describe('migration', () => {
     });
 
     it('supports unique constraint', () => {
-      const migration = createMigration(database, {
+      const migration = createMigration(VERSION, database, {
         change: (m, t) =>
           m.createTable('users', null, {
             id: t.bigserial({ primaryKey: true }),
@@ -62,7 +64,7 @@ describe('migration', () => {
     });
 
     it('supports compound primary key', () => {
-      const migration = createMigration(database, {
+      const migration = createMigration(VERSION, database, {
         change: (m, t) =>
           m.createTable(
             'users',
