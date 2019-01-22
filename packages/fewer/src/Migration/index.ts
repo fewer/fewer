@@ -6,55 +6,88 @@ import {
   ChangeMigrationShorthand,
   TaggedMigrationDefinition,
 } from './Definition';
+import { Operation } from './Operations';
 
 interface ColumnTypes {
   [columnName: string]: FieldType;
 }
 
-type Operation =
-  | {
-      type: 'createTable';
-      name: string;
-      options: any;
-      fields: ColumnTypes;
-    }
-  | {
-      type: 'dropTable';
-      name: string;
-    };
-
 export class MigrationBuilder<DBAdapter extends Adapter = any> {
   operations: Operation[] = [];
+  direction: 'up' | 'down';
+  isChangeMigration: boolean;
+
+  constructor(direction: 'up' | 'down', isChangeMigration: boolean) {
+    this.direction = direction;
+    this.isChangeMigration = isChangeMigration;
+  }
+
+  private get flipped() {
+    return this.isChangeMigration && this.direction === 'down';
+  }
+
+  private addOperation(operation: Operation): this {
+    this.operations.push(operation);
+    return this;
+  }
 
   createTable(
     name: string,
     options: DBAdapter['TableTypes'] | null | undefined,
     fields: ColumnTypes,
-  ) {
-    this.operations.push({
-      type: 'createTable',
-      name,
-      options,
-      fields,
-    });
-
-    return this;
+  ): this {
+    if (this.flipped) {
+      return this.addOperation({
+        type: 'dropTable',
+        name,
+        options,
+        fields,
+      });
+    } else {
+      return this.addOperation({
+        type: 'createTable',
+        name,
+        options,
+        fields,
+      });
+    }
   }
 
-  dropTable(name: string) {
-    this.operations.push({
-      type: 'dropTable',
-      name,
-    });
-
-    return this;
+  dropTable(
+    name: string,
+    options?: DBAdapter['TableTypes'] | null | undefined,
+    fields?: ColumnTypes,
+  ): this {
+    if (this.flipped) {
+      if (options && fields) {
+        return this.addOperation({
+          type: 'createTable',
+          name,
+          options,
+          fields,
+        });
+      } else {
+        throw new Error(
+          'Change migration containing `dropTable` is not reversible. You must provide the table options and fields to the dropTable to allow the migration to be reversed.',
+        );
+      }
+    } else {
+      return this.addOperation({
+        type: 'dropTable',
+        name,
+        options,
+        fields,
+      });
+    }
   }
 }
 
 export class Migration<DBAdapter extends Adapter = any> {
-  database: Database;
-  definition: TaggedMigrationDefinition<DBAdapter>;
-  operations: Operation[];
+  private definition: TaggedMigrationDefinition<DBAdapter>;
+
+  readonly type: 'change' | 'updown' | 'irreversible';
+  readonly database: Database;
+  readonly operations: Operation[];
 
   constructor(
     database: Database,
@@ -62,6 +95,7 @@ export class Migration<DBAdapter extends Adapter = any> {
   ) {
     this.database = database;
     this.definition = definition;
+    this.type = definition.type;
     this.operations = [];
   }
 
@@ -69,7 +103,11 @@ export class Migration<DBAdapter extends Adapter = any> {
    * Prepares the migration to be run. Populates the operations.
    */
   prepare(direction: 'up' | 'down') {
-    const builder = new MigrationBuilder();
+    const builder = new MigrationBuilder(
+      direction,
+      this.definition.type === 'change',
+    );
+
     const fieldTypes = this.database.adapter.FieldTypes;
 
     if (this.definition.type === 'change') {

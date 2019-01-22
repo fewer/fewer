@@ -6,6 +6,9 @@ import { createMigration, Migration, MigrationDefinition } from './Migration';
 import { Adapter } from './Adapter';
 import FieldType from './FieldType';
 
+import * as Operations from './Migration/Operations';
+export { Operations };
+
 // Export the main API:
 export {
   createDatabase,

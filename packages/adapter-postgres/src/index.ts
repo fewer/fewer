@@ -27,7 +27,32 @@ class PostgresAdapter implements BaseAdapter {
     return this.client.end();
   }
 
-  async migrate(direction: 'up' | 'down', migration: Migration) {
+  private async ensureMigrationTable() {
+    await this.rawQuery(`CREATE TABLE IF NOT EXISTS _fewer_version (
+      id bigserial PRIMARY KEY,
+      version varchar UNIQUE
+    )`);
+  }
+
+  async migrateAddVersion(version: string) {
+    await this.ensureMigrationTable();
+    await this.rawQuery('INSERT INTO _fewer_version (version) VALUES ($1)', [
+      version,
+    ]);
+  }
+
+  async migrateRemoveVersion(version: string) {
+    await this.ensureMigrationTable();
+    await this.rawQuery('DELETE FROM _fewer_version WHERE version=$1', [
+      version,
+    ]);
+  }
+
+  async migrateGetVersions() {
+    return await this.rawQuery('SELECT * FROM _fewer_version ORDER BY id ASC');
+  }
+
+  async migrate(_direction: 'up' | 'down', migration: Migration) {
     const query = migrate(migration);
     const results = await this.client.query(query);
     return results;
@@ -90,8 +115,8 @@ class PostgresAdapter implements BaseAdapter {
     return results.rows;
   }
 
-  async rawQuery(query: string) {
-    const results = await this.client.query(query);
+  async rawQuery(query: string, values?: any[]) {
+    const results = await this.client.query(query, values);
     return results.rows;
   }
 }

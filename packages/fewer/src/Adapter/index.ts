@@ -20,10 +20,6 @@ export interface Adapter {
    */
   disconnect(): Promise<void>;
   /**
-   * Perform a migration.
-   */
-  migrate(direction: 'up' | 'down', migration: Migration): Promise<any>;
-  /**
    * Performs a query against the database. Returns an array of results from the database.
    */
   select(query: Select): Promise<any[]>;
@@ -35,4 +31,14 @@ export interface Adapter {
    * Updates a record in the database. Returns the id of the updated item.
    */
   update(query: Update): Promise<any>;
+
+  // HOOKS FOR MIGRATIONS:
+
+  /**
+   * Perform a migration.
+   */
+  migrate(direction: 'up' | 'down', migration: Migration): Promise<any>;
+  migrateAddVersion(version: string): Promise<void>;
+  migrateRemoveVersion(version: string): Promise<void>;
+  migrateGetVersions(): Promise<any>;
 }

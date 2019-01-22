@@ -1,4 +1,4 @@
-import { Migration, FieldType } from 'fewer';
+import { Migration, FieldType, Operations } from 'fewer';
 import squel from './squel';
 import { CharacterOptions, NumericOptions } from './FieldTypes';
 
@@ -31,20 +31,33 @@ function getTypeName(type: FieldType): string {
   }
 }
 
-export default function migrate(migration: Migration) {
-  const sqls: string[] = [];
+function createTable(operation: Operations.CreateTable) {
+  const create = squel.create(operation.options);
+  create.table(operation.name);
+  for (const [columnName, columnType] of Object.entries(operation.fields)) {
+    const typeName = getTypeName(columnType);
+    create.field(columnName, typeName, columnType.config);
+  }
+  return create.toString();
+}
 
-  migration.operations.forEach(operation => {
-    if (operation.type === 'createTable') {
-      const create = squel.create(operation.options);
-      create.table(operation.name);
-      for (const [columnName, columnType] of Object.entries(operation.fields)) {
-        const typeName = getTypeName(columnType);
-        create.field(columnName, typeName, columnType.config);
-      }
-      sqls.push(create.toString());
+function dropTable(operation: Operations.DropTable) {
+  return squel.dropTable(operation.name).toString();
+}
+
+export default function migrate(
+  migration: Migration,
+) {
+  const sqls: (null | string)[] = migration.operations.map(operation => {
+    switch (operation.type) {
+      case 'createTable':
+        return createTable(operation);
+      case 'dropTable':
+        return dropTable(operation);
+      default:
+        return null;
     }
   });
 
-  return sqls.join('; ');
+  return sqls.filter(Boolean).join('; ');
 }

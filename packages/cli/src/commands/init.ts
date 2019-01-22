@@ -27,6 +27,15 @@ export default class Init extends Command {
       choices: ['postgres', 'mysql'],
     });
 
+    const sourceType = await prompt({
+      type: 'select',
+      message: 'Will your project be written in TypeScript or JavaScript?',
+      choices: ['TypeScript', 'JavaScript'],
+      default: 'TypeScript',
+    });
+
+    const useTypeScript = sourceType === 'TypeScript';
+
     const src = await prompt({
       type: 'input',
       message: 'Where will your source files be located?',
@@ -44,15 +53,6 @@ export default class Init extends Command {
       message: 'Where would you like your repositories to be stored?',
       default: path.join(src, 'repositories/'),
     });
-
-    const sourceType = await prompt({
-      type: 'select',
-      message: 'Will your project be written in TypeScript or JavaScript?',
-      choices: ['TypeScript', 'JavaScript'],
-      default: 'TypeScript',
-    });
-
-    const useTypeScript = sourceType === 'TypeScript';
 
     let cjs = false;
     if (!useTypeScript) {
@@ -76,7 +76,7 @@ export default class Init extends Command {
       {
         adapter,
       },
-      cjs
+      cjs,
     );
 
     await createDirectory(migrations);
@@ -86,6 +86,7 @@ export default class Init extends Command {
       src,
       migrations,
       repositories,
+      schema: path.join(src, `schema.${extension}`),
       databases: [path.join(src, `database.${extension}`)],
     };
 
