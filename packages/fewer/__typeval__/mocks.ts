@@ -1,8 +1,4 @@
-import {
-  createDatabase,
-  createAdapter,
-  FieldType,
-} from '../src';
+import { createDatabase, createAdapter, FieldType } from '../src';
 
 const fieldTypes = {
   string: () => new FieldType<string>('string'),
@@ -33,6 +29,12 @@ export const Adapter = createAdapter<TableTypes, FieldTypes, any, any>({
   async update() {
     return null;
   },
+  async migrateAddVersion() {},
+  async migrateGetVersions() {},
+  async migrateHasVersion() {
+    return true;
+  },
+  async migrateRemoveVersion() {},
 });
 
 export const adapter = new Adapter({});
