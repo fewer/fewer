@@ -7,7 +7,8 @@ import fieldTypes from './fieldTypes';
 
 type FieldTypes = typeof fieldTypes;
 
-async function rawQuery(db: Client, query: string, values?: any[]) {
+// TODO: Allow custom methods to be defined on the adapter rather than having this here:
+export async function rawQuery(db: Client, query: string, values?: any[]) {
   const results = await db.query(query, values);
   return results.rows;
 }
