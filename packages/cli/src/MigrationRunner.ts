@@ -1,6 +1,7 @@
 import path from 'path';
 import { Migration, Database, Adapter } from 'fewer';
 import getConfig from './getConfig';
+import { prompt } from './utils';
 
 export default class MigrationRunner {
   private migrations: string[];
@@ -14,11 +15,7 @@ export default class MigrationRunner {
     require('ts-node/register/transpile-only');
   }
 
-  // TODO: Once we have managed adapters, we can be way lazier about this:
   private async ensureAdapterConnecter(adapter: Adapter) {
-    if (this.connectionPool.has(adapter)) {
-      return;
-    }
     this.connectionPool.add(adapter);
     await adapter.connect();
   }
@@ -40,15 +37,72 @@ export default class MigrationRunner {
     return this.loadMigration(migrationFile);
   }
 
-  private loadMigration(migrationFile: string) {
+  private loadMigration(migrationFile: string): Migration {
     const migration = require(migrationFile);
 
     return migration.default || migration;
   }
 
-  redo(steps = 1) {}
+  private loadDatabase(dbFile: string): Database {
+    const dbModule = require(path.join(process.cwd(), dbFile));
 
-  rollback(steps = 1) {}
+    return dbModule.default || dbModule;
+  }
+
+  async redo(steps = 1) {
+    const config = await getConfig();
+    let dbFile = config.databases[0];
+    if (config.databases.length > 1) {
+      dbFile = await prompt({
+        type: 'select',
+        message: 'Which Database would you like to rollback?',
+        choices: config.databases,
+      });
+    }
+
+    const database = this.loadDatabase(dbFile);
+    await this.ensureAdapterConnecter(database.adapter);
+
+    const versions = await database.adapter.migrateGetVersions();
+
+    // TODO: We should just have the hook return a sorted list of verisons, rather than having to do the property access here:
+    const migrationsToRun = versions
+      .slice(-1 * steps)
+      .map(({ version }: any) => this.resolveVersion(version));
+
+    for (const migration of migrationsToRun) {
+      await this.run('down', migration);
+    }
+
+    for (const migration of [...migrationsToRun].reverse()) {
+      await this.run('up', migration);
+    }
+  }
+
+  async rollback(steps = 1) {
+    const config = await getConfig();
+    let dbFile = config.databases[0];
+    if (config.databases.length > 1) {
+      dbFile = await prompt({
+        type: 'select',
+        message: 'Which Database would you like to rollback?',
+        choices: config.databases,
+      });
+    }
+
+    const database = this.loadDatabase(dbFile);
+    await this.ensureAdapterConnecter(database.adapter);
+
+    const versions = await database.adapter.migrateGetVersions();
+    // TODO: We should just have the hook return a sorted list of verisons, rather than having to do the property access here:
+    const migrationsToRun = versions
+      .slice(-1 * steps)
+      .map(({ version }: any) => this.resolveVersion(version));
+
+    for (const migration of migrationsToRun) {
+      await this.run('down', migration);
+    }
+  }
 
   async up(version: string) {
     await this.run('up', this.resolveVersion(version));
@@ -61,9 +115,9 @@ export default class MigrationRunner {
   async latest() {
     const config = await getConfig();
     for (const dbFile of config.databases) {
-      const dbModule = require(path.join(process.cwd(), dbFile));
-      const database: Database = dbModule.default || dbModule;
+      const database = this.loadDatabase(dbFile);
       await this.ensureAdapterConnecter(database.adapter);
+
       const migratedVersions = await database.adapter.migrateGetVersions();
       const migrationsToRun = this.migrations.filter(
         filename =>
@@ -71,6 +125,7 @@ export default class MigrationRunner {
             path.basename(filename).startsWith(version),
           ),
       );
+
       for (const migrationFile of migrationsToRun) {
         await this.run('up', this.loadMigration(migrationFile));
       }

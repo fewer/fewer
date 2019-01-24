@@ -41,12 +41,14 @@ export class Adapter<
   FieldTypes: FieldTypes;
 
   connected: boolean;
+  connection: Promise<DBInstance> | null;
   client: DBInstance | null;
   config: DBConfiguration;
   impl: AdapterConfiguration;
 
   constructor(config: DBConfiguration, impl: AdapterConfiguration) {
     this.connected = false;
+    this.connection = null;
     this.client = null;
     this.config = config;
     this.impl = impl;
@@ -54,12 +56,21 @@ export class Adapter<
   }
 
   async connect() {
+    // If we're already connected, just resolve:
     if (this.connected) {
       return;
     }
 
-    this.client = await this.impl.connect(this.config);
+    // If a connect is in-progress, wait for it to finish, then resolve:
+    if (this.connection) {
+      await this.connection;
+      return;
+    }
 
+    // Connect:
+    this.connection = this.impl.connect(this.config);
+    this.client = await this.connection;
+    this.connection = null;
     this.connected = true;
   }
 

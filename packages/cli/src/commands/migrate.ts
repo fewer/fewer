@@ -37,7 +37,7 @@ export default class Migrate extends Command {
     }),
     steps: flags.integer({
       description: 'Sets the number of migrations to rollback, or redo.',
-      dependsOn: ['rollback', 'redo'],
+      exclusive: ['version'],
     }),
     direction: flags.string({
       description: 'Runs a specific migration in the provided direction.',
