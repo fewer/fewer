@@ -5,7 +5,7 @@
     "declaration": true,
     "esModuleInterop": true,
     "lib": ["esnext"],
-    "target": "es6",
+    "target": "es2017",
     "moduleResolution": "node",
     "module": "commonjs",
     "outDir": "./lib",
