@@ -5,8 +5,13 @@ type ChangeMigrationDefinition<DBAdapter extends Adapter> = {
   change: (
     m: MigrationBuilder<DBAdapter>,
     t: DBAdapter['FieldTypes'],
-  ) => MigrationBuilder;
+  ) => MigrationBuilder<any, false>;
 };
+
+export type ChangeMigrationShorthand<DBAdapter extends Adapter> = (
+  m: MigrationBuilder<DBAdapter>,
+  t: DBAdapter['FieldTypes'],
+) => MigrationBuilder<any, false>;
 
 type UpDownMigrationDefinition<DBAdapter extends Adapter> = {
   up: (
@@ -48,8 +53,3 @@ export type TaggedMigrationDefinition<DBAdapter extends Adapter = any> =
   | TaggedChangeMigrationDefinition<DBAdapter>
   | TaggedUpDownMigrationDefinition<DBAdapter>
   | TaggedIrreversibleMigrationDefinition<DBAdapter>;
-
-export type ChangeMigrationShorthand<DBAdapter extends Adapter> = (
-  m: MigrationBuilder<DBAdapter>,
-  t: DBAdapter['FieldTypes'],
-) => MigrationBuilder;

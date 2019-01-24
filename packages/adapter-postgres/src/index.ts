@@ -1,40 +1,39 @@
-import { Adapter as BaseAdapter, Migration } from 'fewer';
-import { Insert, Select, Update } from '@fewer/sq';
+import { createAdapter } from 'fewer';
 import { Client, ConnectionConfig } from 'pg';
 import squel from './squel';
 import TableTypes from './TableTypes';
-import FieldTypes from './FieldTypes';
 import migrate from './migrate';
+import fieldTypes from './fieldTypes';
 
-class PostgresAdapter implements BaseAdapter {
-  private client: Client;
+type FieldTypes = typeof fieldTypes;
 
-  // Expose the Table Types:
-  TableTypes!: TableTypes;
+// TODO: Allow custom methods to be defined on the adapter rather than having this here:
+export async function rawQuery(db: Client, query: string, values?: any[]) {
+  const results = await db.query(query, values);
+  return results.rows;
+}
 
-  // Expose the Field Types:
-  FieldTypes = FieldTypes;
+async function ensureMigrationTable(db: Client) {
+  await rawQuery(db, `CREATE TABLE IF NOT EXISTS _fewer_version (
+    id bigserial PRIMARY KEY,
+    version varchar UNIQUE
+  )`);
+}
 
-  constructor(options: ConnectionConfig) {
-    this.client = new Client(options);
-  }
+export const Adapter = createAdapter<TableTypes, FieldTypes, ConnectionConfig, Client>({
+  fieldTypes,
 
-  connect() {
-    return this.client.connect();
-  }
+  async connect(options) {
+    const client = new Client(options);
+    await client.connect();
+    return client;
+  },
 
-  disconnect() {
-    return this.client.end();
-  }
+  async disconnect(db) {
+    await db.end();
+  },
 
-  async migrate(direction: 'up' | 'down', migration: Migration) {
-    const query = migrate(migration);
-    const results = await this.client.query(query);
-    return results;
-  }
-
-  async select(query: Select) {
-    const context = query.get();
+  async select(db, context) {
     const select = squel.select().from(context.table);
 
     if (context.limit) {
@@ -63,37 +62,62 @@ class PostgresAdapter implements BaseAdapter {
       }
     }
 
-    const results = await this.client.query(select.toString());
+    const results = await db.query(select.toString());
     return results.rows;
-  }
+  },
 
-  async insert(query: Insert) {
-    const context = query.get();
+  async insert(db, context) {
     const insert = squel
       .insert()
       .into(context.table)
       .setFields(context.fields)
       .returning('id');
 
-    const results = await this.client.query(insert.toString());
+    const results = await db.query(insert.toString());
     return results.rows;
-  }
+  },
 
-  async update(query: Update) {
-    const context = query.get();
+  async update(db, context) {
     const update = squel
       .update()
       .table(context.table)
       .setFields(context.fields);
 
-    const results = await this.client.query(update.toString());
+    const results = await db.query(update.toString());
     return results.rows;
-  }
+  },
 
-  async rawQuery(query: string) {
-    const results = await this.client.query(query);
-    return results.rows;
-  }
-}
+  async migrateAddVersion(db, version) {
+    await ensureMigrationTable(db);
+    await rawQuery(db, 'INSERT INTO _fewer_version (version) VALUES ($1)', [
+      version,
+    ]);
+  },
 
-export { PostgresAdapter as Adapter };
+  async migrateRemoveVersion(db, version) {
+    await ensureMigrationTable(db);
+    await rawQuery(db, 'DELETE FROM _fewer_version WHERE version=$1', [
+      version,
+    ]);
+  },
+
+  async migrateGetVersions(db) {
+    await ensureMigrationTable(db);
+    return await rawQuery(db, 'SELECT * FROM _fewer_version ORDER BY id ASC');
+  },
+
+  async migrateHasVersion(db, version) {
+    await ensureMigrationTable(db);
+    const versions = await rawQuery(db,
+      'SELECT id FROM _fewer_version WHERE version=$1',
+      [version],
+    );
+    return !!versions.length;
+  },
+
+  async migrate(db, direction, migration) {
+    const query = migrate(migration);
+    const results = await db.query(query);
+    return results;
+  }
+});

@@ -10,7 +10,7 @@
                 "column": 18
             }
         },
-        "errorMessage": "Property 'middleName' does not exist on type '{ posts: (Pick<BuiltTable<{ title: FieldType<string>; subtitle: FieldType<string>; content: FieldType<string>; userId: FieldType<number>; }>, \"title\" | \"subtitle\" | \"content\" | \"userId\"> & Partial<...> & ResolveAssociations<...>)[]; firstName: string; lastName: string; bd: Date | undefined; }'."
+        "errorMessage": "Property 'middleName' does not exist on type '{ posts: (Merge<{} & { userId: number; title: string; subtitle: string; content: string; }> & ResolveAssociations<{}>)[]; firstName: string; lastName: string; bd: Date | undefined; }'."
     },
     {
         "location": {
@@ -23,7 +23,7 @@
                 "column": 16
             }
         },
-        "errorMessage": "Property 'birthday' does not exist on type '{ posts: (Pick<BuiltTable<{ title: FieldType<string>; subtitle: FieldType<string>; content: FieldType<string>; userId: FieldType<number>; }>, \"title\" | \"subtitle\" | \"content\" | \"userId\"> & Partial<...> & ResolveAssociations<...>)[]; firstName: string; lastName: string; bd: Date | undefined; }'."
+        "errorMessage": "Property 'birthday' does not exist on type '{ posts: (Merge<{} & { userId: number; title: string; subtitle: string; content: string; }> & ResolveAssociations<{}>)[]; firstName: string; lastName: string; bd: Date | undefined; }'."
     },
     {
         "location": {
@@ -88,7 +88,7 @@
                 "column": 16
             }
         },
-        "errorMessage": "Property 'subtitle' does not exist on type '{ title: string; details: string; user: Pick<BuiltTable<{ firstName: FieldType<string>; middleName: FieldType<string>; lastName: FieldType<string>; birthday: FieldType<Date | undefined>; }>, \"firstName\" | ... 1 more ... | \"lastName\"> & Partial<...> & ResolveAssociations<...>; }'."
+        "errorMessage": "Property 'subtitle' does not exist on type '{ title: string; details: string; user: Merge<{ birthday?: Date | undefined; } & { firstName: string; middleName: string; lastName: string; }> & ResolveAssociations<{}>; }'."
     },
     {
         "location": {
@@ -101,7 +101,7 @@
                 "column": 15
             }
         },
-        "errorMessage": "Property 'content' does not exist on type '{ title: string; details: string; user: Pick<BuiltTable<{ firstName: FieldType<string>; middleName: FieldType<string>; lastName: FieldType<string>; birthday: FieldType<Date | undefined>; }>, \"firstName\" | ... 1 more ... | \"lastName\"> & Partial<...> & ResolveAssociations<...>; }'."
+        "errorMessage": "Property 'content' does not exist on type '{ title: string; details: string; user: Merge<{ birthday?: Date | undefined; } & { firstName: string; middleName: string; lastName: string; }> & ResolveAssociations<{}>; }'."
     },
     {
         "location": {

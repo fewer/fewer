@@ -1,14 +1,17 @@
-type Diff<T, U> = T extends U ? never : T;
-type Undefined<T> =
-  T extends undefined ? undefined :
-  never
-type NotUndefinedProperties<T> = { [K in keyof T]: Undefined<T[K]> extends never ? K : never }[keyof T];
-type UndefinedPropertyNames<T> = Diff<keyof T, NotUndefinedProperties<T>>
-type UndefinedProperties<T> = Pick<T, UndefinedPropertyNames<T>>
-type WithoutUndefined<T> = {
-  [P in keyof T]: Exclude<T[P], undefined>
-}
-type UndefinedPropertiesAsOptionals<T> = Partial<WithoutUndefined<UndefinedProperties<T>>>
+type Undefined<T> = T extends undefined ? undefined : never;
 
-// Finally...
-export type WithUndefinedPropertiesAsOptionals<T> = Pick<T, NotUndefinedProperties<T>> & UndefinedPropertiesAsOptionals<T>
+type UndefinedProperties<T> = {
+  [K in keyof T]: Undefined<T[K]> extends never ? never : K
+}[keyof T];
+
+type NotUndefinedProperties<T> = {
+  [K in keyof T]: Undefined<T[K]> extends never ? K : never
+}[keyof T];
+
+// This is just a step that makes vscode collapse the type def:
+type Merge<T extends object> = { [K in keyof T]: T[K] };
+
+export type WithUndefinedPropertiesAsOptionals<T> = Merge<
+  { [K in keyof T & UndefinedProperties<T>]?: Exclude<T[K], undefined> } &
+    { [K in keyof T & NotUndefinedProperties<T>]: T[K] }
+>;

@@ -1,5 +1,5 @@
 import { createDatabase } from 'fewer';
-import { Adapter } from '../';
+import { Adapter, rawQuery } from '../';
 import config from './config';
 
 async function prepare() {
@@ -9,8 +9,8 @@ async function prepare() {
 
   try {
     await database.connect();
-    await adapter.rawQuery('DROP DATABASE IF EXISTS fewer_integration_tests;');
-    await adapter.rawQuery('CREATE DATABASE fewer_integration_tests;');
+    await rawQuery(adapter.client!, 'DROP DATABASE IF EXISTS fewer_integration_tests;');
+    await rawQuery(adapter.client!, 'CREATE DATABASE fewer_integration_tests;');
   } catch(err) {
     console.log(err);
   }

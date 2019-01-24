@@ -9,7 +9,7 @@ import {
   createFileWithContents,
 } from '../utils';
 import commonFlags from '../commonFlags';
-import { FewerConfigurationFile } from '../config';
+import { FewerConfigurationFile } from '../getConfig';
 
 export default class Init extends Command {
   static description = 'Initializes fewer into an existing project.';
@@ -26,6 +26,15 @@ export default class Init extends Command {
       message: 'Which database will you be connecting to?',
       choices: ['postgres', 'mysql'],
     });
+
+    const sourceType = await prompt({
+      type: 'select',
+      message: 'Will your project be written in TypeScript or JavaScript?',
+      choices: ['TypeScript', 'JavaScript'],
+      default: 'TypeScript',
+    });
+
+    const useTypeScript = sourceType === 'TypeScript';
 
     const src = await prompt({
       type: 'input',
@@ -45,15 +54,6 @@ export default class Init extends Command {
       default: path.join(src, 'repositories/'),
     });
 
-    const sourceType = await prompt({
-      type: 'select',
-      message: 'Will your project be written in TypeScript or JavaScript?',
-      choices: ['TypeScript', 'JavaScript'],
-      default: 'TypeScript',
-    });
-
-    const useTypeScript = sourceType === 'TypeScript';
-
     let cjs = false;
     if (!useTypeScript) {
       cjs = await prompt({
@@ -71,11 +71,12 @@ export default class Init extends Command {
     cli.action.start('Creating files');
     const extension = useTypeScript ? 'ts' : 'js';
     await createFile(
-      cjs ? 'db.cjs' : 'db',
+      'db',
       path.join(src, `database.${extension}`),
       {
         adapter,
       },
+      cjs,
     );
 
     await createDirectory(migrations);
@@ -85,6 +86,7 @@ export default class Init extends Command {
       src,
       migrations,
       repositories,
+      schema: path.join(src, `schema.${extension}`),
       databases: [path.join(src, `database.${extension}`)],
     };
 

@@ -1,6 +1,6 @@
 import baseSquel, { PostgresSquel, Block, QueryBuilder } from 'squel';
 import TableTypes from './TableTypes';
-import { ColumnOptions } from './FieldTypes';
+import { ColumnOptions } from './fieldTypes';
 
 class CreateTableBlock extends baseSquel.cls.Block {
   _name: string = '';
@@ -86,10 +86,6 @@ class CreateTableQuery extends baseSquel.cls.QueryBuilder {
 
     blocks.push(new squel.cls.StringBlock(BLOCK_OPTIONS, 'TABLE'));
 
-    if (options.ifNotExists) {
-      blocks.push(new squel.cls.StringBlock(BLOCK_OPTIONS, 'IF NOT EXISTS'));
-    }
-
     blocks.push(
       new CreateTableBlock(BLOCK_OPTIONS),
       new squel.cls.StringBlock(BLOCK_OPTIONS, `(`),
@@ -143,6 +139,14 @@ class CreateTableQuery extends baseSquel.cls.QueryBuilder {
   }
 }
 
+class DropTableQuery extends baseSquel.cls.QueryBuilder {
+  constructor(tableName: string) {
+    super(BLOCK_OPTIONS, [
+      new squel.cls.StringBlock(BLOCK_OPTIONS, `DROP TABLE ${tableName}`),
+    ]);
+  }
+}
+
 interface CreateTableQueryBuilder extends QueryBuilder {
   table(name: string): this;
   field(name: string, type: string, options?: ColumnOptions): this;
@@ -150,12 +154,17 @@ interface CreateTableQueryBuilder extends QueryBuilder {
 
 interface SquelWithCreateTable extends PostgresSquel {
   create(options?: TableTypes): CreateTableQueryBuilder;
+  dropTable(tableName: string): QueryBuilder;
 }
 
 const squel: SquelWithCreateTable = baseSquel.useFlavour('postgres') as any;
 
 squel.create = function(options?: TableTypes) {
   return new CreateTableQuery(options || {}) as any;
+};
+
+squel.dropTable = function(tableName: string) {
+  return new DropTableQuery(tableName);
 };
 
 export default squel;

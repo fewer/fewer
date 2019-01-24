@@ -3,7 +3,7 @@ import cli from 'cli-ux';
 import { Command, flags } from '@oclif/command';
 import { npmInstall, createFile } from '../../utils';
 import commonFlags from '../../commonFlags';
-import config from '../../config';
+import getConfig from '../../getConfig';
 
 export default class GenerateDatabase extends Command {
   static description = 'Generates a new database file.';
@@ -36,6 +36,7 @@ export default class GenerateDatabase extends Command {
 
   async run() {
     const { flags, args } = this.parse(GenerateDatabase);
+    const config = await getConfig();
 
     cli.action.start('Installing adapter');
     await npmInstall(`@fewer/adapter-${flags.adapter}`);
@@ -44,11 +45,12 @@ export default class GenerateDatabase extends Command {
     cli.action.start('Creating files');
     const extension = config.typescript ? 'ts' : 'js';
     await createFile(
-      config.cjs ? 'db.cjs' : 'db',
+      'db',
       path.join(config.src, `${args.name}.${extension}`),
       {
         adapter: flags.adapter,
       },
+      config.cjs
     );
     cli.action.stop();
   }

@@ -1,10 +1,13 @@
 export default class Builder<T> {
-  protected context: T;
+  context: T;
 
   constructor(context: T) {
     this.context = context;
   }
 
+  /**
+   * @deprecated Use Sq#context directly instead.
+   */
   get() {
       return this.context;
   }

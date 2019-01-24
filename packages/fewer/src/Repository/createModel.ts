@@ -46,7 +46,7 @@ export interface SymbolProperties<T = any> {
   readonly [Symbols.isModel]: true;
   readonly [Symbols.dirty]: boolean;
   readonly [Symbols.changed]: (keyof T)[];
-  readonly [Symbols.changes]: { [P in keyof T]: any };
+  readonly [Symbols.changes]: { [P in keyof T]?: T[P] };
   readonly [Symbols.valid]: boolean;
   readonly [Symbols.errors]: ValidationError<T>[];
 }

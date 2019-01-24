@@ -6,62 +6,108 @@ import {
   ChangeMigrationShorthand,
   TaggedMigrationDefinition,
 } from './Definition';
+import { Operation } from './Operations';
 
 interface ColumnTypes {
   [columnName: string]: FieldType;
 }
 
-type Operation =
-  | {
-      type: 'createTable';
-      name: string;
-      options: any;
-      fields: ColumnTypes;
-    }
-  | {
-      type: 'dropTable';
-      name: string;
-    };
+const CONTAINS_IRREVERSIBLE = Symbol('irreversible');
 
-export class MigrationBuilder<DBAdapter extends Adapter = any> {
+export class MigrationBuilder<
+  DBAdapter extends Adapter = any,
+  ContainsIrreversibleOperation extends boolean = false
+> {
+  [CONTAINS_IRREVERSIBLE]: ContainsIrreversibleOperation;
   operations: Operation[] = [];
+  direction: 'up' | 'down';
+  isChangeMigration: boolean;
+
+  constructor(direction: 'up' | 'down', isChangeMigration: boolean) {
+    this.direction = direction;
+    this.isChangeMigration = isChangeMigration;
+  }
+
+  private get flipped() {
+    return this.isChangeMigration && this.direction === 'down';
+  }
+
+  private addOperation(operation: Operation): this {
+    this.operations.push(operation);
+    return this;
+  }
 
   createTable(
     name: string,
     options: DBAdapter['TableTypes'] | null | undefined,
     fields: ColumnTypes,
-  ) {
-    this.operations.push({
-      type: 'createTable',
-      name,
-      options,
-      fields,
-    });
-
-    return this;
+  ): MigrationBuilder<DBAdapter, ContainsIrreversibleOperation> {
+    if (this.flipped) {
+      return this.addOperation({
+        type: 'dropTable',
+        name,
+        options,
+        fields,
+      });
+    } else {
+      return this.addOperation({
+        type: 'createTable',
+        name,
+        options,
+        fields,
+      });
+    }
   }
 
-  dropTable(name: string) {
-    this.operations.push({
-      type: 'dropTable',
-      name,
-    });
-
-    return this;
+  dropTable(name: string): MigrationBuilder<DBAdapter, true>;
+  dropTable(
+    name: string,
+    options?: DBAdapter['TableTypes'] | null | undefined,
+    fields?: ColumnTypes,
+  ): MigrationBuilder<DBAdapter, ContainsIrreversibleOperation>;
+  dropTable(name: string, options?: any, fields?: any): any {
+    if (this.flipped) {
+      if (options && fields) {
+        return this.addOperation({
+          type: 'createTable',
+          name,
+          options,
+          fields,
+        });
+      } else {
+        throw new Error(
+          'Change migration containing `dropTable` is not reversible. You must provide the table options and fields to the dropTable to allow the migration to be reversed.',
+        );
+      }
+    } else {
+      return this.addOperation({
+        type: 'dropTable',
+        name,
+        options,
+        fields,
+      });
+    }
   }
 }
 
 export class Migration<DBAdapter extends Adapter = any> {
-  database: Database;
-  definition: TaggedMigrationDefinition<DBAdapter>;
+  private definition: TaggedMigrationDefinition<DBAdapter>;
+
+  readonly version: number;
+  readonly type: 'change' | 'updown' | 'irreversible';
+  readonly database: Database;
+
   operations: Operation[];
 
   constructor(
+    version: number,
     database: Database,
     definition: TaggedMigrationDefinition<DBAdapter>,
   ) {
+    this.version = version;
     this.database = database;
     this.definition = definition;
+    this.type = definition.type;
     this.operations = [];
   }
 
@@ -69,7 +115,13 @@ export class Migration<DBAdapter extends Adapter = any> {
    * Prepares the migration to be run. Populates the operations.
    */
   prepare(direction: 'up' | 'down') {
-    const builder = new MigrationBuilder();
+    this.operations = [];
+
+    const builder = new MigrationBuilder(
+      direction,
+      this.definition.type === 'change',
+    );
+
     const fieldTypes = this.database.adapter.FieldTypes;
 
     if (this.definition.type === 'change') {
@@ -92,13 +144,28 @@ export class Migration<DBAdapter extends Adapter = any> {
   async run(direction: 'up' | 'down') {
     this.prepare(direction);
 
+    const hasVersion = await this.database.adapter.migrateHasVersion(String(this.version));
+
+    if (direction === 'up' && hasVersion) {
+      throw new Error('This migration has already been run on the database.');
+    } else if (direction === 'down' && !hasVersion) {
+      throw new Error('This migration has not yet been run, it cannot be run down.');
+    }
+
     await this.database.adapter.migrate(direction, this);
+
+    if (direction === 'up') {
+      await this.database.adapter.migrateAddVersion(String(this.version));
+    } else {
+      await this.database.adapter.migrateRemoveVersion(String(this.version));
+    }
   }
 }
 
 export { MigrationDefinition };
 
 export function createMigration<DBAdapter extends Adapter>(
+  version: number,
   db: Database<DBAdapter>,
   definition:
     | MigrationDefinition<DBAdapter>
@@ -120,5 +187,5 @@ export function createMigration<DBAdapter extends Adapter>(
 
   const taggedDefinition = { ...definition, type } as TaggedMigrationDefinition;
 
-  return new Migration(db, taggedDefinition);
+  return new Migration(version, db, taggedDefinition);
 }
