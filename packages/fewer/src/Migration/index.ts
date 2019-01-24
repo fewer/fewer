@@ -96,6 +96,7 @@ export class Migration<DBAdapter extends Adapter = any> {
   readonly version: number;
   readonly type: 'change' | 'updown' | 'irreversible';
   readonly database: Database;
+
   operations: Operation[];
 
   constructor(
