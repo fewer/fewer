@@ -96,7 +96,7 @@ export class Migration<DBAdapter extends Adapter = any> {
   readonly version: number;
   readonly type: 'change' | 'updown' | 'irreversible';
   readonly database: Database;
-  readonly operations: Operation[];
+  operations: Operation[];
 
   constructor(
     version: number,
@@ -114,6 +114,8 @@ export class Migration<DBAdapter extends Adapter = any> {
    * Prepares the migration to be run. Populates the operations.
    */
   prepare(direction: 'up' | 'down') {
+    this.operations = [];
+
     const builder = new MigrationBuilder(
       direction,
       this.definition.type === 'change',

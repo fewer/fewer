@@ -21,6 +21,7 @@ export default class MigrationRunner {
   }
 
   private async run(direction: 'up' | 'down', migration: Migration) {
+    console.log(`Migrating version ${migration.version} ${direction}...`);
     await this.ensureAdapterConnecter(migration.database.adapter);
     await migration.run(direction);
   }
