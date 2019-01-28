@@ -20,12 +20,12 @@ export interface PathOptions extends ColumnOptions {
   open?: boolean;
 }
 
-function columnType<T, AdditionalConfig extends ColumnOptions = ColumnOptions>(
+function columnType<T, Config extends ColumnOptions = ColumnOptions>(
   name: string,
 ) {
-  return function<Config extends AdditionalConfig>(
+  return function(
     config?: Config,
-  ): FieldType<Config['nonNull'] extends true ? T : T | undefined> {
+  ): FieldType<Config['nonNull'] extends true ? T : T | undefined, Config> {
     return new FieldType(name, config);
   };
 }
