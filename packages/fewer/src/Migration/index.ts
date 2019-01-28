@@ -114,15 +114,16 @@ export class Migration<DBAdapter extends Adapter = any> {
   /**
    * Prepares the migration to be run. Populates the operations.
    */
-  prepare(direction: 'up' | 'down') {
+  prepare(
+    direction: 'up' | 'down',
+    fieldTypes: any = this.database.adapter.FieldTypes,
+  ) {
     this.operations = [];
 
     const builder = new MigrationBuilder(
       direction,
       this.definition.type === 'change',
     );
-
-    const fieldTypes = this.database.adapter.FieldTypes;
 
     if (this.definition.type === 'change') {
       this.definition.change(builder, fieldTypes);
@@ -144,12 +145,16 @@ export class Migration<DBAdapter extends Adapter = any> {
   async run(direction: 'up' | 'down') {
     this.prepare(direction);
 
-    const hasVersion = await this.database.adapter.migrateHasVersion(String(this.version));
+    const hasVersion = await this.database.adapter.migrateHasVersion(
+      String(this.version),
+    );
 
     if (direction === 'up' && hasVersion) {
       throw new Error('This migration has already been run on the database.');
     } else if (direction === 'down' && !hasVersion) {
-      throw new Error('This migration has not yet been run, it cannot be run down.');
+      throw new Error(
+        'This migration has not yet been run, it cannot be run down.',
+      );
     }
 
     await this.database.adapter.migrate(direction, this);

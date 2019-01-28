@@ -1,0 +1,12 @@
+/* eslint-disable */
+import { createSchema } from 'fewer';
+<%- databases.map(db => `import ${db.ident} from '${db.path}';`).join('\n') %>
+
+export default createSchema(<%= version %>)
+    <%_ tables.forEach((table) => { _%>
+        .table(<%= table.database.ident %>, <%- JSON.stringify(table.name) %>, (t) => ({
+            <%_ Object.keys(table.fields).forEach((fieldName) => { _%>
+            <%- JSON.stringify(fieldName) %>: <%- table.fields[fieldName] %>,
+            <%_ }); _%>
+        }))
+    <%_ }); _%>

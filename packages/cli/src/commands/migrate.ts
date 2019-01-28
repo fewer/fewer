@@ -1,13 +1,7 @@
-import fs from 'fs';
-import path from 'path';
-import { promisify } from 'util';
 import { Command, flags } from '@oclif/command';
-import sortBy from 'lodash/sortBy';
 import commonFlags from '../commonFlags';
-import getConfig from '../getConfig';
 import MigrationRunner from '../MigrationRunner';
-
-const readdirAsync = promisify(fs.readdir);
+import { getMigrations } from '../utils';
 
 export default class Migrate extends Command {
   static description = 'Performs migrations.';
@@ -49,16 +43,7 @@ export default class Migrate extends Command {
 
   async run() {
     const { flags } = this.parse(Migrate);
-    const config = await getConfig();
-
-    // TODO: Store project root somewhere so that I don't need to do cwd garbage:
-    const migrationFiles = await readdirAsync(
-      path.resolve(process.cwd(), config.migrations),
-    );
-
-    const migrations = sortBy(
-      migrationFiles.filter(filename => !filename.startsWith('.')),
-    ).map(filename => path.join(process.cwd(), config.migrations, filename));
+    const migrations = await getMigrations();
 
     const runner = new MigrationRunner(migrations);
 

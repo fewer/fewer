@@ -5,6 +5,8 @@ import execa from 'execa';
 import ejs from 'ejs';
 import { promisify } from 'util';
 import enquirer from 'enquirer';
+import prettier from 'prettier';
+import sortBy from 'lodash/sortBy';
 import getConfig from './getConfig';
 
 const cwd = process.cwd();
@@ -12,6 +14,7 @@ const cwd = process.cwd();
 const statAsync = promisify(fs.stat);
 const writeFileAsync = promisify(fs.writeFile);
 const mkdirpAsync = promisify(mkdirp);
+const readdirAsync = promisify(fs.readdir);
 
 async function hasFileOrDir(filename: string) {
   try {
@@ -123,7 +126,42 @@ export async function createFile(
     fileContents = toCJS(fileContents);
   }
 
-  await writeFileAsync(path.join(cwd, fileName), fileContents);
+  const outputFilePath = path.join(cwd, fileName);
+  const prettierConfig = await prettier.resolveConfig(outputFilePath);
+
+  await writeFileAsync(
+    outputFilePath,
+    prettier.format(fileContents, {
+      filepath: outputFilePath,
+      ...prettierConfig,
+    }),
+  );
+}
+
+export async function getMigrations() {
+  const config = await getConfig();
+
+  // TODO: Store project root somewhere (read-pkg-up?) so that I don't need to do cwd garbage:
+  const migrationFiles = await readdirAsync(
+    path.resolve(cwd, config.migrations),
+  );
+
+  return sortBy(
+    migrationFiles.filter(filename => !filename.startsWith('.')),
+  ).map(filename => path.join(cwd, config.migrations, filename));
+}
+
+export function resolve(from: string, to: string) {
+  const relativePath = path.relative(
+    path.dirname(from),
+    path.join(path.dirname(to), path.basename(to, path.extname(to))),
+  );
+
+  if (!relativePath.startsWith('.')) {
+    return `./${relativePath}`;
+  }
+
+  return relativePath;
 }
 
 // A quick-and-dirty way to convert a file to from ESM to CJS. This is intentionally

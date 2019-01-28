@@ -1,5 +1,6 @@
 import { Command, flags } from '@oclif/command';
 import commonFlags from '../../commonFlags';
+import offlineSchemaGenerator from '../../offlineSchemaGenerator';
 
 export default class GenerateSchema extends Command {
   static description =
@@ -9,6 +10,9 @@ export default class GenerateSchema extends Command {
 
   static flags = {
     ...commonFlags,
+    offline: flags.boolean({
+      description: '',
+    }),
     version: flags.integer({
       char: 'v',
       description:
@@ -20,5 +24,9 @@ export default class GenerateSchema extends Command {
 
   async run() {
     const { flags } = this.parse(GenerateSchema);
+
+    if (flags.offline) {
+      await offlineSchemaGenerator(flags.version);
+    }
   }
 }

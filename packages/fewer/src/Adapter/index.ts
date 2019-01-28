@@ -3,7 +3,9 @@ import { Migration } from '../Migration';
 import FieldType from '../FieldType';
 
 interface BaseFieldTypes {
-  [columnName: string]: (...args: any[]) => FieldType;
+  [columnName: string]: (
+    ...args: any[]
+  ) => FieldType | { [key: string]: FieldType };
 }
 
 export interface AdapterConfiguration<
@@ -121,7 +123,7 @@ export class Adapter<
 
   migrateHasVersion(version: string): Promise<boolean> {
     return this.impl.migrateHasVersion(this.client, version);
-  };
+  }
 }
 
 export function createAdapter<
