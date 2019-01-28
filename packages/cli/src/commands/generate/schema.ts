@@ -41,7 +41,7 @@ export default class GenerateSchema extends Command {
     for (const database of databases) {
       await database.connect();
       const infos = await database.adapter.getInfos();
-      console.log(infos.users.columns.map((col) => col.arguments))
+      console.log(infos);
       await database.disconnect();
     }
   }

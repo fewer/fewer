@@ -5,9 +5,6 @@ import getConfig from './getConfig';
 import { getMigrations, resolve, createFile } from './utils';
 
 export default async function offlineSchemaGenerator(version?: number) {
-  // Include the TS transpiler to allow TS syntax inside of migration files:
-  require('ts-node/register/transpile-only');
-
   const config = await getConfig();
   let migrations = await getMigrations();
 
