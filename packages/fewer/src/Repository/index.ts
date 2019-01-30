@@ -30,31 +30,34 @@ export enum QueryTypes {
 
 const SCHEMA_TYPE = Symbol('schema-type');
 
+type RepoTypeBuilder<Root, Extensions> = Pick<
+  Root,
+  Exclude<keyof Root, keyof Root & keyof Extensions>
+> &
+  Extensions;
+
 export class Repository<
-  SchemaType = {},
-  // TODO: Make this just extensions, not schema + extensions.
-  RegisteredExtensions = {},
+  SchemaType = any,
+  RegisteredExtensions = any,
   SelectionSet = INTERNAL_TYPES.ALL_FIELDS,
-  LoadAssociations extends Associations = {},
-  JoinAssociations extends Associations = {},
+  LoadAssociations extends Associations = any,
+  JoinAssociations extends Associations = any,
   QueryType extends QueryTypes = any,
-  // NOTE: This generic should never explicitly be passed.
+  // NOTE: These generics should never explicitly be passed.
+  RepoType = RepoTypeBuilder<SchemaType, RegisteredExtensions>,
   ResolvedType = Subset<
-    SchemaType & RegisteredExtensions & ResolveAssociations<LoadAssociations>,
+    RepoType & ResolveAssociations<LoadAssociations>,
     SelectionSet,
     keyof LoadAssociations
   >
 >
   implements
-    CommonQuery<
-      SchemaType & RegisteredExtensions,
-      LoadAssociations & JoinAssociations
-    > {
+    CommonQuery<SchemaType, RepoType, LoadAssociations & JoinAssociations> {
   // Stash the schema type so that the generic can be used as a type constraint.
   readonly [SCHEMA_TYPE]: SchemaType;
 
   readonly [INTERNAL_TYPES.RESOLVED_TYPE]: ResolvedType;
-  readonly [INTERNAL_TYPES.INTERNAL_TYPE]: SchemaType & RegisteredExtensions;
+  readonly [INTERNAL_TYPES.INTERNAL_TYPE]: RepoType;
 
   /**
    * Contains symbols that are used to access metadata about the state of models.
@@ -82,7 +85,7 @@ export class Repository<
    * TODO: Documentation.
    */
   pipe<Extensions>(
-    pipe: Pipe<SchemaType & RegisteredExtensions, Extensions>,
+    pipe: Pipe<RepoType, Extensions>,
   ): Repository<
     SchemaType,
     RegisteredExtensions & Extensions,
@@ -103,10 +106,7 @@ export class Repository<
    * Validates an object.
    */
   // TODO: Async
-  validate<
-    T extends Partial<SchemaType & RegisteredExtensions> &
-      SymbolProperties<SchemaType & RegisteredExtensions>
-  >(model: T) {
+  validate<T extends Partial<RepoType> & SymbolProperties<RepoType>>(model: T) {
     // Ensure that we're actually working with a model:
     if (!model[Symbols.isModel]) {
       throw new Error(
@@ -146,14 +146,14 @@ export class Repository<
   /**
    * Converts a plain JavaScript object into a Fewer model.
    */
-  from<T extends Partial<SchemaType & RegisteredExtensions>>(obj: T) {
-    return createModel<SchemaType & RegisteredExtensions, T>(obj);
+  from<T extends Partial<RepoType>>(obj: T) {
+    return createModel<RepoType, T>(obj);
   }
 
   /**
    * TODO: Documentation.
    */
-  async create<T extends Partial<SchemaType & RegisteredExtensions>>(obj: T) {
+  async create<T extends Partial<RepoType>>(obj: T) {
     // Convert the object:
     const model = this.from(obj);
 
@@ -175,10 +175,9 @@ export class Repository<
   /**
    * Updates a model in the database.
    */
-  async update<
-    T extends Partial<SchemaType & RegisteredExtensions> &
-      SymbolProperties<SchemaType & RegisteredExtensions>
-  >(model: T) {
+  async update<T extends Partial<RepoType> & SymbolProperties<RepoType>>(
+    model: T,
+  ) {
     // Ensure that we're actually working with a model:
     if (!model[Symbols.isModel]) {
       throw new Error(
@@ -220,10 +219,7 @@ export class Repository<
    * TODO: Documentation.
    */
   where(
-    wheres: WhereType<
-      SchemaType & RegisteredExtensions,
-      LoadAssociations & JoinAssociations
-    >,
+    wheres: WhereType<RepoType, LoadAssociations & JoinAssociations>,
   ): Repository<
     SchemaType,
     RegisteredExtensions,

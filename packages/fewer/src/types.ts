@@ -46,10 +46,10 @@ export type ResolveAssociations<Assoc extends Associations> = {
     : Assoc[P][INTERNAL_TYPES.RESOLVED_TYPE]
 };
 
-export interface CommonQuery<Type, Assoc extends Associations> {
-  pluck(...fields: (keyof Type)[]): any;
-  pluckAs(name: keyof Type, alias: string): any;
-  where(wheres: WhereType<Type, Assoc>): any;
+export interface CommonQuery<SchemaType, RepoType, Assoc extends Associations> {
+  pluck(...fields: (keyof SchemaType)[]): any;
+  pluckAs(name: keyof SchemaType, alias: string): any;
+  where(wheres: WhereType<RepoType, Assoc>): any;
   limit(amount: number): any;
   offset(amount: number): any;
   order(): any;
