@@ -123,7 +123,6 @@ export class Migration<DBAdapter extends Adapter = any> {
     );
 
     const fieldTypes = this.database.adapter.FieldTypes;
-
     if (this.definition.type === 'change') {
       this.definition.change(builder, fieldTypes);
     } else if (this.definition.type === 'irreversible') {
@@ -144,12 +143,16 @@ export class Migration<DBAdapter extends Adapter = any> {
   async run(direction: 'up' | 'down') {
     this.prepare(direction);
 
-    const hasVersion = await this.database.adapter.migrateHasVersion(String(this.version));
+    const hasVersion = await this.database.adapter.migrateHasVersion(
+      String(this.version),
+    );
 
     if (direction === 'up' && hasVersion) {
       throw new Error('This migration has already been run on the database.');
     } else if (direction === 'down' && !hasVersion) {
-      throw new Error('This migration has not yet been run, it cannot be run down.');
+      throw new Error(
+        'This migration has not yet been run, it cannot be run down.',
+      );
     }
 
     await this.database.adapter.migrate(direction, this);

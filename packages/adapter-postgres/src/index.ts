@@ -4,14 +4,13 @@ import squel from './squel';
 import TableTypes from './TableTypes';
 import migrate from './migrate';
 import fieldTypes from './fieldTypes';
+// TODO: Allow custom methods to be defined on the adapter rather than having this here:
+import rawQuery from './rawQuery';
+import infos from './infos';
 
 type FieldTypes = typeof fieldTypes;
 
-// TODO: Allow custom methods to be defined on the adapter rather than having this here:
-export async function rawQuery(db: Client, query: string, values?: any[]) {
-  const results = await db.query(query, values);
-  return results.rows;
-}
+export { rawQuery };
 
 async function ensureMigrationTable(db: Client) {
   await rawQuery(db, `CREATE TABLE IF NOT EXISTS _fewer_version (
@@ -158,5 +157,9 @@ export const Adapter = createAdapter<TableTypes, FieldTypes, ConnectionConfig, C
     const query = migrate(migration);
     const results = await db.query(query);
     return results;
+  },
+
+  async getInfos(db) {
+    return await infos(db);
   }
 });

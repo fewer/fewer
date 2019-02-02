@@ -2,7 +2,7 @@ import path from 'path';
 import { Command, flags } from '@oclif/command';
 import commonFlags from '../../commonFlags';
 import getConfig from '../../getConfig';
-import { prompt, createFile } from '../../utils';
+import { prompt, createFile, resolve } from '../../utils';
 
 function pad(num: number) {
   return String(num).padStart(2, '0');
@@ -60,13 +60,7 @@ export default class GenerateMigration extends Command {
       `${version}_${args.name}.${config.typescript ? 'ts' : 'js'}`,
     );
 
-    const databaseImportPath = path.relative(
-      path.dirname(migrationFileName),
-      path.join(
-        path.dirname(database),
-        path.basename(database, path.extname(database)),
-      ),
-    );
+    const databaseImportPath = resolve(migrationFileName, database);;
 
     createFile(
       'migration',

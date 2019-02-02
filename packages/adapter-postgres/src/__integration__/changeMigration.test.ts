@@ -1,5 +1,6 @@
 import { createMigration, createDatabase, Database } from 'fewer';
-import { Adapter, rawQuery } from '..';
+import { Adapter } from '..';
+import rawQuery from '../rawQuery';
 import config from './config';
 import { prepare } from './setup';
 

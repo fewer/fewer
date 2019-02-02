@@ -3,7 +3,9 @@ import { Migration } from '../Migration';
 import FieldType from '../FieldType';
 
 interface BaseFieldTypes {
-  [columnName: string]: (...args: any[]) => FieldType;
+  [columnName: string]: (
+    ...args: any[]
+  ) => FieldType | { [key: string]: FieldType };
 }
 
 export interface AdapterConfiguration<
@@ -29,6 +31,19 @@ export interface AdapterConfiguration<
   migrateRemoveVersion(db: DBInstance, version: string): Promise<void>;
   migrateGetVersions(db: DBInstance): Promise<any>;
   migrateHasVersion(db: DBInstance, version: string): Promise<boolean>;
+
+  getInfos?(
+    db: DBInstance,
+  ): Promise<{
+    [key: string]: {
+      columns: {
+        [key: string]: {
+          method: string;
+          arguments: any[];
+        };
+      };
+    };
+  }>;
 }
 
 export class Adapter<
@@ -121,7 +136,17 @@ export class Adapter<
 
   migrateHasVersion(version: string): Promise<boolean> {
     return this.impl.migrateHasVersion(this.client, version);
-  };
+  }
+
+  getInfos(): Promise<any> {
+    if (!this.impl.getInfos) {
+      throw new Error(
+        'Database Adapter does not implement method for online schema generation.',
+      );
+    }
+
+    return this.impl.getInfos(this.client);
+  }
 }
 
 export function createAdapter<
