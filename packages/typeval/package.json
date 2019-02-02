@@ -1,6 +1,6 @@
 {
   "name": "@fewer/typeval",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "dependencies": {
     "@babel/code-frame": "^7.0.0",
     "create-jest-runner": "^0.4.1",

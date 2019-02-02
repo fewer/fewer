@@ -1,6 +1,6 @@
 {
   "name": "@fewer/sq",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "A simple query builder for Fewer.",
   "keywords": [
     "fewer",
@@ -30,7 +30,5 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "dependencies": {},
-  "devDependencies": {}
+  }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@fewer/typo",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Jest runner that checks runtime type for mistyping.",
   "author": "Emily Dobervich <emily@dobervich.com>",
   "private": true,
