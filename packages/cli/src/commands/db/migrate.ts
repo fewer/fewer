@@ -1,18 +1,18 @@
 import { Command, flags } from '@oclif/command';
-import commonFlags from '../commonFlags';
-import MigrationRunner from '../MigrationRunner';
-import { getMigrations } from '../utils';
+import commonFlags from '../../commonFlags';
+import MigrationRunner from '../../MigrationRunner';
+import { getMigrations } from '../../utils';
 
 export default class Migrate extends Command {
   static description = 'Performs migrations.';
 
   static examples = [
-    '$ fewer migrate',
-    '$ fewer migrate --version 20190121190432',
-    '$ fewer migrate --direction down --version 20190121190432',
-    '$ fewer migrate --rollback',
-    '$ fewer migrate --rollback --steps 3',
-    '$ fewer migrate --redo --steps 3',
+    '$ fewer db:migrate',
+    '$ fewer db:migrate --version 20190121190432',
+    '$ fewer db:migrate --direction down --version 20190121190432',
+    '$ fewer db:migrate --rollback',
+    '$ fewer db:migrate --rollback --steps 3',
+    '$ fewer db:migrate --redo --steps 3',
   ];
 
   static flags = {

@@ -10,6 +10,8 @@ import infos from './infos';
 
 type FieldTypes = typeof fieldTypes;
 
+export { rawQuery };
+
 async function ensureMigrationTable(db: Client) {
   await rawQuery(db, `CREATE TABLE IF NOT EXISTS _fewer_version (
     id bigserial PRIMARY KEY,

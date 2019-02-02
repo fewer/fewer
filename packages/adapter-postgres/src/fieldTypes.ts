@@ -20,13 +20,18 @@ export interface PathOptions extends ColumnOptions {
   open?: boolean;
 }
 
+export interface ArrayOptions<T> extends ColumnOptions {
+  type: T;
+}
+
 function columnType<T, Config extends ColumnOptions = ColumnOptions>(
   name: string,
+  reflectName?: string,
 ) {
   return function(
     config?: Config,
   ): FieldType<Config['nonNull'] extends true ? T : T | undefined, Config> {
-    return new FieldType(name, config);
+    return new FieldType(name, config, reflectName || name);
   };
 }
 
@@ -41,7 +46,7 @@ const fieldTypes = {
   integer: columnType<number>('integer'),
   int: columnType<number>('int'),
   bigint: columnType<number>('bigint'),
-  double: columnType<number>('double precision'),
+  double: columnType<number>('double precision', 'double'),
   real: columnType<number>('real'),
   // Numeric Serial Types (automatiocally non null):
   smallserial: (options?: ColumnOptions) =>
@@ -60,8 +65,6 @@ const fieldTypes = {
   // Binary Data Types:
   bytea: columnType<string>('bytea'),
 
-  // TODO: Date/Time Types, Monetary Types, Network Address Types, Bit String Types, Text Search Types, XML Type, Range Types, Custom Types
-
   // Geometric Types:
   point: columnType<[number, number]>('point'),
   line: columnType<{ A: number; B: number; C: number }>('line'),
@@ -78,10 +81,7 @@ const fieldTypes = {
   json: columnType<object>('json'),
   jsonb: columnType<object>('jsonb'),
 
-  // Array Types:
-  array: <SubType extends FieldType>(
-    subtype: SubType,
-  ): FieldType<Array<SubType['$$type']>> => new FieldType('array', { subtype }),
+  // TODO: Array Types, Date/Time Types, Monetary Types, Network Address Types, Bit String Types, Text Search Types, XML Type, Range Types, Custom Types
 };
 
 export default fieldTypes;

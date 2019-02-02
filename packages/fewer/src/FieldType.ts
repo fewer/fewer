@@ -10,10 +10,12 @@ export default class FieldType<T = any, Config extends BaseConfig = any> {
   $$type!: T;
 
   name: string;
+  reflectName: string;
   config?: Config;
 
-  constructor(name: string, config?: any) {
+  constructor(name: string, config?: any, reflectName?: string) {
     this.name = name;
     this.config = config;
+    this.reflectName = reflectName || name;
   }
 }
