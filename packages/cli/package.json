@@ -28,10 +28,6 @@
     "lib": "lib",
     "test": "__tests__"
   },
-  "files": [
-    "lib",
-    "templates"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fewer/fewer.git"
