@@ -114,10 +114,7 @@ export class Migration<DBAdapter extends Adapter = any> {
   /**
    * Prepares the migration to be run. Populates the operations.
    */
-  prepare(
-    direction: 'up' | 'down',
-    fieldTypes: any = this.database.adapter.FieldTypes,
-  ) {
+  prepare(direction: 'up' | 'down') {
     this.operations = [];
 
     const builder = new MigrationBuilder(
@@ -125,6 +122,7 @@ export class Migration<DBAdapter extends Adapter = any> {
       this.definition.type === 'change',
     );
 
+    const fieldTypes = this.database.adapter.FieldTypes;
     if (this.definition.type === 'change') {
       this.definition.change(builder, fieldTypes);
     } else if (this.definition.type === 'irreversible') {

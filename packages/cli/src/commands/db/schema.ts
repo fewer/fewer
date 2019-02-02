@@ -46,6 +46,7 @@ export default class GenerateSchema extends Command {
       for (const migrationFile of migrations) {
         const migrationModule = require(migrationFile);
         const migration: Migration = migrationModule.default || migrationModule;
+        migration.prepare('up');
         migration.operations.forEach(operation => {
           if (operation.type === 'createTable') {
             tableMap[operation.name] = {
@@ -55,7 +56,11 @@ export default class GenerateSchema extends Command {
                   db.module === migration.database ||
                   db.module.default === migration.database,
               ),
-              columns: [],
+              columns: Object.entries(operation.fields).map(([key, value]) => ({
+                name: key,
+                method: value.reflectName,
+                arguments: [value.config],
+              })),
             };
           } else if (operation.type === 'dropTable') {
             delete tableMap[operation.name];
