@@ -29,9 +29,10 @@
     "test": "__tests__"
   },
   "files": [
-    "lib",
-    "bin",
-    "template"
+    "/lib",
+    "/bin",
+    "/template",
+    "/oclif.manifest.json"
   ],
   "repository": {
     "type": "git",
