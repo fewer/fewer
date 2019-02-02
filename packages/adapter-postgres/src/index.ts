@@ -52,6 +52,15 @@ export const Adapter = createAdapter<TableTypes, FieldTypes, ConnectionConfig, C
       }
     }
 
+    const joins = context.joins;
+
+    if (joins) {
+      for (const key in joins) {
+        const join = joins[key];
+        select.join(join.tableName, key, `${key}.${join.keys[1]} = ${context.table}.${join.keys[0]}`);
+      }
+    }
+
     for (const where of context.wheres) {
       for (const [fieldName, matcher] of Object.entries(where)) {
         if (Array.isArray(matcher)) {
@@ -63,6 +72,36 @@ export const Adapter = createAdapter<TableTypes, FieldTypes, ConnectionConfig, C
     }
 
     const results = await db.query(select.toString());
+    const loads = context.loads;
+
+    if (loads) {
+      const loadPromises = Object.keys(loads).map(async (k) => {
+        const load = loads[k];
+        const where: { [k: string]: any[] } = {};
+        where[load.keys[1]] = results.rows.map((r) => r[load.keys[0]]);
+
+        return {
+          k, load,
+          results: await this.select(db, load.select.where(where).context)};
+      });
+
+      const loaded = await Promise.all(loadPromises);
+      loaded.forEach((load) => {
+        const grouped = load.results.reduce((m: { [k: string]: any[] }, v) => {
+          if (!m[v[load.load.keys[1]]]) {
+            m[v[load.load.keys[1]]] = [];
+          }
+          m[v[load.load.keys[1]]].push(v);
+
+          return m;
+        }, {} as { [k: string]: any[] });
+
+        results.rows.forEach((row) => {
+          row[load.k] = grouped[row[load.load.keys[0]]] ? grouped[row[load.load.keys[0]]] : [];
+        })
+      })
+    }
+
     return results.rows;
   },
 

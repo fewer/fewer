@@ -25,8 +25,8 @@
   },
   "scripts": {
     "integration:local": "docker-compose up --abort-on-container-exit; docker-compose down",
-    "preintegration": "ts-node src/__integration__/setup.ts",
-    "integration": "jest --config=../../jest.config.integration.js"
+    "preintegration": "ts-node src/__integration__/setup.ts && ts-node src/__typo__/setup.ts",
+    "integration": "jest --config=../../jest.config.integration.js --runInBand"
   },
   "bugs": {
     "url": "https://github.com/fewer/fewer/issues"

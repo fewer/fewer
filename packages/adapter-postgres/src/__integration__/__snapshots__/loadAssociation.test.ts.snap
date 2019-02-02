@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`load associations postgres can load associated posts on users 1`] = `
+Array [
+  Object {
+    "first_name": "Emily",
+    "id": "1",
+    "last_name": "Dobervich",
+    "posts": Array [
+      Object {
+        "id": "1",
+        "subtitle": null,
+        "title": "How to use Fewer",
+        "user_id": "1",
+      },
+    ],
+  },
+  Object {
+    "first_name": "Jordan",
+    "id": "2",
+    "last_name": "Gensler",
+    "posts": Array [
+      Object {
+        "id": "2",
+        "subtitle": null,
+        "title": "Abusing Typescript",
+        "user_id": "2",
+      },
+      Object {
+        "id": "3",
+        "subtitle": null,
+        "title": "Ten Typescript Type Tricks",
+        "user_id": "2",
+      },
+    ],
+  },
+]
+`;

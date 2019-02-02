@@ -1,6 +1,7 @@
 import { createMigration, createDatabase, Database } from 'fewer';
 import { Adapter, rawQuery } from '..';
 import config from './config';
+import { prepare } from './setup';
 
 type AdapterInstance = InstanceType<typeof Adapter>;
 
@@ -9,7 +10,9 @@ describe('change migration', () => {
     let database: Database<AdapterInstance>;
     let adapter: AdapterInstance;
 
-    beforeAll(async () => {
+    beforeEach(async () => {
+      await prepare();
+
       adapter = new Adapter(config);
 
       database = createDatabase({ adapter });
@@ -17,7 +20,7 @@ describe('change migration', () => {
       await database.connect();
     });
 
-    afterAll(async () => {
+    afterEach(async () => {
       await database.disconnect();
     });
 

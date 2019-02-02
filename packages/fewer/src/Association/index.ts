@@ -1,4 +1,5 @@
 import { Repository } from '../Repository';
+import sq, { Select } from '@fewer/sq';
 import {
   INTERNAL_TYPES,
   Associations,
@@ -8,6 +9,7 @@ import {
   ResolveAssociations,
   Subset,
 } from '../types';
+import { Schema } from '../Schema';
 
 export enum AssociationType {
   HAS_ONE = 'hasOne',
@@ -18,6 +20,9 @@ export enum AssociationType {
 // NOTE: We need to stash
 const BASE_TYPE = Symbol('base-type');
 const FK_TYPE = Symbol('fk-type');
+const IS_CHAINED = Symbol('is-chanined');
+
+type CheckUsedKeys<T, K> = T extends K ? 'This key is already in use.' : T;
 
 export class Association<
   Type extends AssociationType = any,
@@ -26,11 +31,14 @@ export class Association<
   RepoType = any,
   SelectionSet = any,
   LoadAssociations extends Associations = {},
-  JoinAssociations extends Associations = {}
+  JoinAssociations extends Associations = {},
+  Chained = any,
+  SchemaType = {},
 > implements CommonQuery<RepoType, LoadAssociations & JoinAssociations> {
   // NOTE: We need to stash the type here otherwise the generic won't become a constraint.
   readonly [BASE_TYPE]: Base;
   readonly [FK_TYPE]: FK;
+  readonly [IS_CHAINED]: Chained;
 
   readonly [INTERNAL_TYPES.INTERNAL_TYPE]: RepoType;
   readonly [INTERNAL_TYPES.RESOLVED_TYPE]: Subset<
@@ -44,11 +52,24 @@ export class Association<
    */
   readonly type: Type;
 
+  readonly [INTERNAL_TYPES.SCHEMA_TYPE]: SchemaType;
   private associate: Repository;
+  private runningQuery?: Select;
+  foreignKey: string;
 
-  constructor(type: Type, associate: Repository) {
+  constructor(type: Type, associate: Repository, runningQuery: Select | undefined, foreignKey: string) {
     this.type = type;
     this.associate = associate;
+    this.runningQuery = runningQuery;
+    this.foreignKey = foreignKey;
+  }
+
+  toSqSelect(): Select {
+    return this.selectQuery();
+  }
+
+  getTableName(): string {
+    return this.associate.getTableName();
   }
 
   pluck<Key extends keyof RepoType>(
@@ -60,10 +81,16 @@ export class Association<
     RepoType,
     CreateSelectionSet<SelectionSet, Key>,
     LoadAssociations,
-    JoinAssociations
+    JoinAssociations,
+    true,
+    SchemaType
   > {
-    // @ts-ignore
-    return new Association(this.type, this.associate.pluck(...fields));
+    return new Association(
+      this.type,
+      this.associate,
+      this.selectQuery().pluck(...(fields as string[])),
+      this.foreignKey,
+    );
   }
 
   pluckAs<Key extends keyof RepoType, Alias extends string>(
@@ -76,18 +103,54 @@ export class Association<
     RepoType & { [P in Alias]: RepoType[Key] },
     CreateSelectionSet<SelectionSet, Alias>,
     LoadAssociations,
-    JoinAssociations
+    JoinAssociations,
+    true,
+    SchemaType
   > {
-    // @ts-ignore
-    return new Association(this.type, this.associate.pluckAs(name, alias));
+    return new Association(
+      this.type,
+      this.associate,
+      this.selectQuery().pluck([name as string, alias]),
+      this.foreignKey,
+    );
   }
 
-  limit(amount: number) {
-    return new Association(this.type, this.associate.limit(amount));
+  limit(amount: number): Association<
+    Type,
+    Base,
+    FK,
+    RepoType,
+    SelectionSet,
+    LoadAssociations,
+    JoinAssociations,
+    true,
+    SchemaType
+  > {
+    return new Association(
+      this.type,
+      this.associate,
+      this.selectQuery().limit(amount),
+      this.foreignKey,
+    );
   }
 
-  offset(amount: number) {
-    return new Association(this.type, this.associate.offset(amount));
+  offset(amount: number): Association<
+    Type,
+    Base,
+    FK,
+    RepoType,
+    SelectionSet,
+    LoadAssociations,
+    JoinAssociations,
+    true,
+    SchemaType
+  > {
+    return new Association(
+      this.type,
+      this.associate,
+      this.selectQuery().offset(amount),
+      this.foreignKey,
+    );
   }
 
   order() {
@@ -95,13 +158,39 @@ export class Association<
     // return new Association(this.type, this.associate.order());
   }
 
-  // @ts-ignore
-  where(wheres: WhereType<RepoType>) {
-    return new Association(this.type, this.associate.where(wheres));
+  where(wheres: WhereType<RepoType>): Association<
+    Type,
+    Base,
+    FK,
+    RepoType,
+    SelectionSet,
+    LoadAssociations,
+    JoinAssociations,
+    true,
+    SchemaType
+  > {
+    return new Association(
+      this.type,
+      this.associate,
+      this.selectQuery().where(wheres),
+      this.foreignKey,
+    );
   }
 
-  load<Name extends string, LoadAssociation extends Association>(
-    name: string,
+  load<
+    Name extends string,
+    LoadAssociation extends Association<
+      AssociationType,
+      Repository<SchemaType>,
+      KeyConstraint
+    >,
+    KeyConstraint = LoadAssociation extends Association<
+      AssociationType.BELONGS_TO
+    >
+      ? keyof SchemaType
+      : any
+  >(
+    name: Name & CheckUsedKeys<Name, keyof LoadAssociations>,
     association: LoadAssociation,
   ): Association<
     Type,
@@ -110,13 +199,38 @@ export class Association<
     RepoType,
     SelectionSet,
     LoadAssociations & { [P in Name]: LoadAssociations },
-    JoinAssociations
+    JoinAssociations,
+    true,
+    SchemaType
   > {
-    return new Association(this.type, this.associate.load(name, association));
+    return new Association(
+      this.type,
+      this.associate,
+      this.selectQuery().load(name, ['id', this.foreignKey], association.toSqSelect()),
+      this.foreignKey,
+    );
   }
 
-  join<Name extends string, JoinAssociation extends Association>(
-    name: Name,
+  // TODO: fix this
+  join<
+    Name extends string,
+    JoinAssociation extends Association<
+      AssociationType,
+      Repository<SchemaType>,
+      KeyConstraint,
+      any,
+      any,
+      any,
+      any,
+      false
+    >,
+    KeyConstraint = JoinAssociation extends Association<
+      AssociationType.BELONGS_TO
+    >
+      ? keyof SchemaType
+      : any
+  >(
+    name: Name & CheckUsedKeys<Name, keyof JoinAssociations>,
     association: JoinAssociation,
   ): Association<
     Type,
@@ -125,9 +239,24 @@ export class Association<
     RepoType,
     SelectionSet,
     LoadAssociations,
-    JoinAssociations & { [P in Name]: JoinAssociation }
+    JoinAssociations & { [P in Name]: JoinAssociation },
+    Chained,
+    SchemaType
   > {
-    return new Association(this.type, this.associate.join(name, association));
+    return new Association(
+      this.type,
+      this.associate,
+      this.selectQuery().join(name, ['id', association.foreignKey], association.getTableName()),
+      this.foreignKey
+    );
+  }
+
+  private selectQuery(): Select {
+    if (!this.runningQuery) {
+      this.runningQuery = sq.select(this.associate.getTableName());
+    }
+
+    return this.runningQuery;
   }
 }
 
@@ -144,15 +273,17 @@ export function createBelongsTo<
   Associate[INTERNAL_TYPES.INTERNAL_TYPE],
   INTERNAL_TYPES.ALL_FIELDS,
   {},
-  {}
+  {},
+  false,
+  Associate[INTERNAL_TYPES.SCHEMA_TYPE]
 > {
-  return new Association(AssociationType.BELONGS_TO, associate);
+  return new Association(AssociationType.BELONGS_TO, associate, undefined, foreignKey);
 }
 
 export function createHasOne<
   BaseType extends Repository,
   Associate extends Repository,
-  FK extends keyof Associate[INTERNAL_TYPES.INTERNAL_TYPE]
+  FK extends Exclude<keyof Associate[INTERNAL_TYPES.INTERNAL_TYPE], symbol | number>
 >(
   base: BaseType,
   associate: Associate,
@@ -164,15 +295,17 @@ export function createHasOne<
   Associate[INTERNAL_TYPES.INTERNAL_TYPE],
   INTERNAL_TYPES.ALL_FIELDS,
   {},
-  {}
+  {},
+  false,
+  Associate[INTERNAL_TYPES.SCHEMA_TYPE]
 > {
-  return new Association(AssociationType.HAS_ONE, associate);
+  return new Association(AssociationType.HAS_ONE, associate, undefined, foreignKey);
 }
 
 export function createHasMany<
   BaseType extends Repository,
   Associate extends Repository,
-  FK extends keyof Associate[INTERNAL_TYPES.INTERNAL_TYPE]
+  FK extends Exclude<keyof Associate[INTERNAL_TYPES.INTERNAL_TYPE], symbol | number>
 >(
   base: BaseType,
   associate: Associate,
@@ -184,7 +317,9 @@ export function createHasMany<
   Associate[INTERNAL_TYPES.INTERNAL_TYPE],
   INTERNAL_TYPES.ALL_FIELDS,
   {},
-  {}
+  {},
+  false,
+  Associate[INTERNAL_TYPES.SCHEMA_TYPE]
 > {
-  return new Association(AssociationType.HAS_MANY, associate);
+  return new Association(AssociationType.HAS_MANY, associate, undefined, foreignKey);
 }

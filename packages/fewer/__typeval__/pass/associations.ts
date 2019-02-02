@@ -34,20 +34,12 @@ async function main() {
     belongsToUser.pluck('firstName'),
   );
 
-  Users.join('foo', userPosts);
+  Users.join('foo', userPosts).load('foo', userPosts);
+  userPosts.load('user', belongsToUser).join('user', belongsToUser);
 
   // Query through join:
   Users.find(1)
     .join('posts', userPosts)
-    .where({
-      posts: {
-        title: 'testing',
-      },
-    });
-
-  // Query through load:
-  Users.find(1)
-    .load('posts', userPosts)
     .where({
       posts: {
         title: 'testing',
