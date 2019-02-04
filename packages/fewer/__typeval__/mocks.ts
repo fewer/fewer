@@ -30,7 +30,9 @@ export const Adapter = createAdapter<TableTypes, FieldTypes, any, any>({
     return null;
   },
   async migrateAddVersion() {},
-  async migrateGetVersions() {},
+  async migrateGetVersions() {
+    return [];
+  },
   async migrateHasVersion() {
     return true;
   },

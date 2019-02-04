@@ -29,7 +29,7 @@ export interface AdapterConfiguration<
 
   migrateAddVersion(db: DBInstance, version: string): Promise<void>;
   migrateRemoveVersion(db: DBInstance, version: string): Promise<void>;
-  migrateGetVersions(db: DBInstance): Promise<any>;
+  migrateGetVersions(db: DBInstance): Promise<string[]>;
   migrateHasVersion(db: DBInstance, version: string): Promise<boolean>;
 
   getInfos?(
@@ -130,7 +130,7 @@ export class Adapter<
     return this.impl.migrateRemoveVersion(this.client, version);
   }
 
-  migrateGetVersions(): Promise<any> {
+  migrateGetVersions(): Promise<string[]> {
     return this.impl.migrateGetVersions(this.client);
   }
 
