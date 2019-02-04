@@ -141,7 +141,8 @@ export const Adapter = createAdapter<TableTypes, FieldTypes, ConnectionConfig, C
 
   async migrateGetVersions(db) {
     await ensureMigrationTable(db);
-    return await rawQuery(db, 'SELECT * FROM _fewer_version ORDER BY id ASC');
+    const versions = await rawQuery(db, 'SELECT * FROM _fewer_version ORDER BY id ASC');
+    return versions.map(({ version }) => version);
   },
 
   async migrateHasVersion(db, version) {

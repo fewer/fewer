@@ -134,7 +134,7 @@ export class Repository<
       const validationErrors = pipe.validate(obj);
       if (validationErrors) {
         if (Array.isArray(validationErrors)) {
-          errors.concat(validationErrors);
+          errors.push(...validationErrors);
         } else {
           errors.push(validationErrors);
         }
