@@ -46,6 +46,7 @@ export class Association<
     SelectionSet,
     keyof LoadAssociations
   >;
+  readonly [INTERNAL_TYPES.JOINS]: JoinAssociations;
 
   /**
    * The type of relationship that the association represents, such as "hasMany", and "belongsTo".
@@ -64,7 +65,7 @@ export class Association<
     this.foreignKey = foreignKey;
   }
 
-  toSqSelect(): Select {
+  [INTERNAL_TYPES.TO_SQ_SELECT](): Select {
     return this.selectQuery();
   }
 
@@ -203,10 +204,17 @@ export class Association<
     true,
     SchemaType
   > {
+    let keys: [string, string];
+    if (association.type === 'belongsTo') {
+      keys = [association.foreignKey, 'id'];
+    } else {
+      keys = ['id', association.foreignKey];
+    }
+
     return new Association(
       this.type,
       this.associate,
-      this.selectQuery().load(name, ['id', this.foreignKey], association.toSqSelect()),
+      this.selectQuery().load(name, keys, association[INTERNAL_TYPES.TO_SQ_SELECT]()),
       this.foreignKey,
     );
   }
@@ -243,10 +251,17 @@ export class Association<
     Chained,
     SchemaType
   > {
+    let keys: [string, string];
+    if (association.type === 'belongsTo') {
+      keys = [association.foreignKey, 'id'];
+    } else {
+      keys = ['id', association.foreignKey];
+    }
+
     return new Association(
       this.type,
       this.associate,
-      this.selectQuery().join(name, ['id', association.foreignKey], association.getTableName()),
+      this.selectQuery().join(name, keys, association.getTableName(), association[INTERNAL_TYPES.TO_SQ_SELECT]()),
       this.foreignKey
     );
   }

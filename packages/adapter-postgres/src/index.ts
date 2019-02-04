@@ -7,6 +7,8 @@ import fieldTypes from './fieldTypes';
 // TODO: Allow custom methods to be defined on the adapter rather than having this here:
 import rawQuery from './rawQuery';
 import infos from './infos';
+import { PostgresSelect } from 'squel';
+import { SelectJoin } from '@fewer/sq';
 
 type FieldTypes = typeof fieldTypes;
 
@@ -17,6 +19,46 @@ async function ensureMigrationTable(db: Client) {
     id bigserial PRIMARY KEY,
     version varchar UNIQUE
   )`);
+}
+
+function applyJoins(table: string, prefix: string, select: PostgresSelect, joins: { [key: string]: SelectJoin }) {
+  for (const key in joins) {
+    const alias = `${prefix}_${key}`;
+    const join = joins[key];
+    select.join(join.tableName, alias, `${alias}.${join.keys[1]} = ${table}.${join.keys[0]}`);
+
+    const subJoins = join.select.context.joins;
+
+    if (subJoins) {
+      applyJoins(alias, alias, select, subJoins);
+    }
+  }
+}
+
+function applyWheres(table: string, prefix: string, select: PostgresSelect, joins: { [key: string]: SelectJoin } | undefined, wheres: object[]) {
+    for (const where of wheres) {
+      for (const [fieldName, matcher] of Object.entries(where)) {
+        if (joins && fieldName in joins) {
+          const alias = `${prefix}_${fieldName}`;
+          const nestedJoins = joins[fieldName].select.context.joins;
+          const nestedWhere = [Object.entries(matcher).reduce((result: any, [k, v]) => {
+            if (nestedJoins && k in nestedJoins) {
+              result[k] = v;
+            } else {
+              result[`${alias}.${k}`] = v;
+            }
+            return result;
+          }, {})]
+          applyWheres(alias, alias, select, joins[fieldName].select.context.joins, nestedWhere);
+        } else {
+          if (Array.isArray(matcher)) {
+            select.where(`${fieldName} IN ?`, matcher);
+          } else {
+            select.where(`${fieldName} = ?`, matcher);
+          }
+        }
+      }
+    }
 }
 
 export const Adapter = createAdapter<TableTypes, FieldTypes, ConnectionConfig, Client>({
@@ -52,23 +94,11 @@ export const Adapter = createAdapter<TableTypes, FieldTypes, ConnectionConfig, C
     }
 
     const joins = context.joins;
-
     if (joins) {
-      for (const key in joins) {
-        const join = joins[key];
-        select.join(join.tableName, key, `${key}.${join.keys[1]} = ${context.table}.${join.keys[0]}`);
-      }
+      applyJoins(context.table, '', select, joins);
     }
 
-    for (const where of context.wheres) {
-      for (const [fieldName, matcher] of Object.entries(where)) {
-        if (Array.isArray(matcher)) {
-          select.where(`${fieldName} IN ?`, matcher);
-        } else {
-          select.where(`${fieldName} = ?`, matcher);
-        }
-      }
-    }
+    applyWheres(context.table, '', select, joins, context.wheres);
 
     const results = await db.query(select.toString());
     const loads = context.loads;

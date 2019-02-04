@@ -30,7 +30,7 @@ function getSchemaAndRepos(database: Database) {
   }
 }
 
-describe('load associations', () => {
+describe('join associations', () => {
   describe('postgres', () => {
     let database: Database<AdapterInstance>;
     let adapter: AdapterInstance;
@@ -96,6 +96,43 @@ describe('load associations', () => {
       });
 
       const results = await dbTypes.Users.join('posts', dbTypes.userPosts);
+      expect(results.sort((a, b) => a.id - b.id)).toMatchSnapshot();
+    });
+
+    it('nested joins', async () => {
+      const dbTypes = getSchemaAndRepos(database);
+
+      const emilyId = await dbTypes.Users.create({
+        first_name: 'Emily',
+        last_name: 'Dobervich',
+      });
+
+      const jordanId = await dbTypes.Users.create({
+        first_name: 'Jordan',
+        last_name: 'Gensler',
+      });
+
+      const fooId = await dbTypes.Users.create({
+        first_name: 'Foo',
+        last_name: 'Bar',
+      });
+
+      await dbTypes.Posts.create({
+        user_id: emilyId.id,
+        title: 'How to use Fewer',
+      });
+
+      await dbTypes.Posts.create({
+        user_id: jordanId.id,
+        title: 'Abusing Typescript',
+      });
+
+      await dbTypes.Posts.create({
+        user_id: jordanId.id,
+        title: 'Ten Typescript Type Tricks',
+      });
+
+      const results = await dbTypes.Users.join('posts', dbTypes.userPosts.join('user', dbTypes.belongsToUser)).where({ posts: { user: { first_name: 'Emily' } } });
       expect(results.sort((a, b) => a.id - b.id)).toMatchSnapshot();
     });
   });

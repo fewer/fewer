@@ -46,6 +46,16 @@ async function main() {
       },
     });
 
+  // Query through nested join:
+  Users.join('posts', userPosts.join('user', belongsToUser))
+    .where({
+      posts: {
+        user: {
+          firstName: 'Emily',
+        }
+      }
+    });
+
   typeval.acceptsString(user.firstName);
   typeval.accepts<{ title: string; subtitle?: string; userId: number }[]>(
     user.posts,

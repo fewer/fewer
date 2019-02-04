@@ -10,6 +10,6 @@
                 "column": 21
             }
         },
-        "errorMessage": "Type '{ subtitle: string; incorrect: number; }' is not assignable to type 'WhereForType<Merge<{ subtitle?: string | undefined; } & { userId: number; title: string; }>>'.\n  Object literal may only specify known properties, and 'incorrect' does not exist in type 'WhereForType<Merge<{ subtitle?: string | undefined; } & { userId: number; title: string; }>>'."
+        "errorMessage": "Type '{ subtitle: string; incorrect: number; }' is not assignable to type 'Merge<WhereForType<Merge<{ subtitle?: string | undefined; } & { userId: number; title: string; }>> & {}>'.\n  Object literal may only specify known properties, and 'incorrect' does not exist in type 'Merge<WhereForType<Merge<{ subtitle?: string | undefined; } & { userId: number; title: string; }>> & {}>'."
     }
 ]

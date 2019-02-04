@@ -8,6 +8,8 @@ export const enum INTERNAL_TYPES {
   RESOLVED_TYPE = '@@RESOLVED_TYPE',
   INTERNAL_TYPE = '@@INTERNAL_TYPE',
   SCHEMA_TYPE = '@@SCHEMA_TYPE',
+  JOINS = '@@JOINS',
+  TO_SQ_SELECT = '@@TO_SQ_SELECT'
 }
 
 // We default to selecting all fields, but once you pluck one field, we need to remove
@@ -25,7 +27,7 @@ export interface Associations {
 
 type UnrollAssociation<
   T extends Association
-> = T[INTERNAL_TYPES.SCHEMA_TYPE];
+> = WhereType<T[INTERNAL_TYPES.SCHEMA_TYPE], T[INTERNAL_TYPES.JOINS]>;
 
 type WhereForType<T> = {
   [P in keyof T]?: NonNullable<T[P]> | NonNullable<T[P]>[]
@@ -36,7 +38,7 @@ type Merge<T extends object> = { [K in keyof T]: T[K] };
 export type WhereType<Root, Assoc extends Associations = {}> = Merge<WhereForType<
   Root
 > &
-  { [P in keyof Assoc]?: WhereForType<UnrollAssociation<Assoc[P]>> }>;
+  { [P in keyof Assoc]?: UnrollAssociation<Assoc[P]> }>;
 
 export type Subset<Root, Keys, AssociationKeys extends keyof Root> = [
   Keys
@@ -59,5 +61,5 @@ export interface CommonQuery<Type, Assoc extends Associations> {
   order(): any;
   load(name: string, association: Association): any;
   join(name: string, association: Association): any;
-  toSqSelect(): Select;
+  [INTERNAL_TYPES.TO_SQ_SELECT](): Select;
 }

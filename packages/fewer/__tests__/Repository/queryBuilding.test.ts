@@ -5,6 +5,7 @@ import {
   createSchema,
 } from '../../src';
 import { database } from '../../__typeval__/mocks'
+import { INTERNAL_TYPES } from '../../src/types';
 
 interface User {
   id: number;
@@ -37,7 +38,7 @@ const belongsToUser = createBelongsTo(Users, 'userId');
 describe('queryBuilding', () => {
   describe('where', () => {
     it('simple usage results in a correct SQ select', () => {
-      const result = Users.where({ firstName: 'Emily' }).toSqSelect();
+      const result = Users.where({ firstName: 'Emily' })[INTERNAL_TYPES.TO_SQ_SELECT]();
       expect(result).toEqual({
         context: {
           plucked: [],
@@ -51,7 +52,7 @@ describe('queryBuilding', () => {
       const result = Users
         .where({firstName: 'Emily'})
         .where({lastName: 'Dobervich'})
-        .toSqSelect();
+        [INTERNAL_TYPES.TO_SQ_SELECT]();
 
       expect(result).toEqual({
         context: {
@@ -66,7 +67,7 @@ describe('queryBuilding', () => {
     });
 
     it('value in array results in a correct SQ select', () => {
-      const result = Users.where({firstName: ['Emily', 'Jordan']}).toSqSelect();
+      const result = Users.where({firstName: ['Emily', 'Jordan']})[INTERNAL_TYPES.TO_SQ_SELECT]();
 
       expect(result).toEqual({
         context: {
@@ -82,7 +83,7 @@ describe('queryBuilding', () => {
 
   describe('limit', () => {
     it('builds a correct SQ select', () => {
-      const result = Users.limit(5).toSqSelect();
+      const result = Users.limit(5)[INTERNAL_TYPES.TO_SQ_SELECT]();
 
       expect(result).toEqual({
         context: {
@@ -97,7 +98,7 @@ describe('queryBuilding', () => {
 
   describe('offset', () => {
     it('builds a correct SQ select', () => {
-      const result = Users.offset(5).toSqSelect();
+      const result = Users.offset(5)[INTERNAL_TYPES.TO_SQ_SELECT]();
 
       expect(result).toEqual({
         context: {
@@ -112,7 +113,7 @@ describe('queryBuilding', () => {
 
   describe('load', () => {
     it('builds a correct SQ select', () => {
-      const result = Users.load('posts', userPosts).toSqSelect();
+      const result = Users.load('posts', userPosts)[INTERNAL_TYPES.TO_SQ_SELECT]();
 
       expect(result).toEqual({
         context: {
@@ -136,7 +137,7 @@ describe('queryBuilding', () => {
     });
 
     it('with association query builds a correct SQ select', () => {
-      const result = Users.load('posts', userPosts.where({title: 'How to Use Fewer'})).toSqSelect();
+      const result = Users.load('posts', userPosts.where({title: 'How to Use Fewer'}))[INTERNAL_TYPES.TO_SQ_SELECT]();
 
       expect(result).toEqual({
         context: {
@@ -162,7 +163,7 @@ describe('queryBuilding', () => {
     it('with nested association builds a correct SQ select', () => {
       const result = Users
         .load('posts', userPosts.load('user', belongsToUser))
-        .toSqSelect();
+        [INTERNAL_TYPES.TO_SQ_SELECT]();
 
       expect(result).toEqual({
         context: {
@@ -176,7 +177,7 @@ describe('queryBuilding', () => {
                   wheres: [],
                   loads: {
                     'user': {
-                      keys: ['id', 'userId'],
+                      keys: ['userId', 'id'],
                       select: {
                         context: {
                           plucked: [],
