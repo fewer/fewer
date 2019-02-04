@@ -240,7 +240,7 @@ export class Repository<
       this.schemaTable,
       this.selectQuery().where(wheres),
       this.pipes,
-      this.queryType,
+      QueryTypes.MULTIPLE,
     );
   }
 
@@ -263,7 +263,7 @@ export class Repository<
         .where({ id })
         .limit(1),
       this.pipes,
-      this.queryType,
+      QueryTypes.SINGLE,
     );
   }
 
