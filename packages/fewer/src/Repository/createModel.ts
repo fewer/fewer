@@ -81,9 +81,11 @@ export interface ValidationError<T = any> {
 
 const DEFAULT_ERRORS: ReadonlyArray<ValidationError> = Object.freeze([]);
 
+export type Model<RepoType, T> = T & Partial<RepoType> & SymbolProperties<RepoType>;
+
 export default function createModel<RepoType, T extends object>(
   obj: T,
-): T & Partial<RepoType> & SymbolProperties<RepoType> {
+): Model<RepoType, T> {
   const changes = new Map();
 
   let hasValidationRun = false;
