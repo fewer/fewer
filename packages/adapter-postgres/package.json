@@ -40,6 +40,7 @@
   },
   "devDependencies": {
     "@types/pg": "^7.4.11",
-    "fewer": "^0.1.0"
+    "fewer": "^0.1.0",
+    "@fewer/sq": "^0.1.0"
   }
 }

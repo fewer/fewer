@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`load associations postgres can join users <-> posts 1`] = `
+exports[`join associations postgres can join users <-> posts 1`] = `
 Array [
   Object {
     "first_name": "Emily",
@@ -25,6 +25,19 @@ Array [
     "subtitle": null,
     "title": "Ten Typescript Type Tricks",
     "user_id": "2",
+  },
+]
+`;
+
+exports[`join associations postgres nested joins 1`] = `
+Array [
+  Object {
+    "first_name": "Emily",
+    "id": "1",
+    "last_name": "Dobervich",
+    "subtitle": null,
+    "title": "How to use Fewer",
+    "user_id": "1",
   },
 ]
 `;

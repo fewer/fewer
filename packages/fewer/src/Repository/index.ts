@@ -74,7 +74,7 @@ export class Repository<
     this.queryType = queryType;
   }
 
-  toSqSelect(): Select {
+  [INTERNAL_TYPES.TO_SQ_SELECT](): Select {
     return this.selectQuery();
   }
 
@@ -385,9 +385,16 @@ export class Repository<
     JoinAssociations,
     QueryType
   > {
+    let keys: [string, string];
+    if (association.type === 'belongsTo') {
+      keys = [association.foreignKey, 'id'];
+    } else {
+      keys = ['id', association.foreignKey];
+    }
+
     return new Repository(
       this.schemaTable,
-      this.selectQuery().load(name, ['id', association.foreignKey], association.toSqSelect()),
+      this.selectQuery().load(name, keys, association[INTERNAL_TYPES.TO_SQ_SELECT]()),
       this.pipes,
       this.queryType,
     );
@@ -424,9 +431,16 @@ export class Repository<
     JoinAssociations & { [P in Name]: JoinAssociation },
     QueryType
   > {
+    let keys: [string, string];
+    if (association.type === 'belongsTo') {
+      keys = [association.foreignKey, 'id'];
+    } else {
+      keys = ['id', association.foreignKey];
+    }
+
     return new Repository(
       this.schemaTable,
-      this.selectQuery().join(name, ['id', association.foreignKey], association.getTableName()),
+      this.selectQuery().join(name, keys, association.getTableName(), association[INTERNAL_TYPES.TO_SQ_SELECT]()),
       this.pipes,
       this.queryType,
     );

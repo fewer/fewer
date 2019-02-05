@@ -2,20 +2,25 @@ import Builder from "./Builder";
 
 type Pluck = string | [string, string];
 
+export type SelectLoad = {
+  keys: [string, string];
+  select: Select;
+};
+
+export type SelectJoin = {
+  keys: [string, string];
+  tableName: string;
+  select: Select;
+};
+
 interface Context {
   table: string;
   plucked: Pluck[];
   wheres: object[];
   limit?: number;
   offset?: number;
-  loads?: { [key: string]: {
-    keys: [string, string];
-    select: Select;
-  }};
-  joins?: { [key: string]: {
-    keys: [string, string];
-    tableName: string;
-  }};
+  loads?: { [key: string]: SelectLoad };
+  joins?: { [key: string]: SelectJoin };
 }
 
 export default class Select extends Builder<Context> {
@@ -46,12 +51,13 @@ export default class Select extends Builder<Context> {
     return this.next({ loads: newLoads });
   }
 
-  join(name: string, keys: [string, string], tableName: string) {
+  join(name: string, keys: [string, string], tableName: string, select: Select) {
     const existingJoins = this.context.joins || {};
     const newJoins = {...existingJoins};
     newJoins[name] = {
       keys,
       tableName,
+      select,
     };
 
     return this.next({ joins: newJoins });
