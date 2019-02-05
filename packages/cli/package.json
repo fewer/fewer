@@ -31,7 +31,7 @@
   "files": [
     "/lib",
     "/bin",
-    "/template",
+    "/templates",
     "/oclif.manifest.json"
   ],
   "repository": {

@@ -217,8 +217,7 @@ export class Repository<
 
     await this.db.update(updateQuery);
 
-    // TODO: Use Reload method to reload this in-place:
-    return this.reload(model, true);
+    return this.reload(model);
   }
 
   /**
