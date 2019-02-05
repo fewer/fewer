@@ -53,18 +53,22 @@ export interface SymbolProperties<T = any> {
 
 const SetErrors: unique symbol = Symbol('setErrors');
 const HasValidationRun: unique symbol = Symbol('hasValidationRun');
+const HotSwap: unique symbol = Symbol('hotSwap');
 
 export const InternalSymbols: {
   setErrors: typeof SetErrors;
   hasValidationRun: typeof HasValidationRun;
+  hotSwap: typeof HotSwap;
 } = {
   setErrors: SetErrors,
   hasValidationRun: HasValidationRun,
+  hotSwap: HotSwap,
 };
 
 export interface InternalSymbolProperties {
   [InternalSymbols.setErrors]: (newErrors: ValidationError[]) => void;
   [InternalSymbols.hasValidationRun]: boolean;
+  [InternalSymbols.hotSwap]: (nextObj: object) => void;
 }
 
 export interface ValidationError<T = any> {
@@ -87,6 +91,7 @@ export default function createModel<RepoType, T extends object>(
   obj: T,
 ): Model<RepoType, T> {
   const changes = new Map();
+  let currentObj = obj;
 
   let hasValidationRun = false;
   let errors: ReadonlyArray<ValidationError> = DEFAULT_ERRORS;
@@ -97,9 +102,16 @@ export default function createModel<RepoType, T extends object>(
     errors = Object.freeze(newErrors);
   }
 
+  function hotSwap(nextObj: T) {
+    changes.clear();
+    currentObj = nextObj;
+    hasValidationRun = false;
+    errors = DEFAULT_ERRORS;
+  }
+
   // @ts-ignore The proxy implementation here is hard for TypeScript to understand.
-  return new Proxy(obj, {
-    get(target, prop, receiver) {
+  return new Proxy({}, {
+    get(_target, prop, receiver) {
       // TODO: We should probably break this out into a function to get the symbol properties:
       switch (prop) {
         case Symbols.isModel:
@@ -125,13 +137,15 @@ export default function createModel<RepoType, T extends object>(
           return setErrors;
         case InternalSymbols.hasValidationRun:
           return hasValidationRun;
+        case InternalSymbols.hotSwap:
+          return hotSwap;
 
         default:
-          return Reflect.get(target, prop, receiver);
+          return Reflect.get(currentObj, prop, receiver);
       }
     },
 
-    set(obj, prop, value) {
+    set(_target, prop, value) {
       if (typeof prop === 'symbol' && SYMBOL_VALUES.includes(prop)) {
         throw new Error('Cannot set Fewer Symbol properties');
       }
@@ -145,10 +159,10 @@ export default function createModel<RepoType, T extends object>(
           changes.delete(prop);
         }
       } else {
-        changes.set(prop, Reflect.get(obj, prop));
+        changes.set(prop, Reflect.get(currentObj, prop));
       }
 
-      return Reflect.set(obj, prop, value);
+      return Reflect.set(currentObj, prop, value);
     },
   });
 }

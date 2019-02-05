@@ -6,7 +6,6 @@ import createModel, {
   ValidationError,
   InternalSymbols,
   InternalSymbolProperties,
-  Model,
 } from './createModel';
 import { Pipe } from './pipe';
 import { Association, AssociationType } from '../Association';
@@ -73,6 +72,10 @@ export class Repository<
     this.runningQuery = runningQuery;
     this.pipes = pipes;
     this.queryType = queryType;
+  }
+
+  private get db() {
+    return this.schemaTable.database;
   }
 
   [INTERNAL_TYPES.TO_SQ_SELECT](): Select {
@@ -166,11 +169,9 @@ export class Repository<
       throw new Error('model was not valid');
     }
 
-    const db = this.schemaTable.database;
-
     const insertQuery = sq.insert(this.schemaTable.name).set(model);
 
-    const primaryKey = await db.insert(insertQuery);
+    const primaryKey = await this.db.insert(insertQuery);
     // @ts-ignore Need to type the primary key:
     model.id = primaryKey;
 
@@ -214,9 +215,7 @@ export class Repository<
       .update(this.schemaTable.name, ['id', model.id])
       .set(changeSet);
 
-    const db = this.schemaTable.database;
-
-    await db.update(updateQuery);
+    await this.db.update(updateQuery);
 
     // TODO: Use Reload method to reload this in-place:
     return this.reload(model, true);
@@ -229,18 +228,21 @@ export class Repository<
     T extends Partial<SchemaType & RegisteredExtensions> &
       SymbolProperties<SchemaType & RegisteredExtensions>
   >(model: T, inPlace = false) {
-    // TODO: Support in-place reloads:
     // TODO: Stash the repository onto the model so that we don't need to re-create this here?
-    // TODO: Move DB to private getter.
-    const db = this.schemaTable.database;
-
     const query = this.selectQuery()
       // @ts-ignore Need to type the primary key better:
       .where({ id: model.id })
       .limit(1);
-    const [data] = await db.select(query);
 
-    return this.from(data);
+    const [data] = await this.db.select(query);
+
+    if (inPlace) {
+      const modelWithInternals = model as T & InternalSymbolProperties;
+      modelWithInternals[InternalSymbols.hotSwap](data);
+      return model;
+    } else {
+      return this.from(data);
+    }
   }
 
   /**
@@ -477,10 +479,9 @@ export class Repository<
     ) => void,
     onRejected?: (error: Error) => void,
   ) {
-    const db = this.schemaTable.database;
     try {
       const query = this.selectQuery();
-      const data = await db.select(query);
+      const data = await this.db.select(query);
 
       if (this.queryType === QueryTypes.SINGLE) {
         return onFulfilled(data[0]);
