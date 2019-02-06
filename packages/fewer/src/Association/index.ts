@@ -9,7 +9,6 @@ import {
   ResolveAssociations,
   Subset,
 } from '../types';
-import { Schema } from '../Schema';
 
 export enum AssociationType {
   HAS_ONE = 'hasOne',

@@ -1,6 +1,7 @@
 import { Select, Insert, Update } from '@fewer/sq';
 import { Migration } from '../Migration';
 import FieldType from '../FieldType';
+import { INTERNAL_TYPES } from '../types';
 
 interface BaseFieldTypes {
   [columnName: string]: (
@@ -49,11 +50,13 @@ export interface AdapterConfiguration<
 export class Adapter<
   TableTypes = any,
   FieldTypes = any,
+  FunctionsType = any,
   DBConfiguration = any,
   DBInstance = any
 > {
   TableTypes!: TableTypes;
   FieldTypes: FieldTypes;
+  FunctionsType!: FunctionsType;
 
   connected: boolean;
   connection: Promise<DBInstance> | null;
@@ -152,12 +155,14 @@ export class Adapter<
 export function createAdapter<
   TableTypes extends object,
   FieldTypes extends BaseFieldTypes,
+  FunctionsType,
   DBConfiguration,
   DBInstance
 >(impl: AdapterConfiguration<FieldTypes, DBConfiguration, DBInstance>) {
   return class AdapterImpl extends Adapter<
     TableTypes,
     FieldTypes,
+    FunctionsType,
     DBConfiguration,
     DBInstance
   > {

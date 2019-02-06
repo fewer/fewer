@@ -1,5 +1,5 @@
 import { createSchema } from './Schema';
-import { createRepository, ValidationError, Pipe } from './Repository';
+import { createRepository, ValidationError, Pipe, ExprType } from './Repository';
 import { createDatabase, Database } from './Database';
 import { createBelongsTo, createHasOne, createHasMany } from './Association';
 import { createMigration, Migration, MigrationDefinition } from './Migration';
@@ -35,4 +35,5 @@ export {
   ValidationError,
   MigrationDefinition,
   Pipe,
+  ExprType,
 };
