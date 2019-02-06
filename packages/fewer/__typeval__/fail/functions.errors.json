@@ -1,0 +1,28 @@
+[
+    {
+        "location": {
+            "start": {
+                "line": 16,
+                "column": 50
+            },
+            "end": {
+                "line": 16,
+                "column": 60
+            }
+        },
+        "errorMessage": "Argument of type 'ExprType<number>' is not assignable to parameter of type 'ExprType<string>'.\n  Type 'number' is not assignable to type 'string'."
+    },
+    {
+        "location": {
+            "start": {
+                "line": 16,
+                "column": 63
+            },
+            "end": {
+                "line": 16,
+                "column": 71
+            }
+        },
+        "errorMessage": "Argument of type '\"foobar\"' is not assignable to parameter of type 'ExprType<{}>'."
+    }
+]

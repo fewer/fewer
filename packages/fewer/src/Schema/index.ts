@@ -20,6 +20,7 @@ export class SchemaTable<
   readonly [INTERNAL_TYPES.INTERNAL_TYPE]: WithUndefinedPropertiesAsOptionals<
     BuiltTable<T>
   >;
+  ['@@foo']: T;
 
   database: Database<DBAdapter>;
   name: string;

@@ -1,4 +1,4 @@
-import { createDatabase, createAdapter, FieldType } from '../src';
+import { createDatabase, createAdapter, FieldType, ExprType } from '../src';
 
 const fieldTypes = {
   string: () => new FieldType<string>('string'),
@@ -13,9 +13,17 @@ interface TableTypes {
   handlesOptions?: boolean;
 }
 
-type FieldTypes = typeof fieldTypes;
+type ExprTypeWithLiterals<T> = T extends ExprType<string> ? ExprType<string> | string : T;
 
-export const Adapter = createAdapter<TableTypes, FieldTypes, any, any>({
+const functions = {
+  eq: <T>(left: ExprTypeWithLiterals<ExprType<T>>, right: ExprTypeWithLiterals<ExprType<T>>) => new ExprType<boolean>(),
+  lower: <T>(input: ExprType<string>) => new ExprType<string>()
+}
+
+type FieldTypes = typeof fieldTypes;
+type FunctionsType = typeof functions;
+
+export const Adapter = createAdapter<TableTypes, FieldTypes, FunctionsType, any, any>({
   fieldTypes,
   async connect() {},
   async disconnect() {},

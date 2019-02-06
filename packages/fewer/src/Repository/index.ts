@@ -1,5 +1,5 @@
 import sq, { Select } from '@fewer/sq';
-import { SchemaTable } from '../Schema';
+import { SchemaTable, FieldType } from '../Schema';
 import createModel, {
   SymbolProperties,
   Symbols,
@@ -26,10 +26,21 @@ export enum QueryTypes {
 
 type CheckUsedKeys<T, K> = T extends K ? 'This key is already in use.' : T;
 
+export class ExprType<T> {
+  readonly ['@@TEST']: T
+}
+
+type FieldTypeToExpr<FT> = FT extends FieldType<infer T> ? ExprType<T> : never;
+type FieldTypesToExprs<FieldTypes> = {
+  [K in keyof FieldTypes]: FieldTypeToExpr<FieldTypes[K]>
+};
+
 export class Repository<
   SchemaType = {},
   // TODO: Make this just extensions, not schema + extensions.
   RegisteredExtensions = {},
+  FunctionsType = {},
+  FieldTypes = {},
   SelectionSet = INTERNAL_TYPES.ALL_FIELDS,
   LoadAssociations extends Associations = {},
   JoinAssociations extends Associations = {},
@@ -90,6 +101,8 @@ export class Repository<
   ): Repository<
     SchemaType,
     RegisteredExtensions & Extensions,
+    FunctionsType,
+    FieldTypes,
     SelectionSet,
     LoadAssociations,
     JoinAssociations,
@@ -227,10 +240,12 @@ export class Repository<
     wheres: WhereType<
       SchemaType & RegisteredExtensions,
       JoinAssociations
-    >,
+    >
   ): Repository<
     SchemaType,
     RegisteredExtensions,
+    FunctionsType,
+    FieldTypes,
     SelectionSet,
     LoadAssociations,
     JoinAssociations,
@@ -244,6 +259,26 @@ export class Repository<
     );
   }
 
+  whereFn(
+    where: ((fns: FunctionsType, columns: FieldTypesToExprs<FieldTypes>) => any),
+  ): Repository<
+    SchemaType,
+    RegisteredExtensions,
+    FunctionsType,
+    FieldTypes,
+    SelectionSet,
+    LoadAssociations,
+    JoinAssociations,
+    QueryTypes.MULTIPLE
+  > {
+    return new Repository(
+      this.schemaTable,
+      this.selectQuery().where(where),
+      this.pipes,
+      QueryTypes.MULTIPLE,
+    );
+  }
+
   /**
    * TODO: Documentation.
    */
@@ -252,6 +287,8 @@ export class Repository<
   ): Repository<
     SchemaType,
     RegisteredExtensions,
+    FunctionsType,
+    FieldTypes,
     SelectionSet,
     LoadAssociations,
     JoinAssociations,
@@ -275,6 +312,8 @@ export class Repository<
   ): Repository<
     SchemaType,
     RegisteredExtensions,
+    FunctionsType,
+    FieldTypes,
     CreateSelectionSet<SelectionSet, Key>,
     LoadAssociations,
     JoinAssociations,
@@ -297,6 +336,8 @@ export class Repository<
   ): Repository<
     SchemaType,
     RegisteredExtensions & { [P in Alias]: SchemaType[Key] },
+    FunctionsType,
+    FieldTypes,
     CreateSelectionSet<SelectionSet, Alias>,
     LoadAssociations,
     JoinAssociations,
@@ -325,6 +366,8 @@ export class Repository<
   ): Repository<
     SchemaType,
     RegisteredExtensions,
+    FunctionsType,
+    FieldTypes,
     SelectionSet,
     LoadAssociations,
     JoinAssociations,
@@ -346,6 +389,8 @@ export class Repository<
   ): Repository<
     SchemaType,
     RegisteredExtensions,
+    FunctionsType,
+    FieldTypes,
     SelectionSet,
     LoadAssociations,
     JoinAssociations,
@@ -380,6 +425,8 @@ export class Repository<
   ): Repository<
     SchemaType,
     RegisteredExtensions,
+    FunctionsType,
+    FieldTypes,
     SelectionSet,
     LoadAssociations & { [P in Name]: LoadAssociation },
     JoinAssociations,
@@ -426,6 +473,8 @@ export class Repository<
   ): Repository<
     SchemaType,
     RegisteredExtensions,
+    FunctionsType,
+    FieldTypes,
     SelectionSet,
     LoadAssociations,
     JoinAssociations & { [P in Name]: JoinAssociation },
@@ -495,6 +544,8 @@ export function createRepository<Type extends SchemaTable>(
 ): Repository<
   Type[INTERNAL_TYPES.INTERNAL_TYPE],
   {},
+  Type['database']['adapter']['FunctionsType'],
+  Type['@@foo'],
   INTERNAL_TYPES.ALL_FIELDS,
   {},
   {},

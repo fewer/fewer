@@ -9,7 +9,8 @@ export const enum INTERNAL_TYPES {
   INTERNAL_TYPE = '@@INTERNAL_TYPE',
   SCHEMA_TYPE = '@@SCHEMA_TYPE',
   JOINS = '@@JOINS',
-  TO_SQ_SELECT = '@@TO_SQ_SELECT'
+  TO_SQ_SELECT = '@@TO_SQ_SELECT',
+  FUNCTIONS_TYPE = '@@FUNCTIONS_TYPE'
 }
 
 // We default to selecting all fields, but once you pluck one field, we need to remove

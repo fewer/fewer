@@ -37,6 +37,10 @@ export class Database<DBAdapter extends Adapter = Adapter> {
   update(query: Update): Promise<any> {
     return this.adapter.update(query);
   }
+
+  fieldTypes(): DBAdapter['FieldTypes'] {
+    return this.adapter.FieldTypes;
+  }
 }
 
 /**
