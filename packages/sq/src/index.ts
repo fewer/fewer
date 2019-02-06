@@ -20,10 +20,11 @@ export default {
     });
   },
 
-  update(table: string) {
+  update(table: string, primaryKey: [string, string | number]) {
     return new Update({
       table,
       fields: {},
+      primaryKey,
     });
   },
 };

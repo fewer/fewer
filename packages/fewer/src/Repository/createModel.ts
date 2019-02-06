@@ -53,18 +53,22 @@ export interface SymbolProperties<T = any> {
 
 const SetErrors: unique symbol = Symbol('setErrors');
 const HasValidationRun: unique symbol = Symbol('hasValidationRun');
+const DynAssign: unique symbol = Symbol('dynAssign');
 
 export const InternalSymbols: {
   setErrors: typeof SetErrors;
   hasValidationRun: typeof HasValidationRun;
+  dynAssign: typeof DynAssign;
 } = {
   setErrors: SetErrors,
   hasValidationRun: HasValidationRun,
+  dynAssign: DynAssign,
 };
 
 export interface InternalSymbolProperties {
   [InternalSymbols.setErrors]: (newErrors: ValidationError[]) => void;
   [InternalSymbols.hasValidationRun]: boolean;
+  [InternalSymbols.dynAssign]: (nextObj: object) => void;
 }
 
 export interface ValidationError<T = any> {
@@ -81,9 +85,13 @@ export interface ValidationError<T = any> {
 
 const DEFAULT_ERRORS: ReadonlyArray<ValidationError> = Object.freeze([]);
 
+export type Model<RepoType, T> = T & Partial<RepoType> & SymbolProperties<RepoType>;
+
 export default function createModel<RepoType, T extends object>(
-  obj: T,
-): T & Partial<RepoType> & SymbolProperties<RepoType> {
+  initialObj: T,
+): Model<RepoType, T> {
+  // Clone to ensure we can safely mutate:
+  const obj = { ...initialObj };
   const changes = new Map();
 
   let hasValidationRun = false;
@@ -95,9 +103,16 @@ export default function createModel<RepoType, T extends object>(
     errors = Object.freeze(newErrors);
   }
 
+  function dynAssign(nextObj: T) {
+    changes.clear();
+    Object.assign(obj, nextObj);
+    hasValidationRun = false;
+    errors = DEFAULT_ERRORS;
+  }
+
   // @ts-ignore The proxy implementation here is hard for TypeScript to understand.
   return new Proxy(obj, {
-    get(target, prop, receiver) {
+    get(target, prop) {
       // TODO: We should probably break this out into a function to get the symbol properties:
       switch (prop) {
         case Symbols.isModel:
@@ -123,13 +138,14 @@ export default function createModel<RepoType, T extends object>(
           return setErrors;
         case InternalSymbols.hasValidationRun:
           return hasValidationRun;
-
+        case InternalSymbols.dynAssign:
+          return dynAssign;
         default:
-          return Reflect.get(target, prop, receiver);
+          return Reflect.get(target, prop);
       }
     },
 
-    set(obj, prop, value) {
+    set(target, prop, value) {
       if (typeof prop === 'symbol' && SYMBOL_VALUES.includes(prop)) {
         throw new Error('Cannot set Fewer Symbol properties');
       }
@@ -143,10 +159,10 @@ export default function createModel<RepoType, T extends object>(
           changes.delete(prop);
         }
       } else {
-        changes.set(prop, Reflect.get(obj, prop));
+        changes.set(prop, Reflect.get(target, prop));
       }
 
-      return Reflect.set(obj, prop, value);
+      return Reflect.set(target, prop, value);
     },
   });
 }

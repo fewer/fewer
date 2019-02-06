@@ -139,16 +139,20 @@ export const Adapter = createAdapter<TableTypes, FieldTypes, ConnectionConfig, C
       .insert()
       .into(context.table)
       .setFields(context.fields)
+      // TODO: The primary key shouldn't be forced here:
       .returning('id');
 
     const results = await db.query(insert.toString());
-    return results.rows;
+
+    // TODO: We should have a way to signal the primary key:
+    return results.rows[0].id;
   },
 
   async update(db, context) {
     const update = squel
       .update()
       .table(context.table)
+      .where(`${context.primaryKey[0]} = ?`, [context.primaryKey[1]])
       .setFields(context.fields);
 
     const results = await db.query(update.toString());

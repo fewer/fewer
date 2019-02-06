@@ -77,8 +77,20 @@ export function hasDependency(dep: string) {
   return !!pkg.dependencies[dep] || !!pkg.devDependencies[dep];
 }
 
-export async function npmInstall(...packages: string[]) {
-  await execa('npm', ['install', ...packages]);
+export async function installPackages(warn: Function, ...packages: string[]) {
+  const manager = await prompt({
+    type: 'select',
+    message: 'Which package manager should be used to install new dependencies?',
+    choices: ['npm', 'yarn', 'skip dependencies'],
+  });
+
+  if (manager === 'npm') {
+    await execa('npm', ['install', ...packages]);
+  } else if (manager === 'yarn') {
+    await execa('yarn', ['add', ...packages]);
+  } else {
+    warn(`The following dependencies are required to run, but were not installed: ${packages.join(', ')}`);
+  }
 }
 
 export async function prompt(options: {

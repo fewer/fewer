@@ -74,6 +74,10 @@ export class Repository<
     this.queryType = queryType;
   }
 
+  private get db() {
+    return this.schemaTable.database;
+  }
+
   [INTERNAL_TYPES.TO_SQ_SELECT](): Select {
     return this.selectQuery();
   }
@@ -158,7 +162,6 @@ export class Repository<
    * TODO: Documentation.
    */
   async create<T extends Partial<SchemaType & RegisteredExtensions>>(obj: T) {
-    // Convert the object:
     const model = this.from(obj);
 
     const valid = this.validate(model);
@@ -166,32 +169,32 @@ export class Repository<
       throw new Error('model was not valid');
     }
 
-    const db = this.schemaTable.database;
+    const insertQuery = sq.insert(this.schemaTable.name).set(model);
 
-    const query = sq.insert(this.schemaTable.name).set(model);
+    const primaryKey = await this.db.insert(insertQuery);
+    // @ts-ignore Need to type the primary key:
+    model.id = primaryKey;
 
-    const [data] = await db.insert(query);
-
-    // TODO: Avoid double-creating the model:
-    return this.from(data);
+    return this.reload(model, true);
   }
 
   /**
-   * Updates a model in the database.
+   * Saves a model in the database.
    */
-  async update<
+  async save<
     T extends Partial<SchemaType & RegisteredExtensions> &
       SymbolProperties<SchemaType & RegisteredExtensions>
   >(model: T) {
     // Ensure that we're actually working with a model:
     if (!model[Symbols.isModel]) {
       throw new Error(
-        'Attempted to update an object that was not a fewer model.',
+        'Attempted to save an object that was not a fewer model.',
       );
     }
 
     const valid = this.validate(model);
     if (!valid) {
+      // TODO: Expose the validation errors here:
       throw new Error('model was not valid');
     }
 
@@ -207,27 +210,45 @@ export class Repository<
       changeSet[property] = model[property];
     }
 
-    // TODO: Make update work:
-    const query = sq
-      .update(this.schemaTable.name)
-      // TODO: Make this work:
-      // .id('id', model.id)
+    const updateQuery = sq
+      // @ts-ignore Need to type the primary key better:
+      .update(this.schemaTable.name, ['id', model.id])
       .set(changeSet);
 
-    const db = this.schemaTable.database;
-    const [data] = await db.update(query);
+    await this.db.update(updateQuery);
 
-    return this.from(data);
+    return this.reload(model);
+  }
+
+  /**
+   * Reloads the model in-place.
+   */
+  async reload<
+    T extends Partial<SchemaType & RegisteredExtensions> &
+      SymbolProperties<SchemaType & RegisteredExtensions>
+  >(model: T, inPlace = false) {
+    // TODO: Stash the repository onto the model so that we don't need to re-create this here?
+    const query = this.selectQuery()
+      // @ts-ignore Need to type the primary key better:
+      .where({ id: model.id })
+      .limit(1);
+
+    const [data] = await this.db.select(query);
+
+    if (inPlace) {
+      const modelWithInternals = model as T & InternalSymbolProperties;
+      modelWithInternals[InternalSymbols.dynAssign](data);
+      return model;
+    } else {
+      return this.from(data);
+    }
   }
 
   /**
    * TODO: Documentation.
    */
   where(
-    wheres: WhereType<
-      SchemaType & RegisteredExtensions,
-      JoinAssociations
-    >,
+    wheres: WhereType<SchemaType & RegisteredExtensions, JoinAssociations>,
   ): Repository<
     SchemaType,
     RegisteredExtensions,
@@ -457,10 +478,9 @@ export class Repository<
     ) => void,
     onRejected?: (error: Error) => void,
   ) {
-    const db = this.schemaTable.database;
     try {
       const query = this.selectQuery();
-      const data = await db.select(query);
+      const data = await this.db.select(query);
 
       if (this.queryType === QueryTypes.SINGLE) {
         return onFulfilled(data[0]);
