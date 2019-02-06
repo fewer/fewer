@@ -237,7 +237,7 @@ export class Repository<
 
     if (inPlace) {
       const modelWithInternals = model as T & InternalSymbolProperties;
-      modelWithInternals[InternalSymbols.hotSwap](data);
+      modelWithInternals[InternalSymbols.dynAssign](data);
       return model;
     } else {
       return this.from(data);

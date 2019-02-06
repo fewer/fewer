@@ -77,4 +77,12 @@ describe('createModel', () => {
     expect(model[InternalSymbols.hasValidationRun]).toEqual(true);
     expect(model[Symbols.valid]).toEqual(false);
   });
+
+  it('allows dynamic assignment of properties without making the object dirty', () => {
+    // NOTE: Type as any to allow calling internal methods:
+    const model = createModel({ one: '1', two: '2' }) as any;
+    model[InternalSymbols.dynAssign]({ two: 'two', three: '3' });
+    expect(model[Symbols.dirty]).toEqual(false);
+    expect(model).toEqual({ one: '1', two: 'two', three: '3' });
+  });
 });

@@ -53,22 +53,22 @@ export interface SymbolProperties<T = any> {
 
 const SetErrors: unique symbol = Symbol('setErrors');
 const HasValidationRun: unique symbol = Symbol('hasValidationRun');
-const HotSwap: unique symbol = Symbol('hotSwap');
+const DynAssign: unique symbol = Symbol('dynAssign');
 
 export const InternalSymbols: {
   setErrors: typeof SetErrors;
   hasValidationRun: typeof HasValidationRun;
-  hotSwap: typeof HotSwap;
+  dynAssign: typeof DynAssign;
 } = {
   setErrors: SetErrors,
   hasValidationRun: HasValidationRun,
-  hotSwap: HotSwap,
+  dynAssign: DynAssign,
 };
 
 export interface InternalSymbolProperties {
   [InternalSymbols.setErrors]: (newErrors: ValidationError[]) => void;
   [InternalSymbols.hasValidationRun]: boolean;
-  [InternalSymbols.hotSwap]: (nextObj: object) => void;
+  [InternalSymbols.dynAssign]: (nextObj: object) => void;
 }
 
 export interface ValidationError<T = any> {
@@ -88,10 +88,11 @@ const DEFAULT_ERRORS: ReadonlyArray<ValidationError> = Object.freeze([]);
 export type Model<RepoType, T> = T & Partial<RepoType> & SymbolProperties<RepoType>;
 
 export default function createModel<RepoType, T extends object>(
-  obj: T,
+  initialObj: T,
 ): Model<RepoType, T> {
+  // Clone to ensure we can safely mutate:
+  const obj = { ...initialObj };
   const changes = new Map();
-  let currentObj = obj;
 
   let hasValidationRun = false;
   let errors: ReadonlyArray<ValidationError> = DEFAULT_ERRORS;
@@ -102,16 +103,16 @@ export default function createModel<RepoType, T extends object>(
     errors = Object.freeze(newErrors);
   }
 
-  function hotSwap(nextObj: T) {
+  function dynAssign(nextObj: T) {
     changes.clear();
-    currentObj = nextObj;
+    Object.assign(obj, nextObj);
     hasValidationRun = false;
     errors = DEFAULT_ERRORS;
   }
 
   // @ts-ignore The proxy implementation here is hard for TypeScript to understand.
-  return new Proxy({}, {
-    get(_target, prop, receiver) {
+  return new Proxy(obj, {
+    get(target, prop) {
       // TODO: We should probably break this out into a function to get the symbol properties:
       switch (prop) {
         case Symbols.isModel:
@@ -137,15 +138,14 @@ export default function createModel<RepoType, T extends object>(
           return setErrors;
         case InternalSymbols.hasValidationRun:
           return hasValidationRun;
-        case InternalSymbols.hotSwap:
-          return hotSwap;
-
+        case InternalSymbols.dynAssign:
+          return dynAssign;
         default:
-          return Reflect.get(currentObj, prop, receiver);
+          return Reflect.get(target, prop);
       }
     },
 
-    set(_target, prop, value) {
+    set(target, prop, value) {
       if (typeof prop === 'symbol' && SYMBOL_VALUES.includes(prop)) {
         throw new Error('Cannot set Fewer Symbol properties');
       }
@@ -159,10 +159,10 @@ export default function createModel<RepoType, T extends object>(
           changes.delete(prop);
         }
       } else {
-        changes.set(prop, Reflect.get(currentObj, prop));
+        changes.set(prop, Reflect.get(target, prop));
       }
 
-      return Reflect.set(currentObj, prop, value);
+      return Reflect.set(target, prop, value);
     },
   });
 }
