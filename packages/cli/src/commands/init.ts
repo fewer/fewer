@@ -2,11 +2,11 @@ import path from 'path';
 import cli from 'cli-ux';
 import { Command } from '@oclif/command';
 import {
-  npmInstall,
   createFile,
   prompt,
   createDirectory,
   createFileWithContents,
+  installPackages,
 } from '../utils';
 import commonFlags from '../commonFlags';
 import { FewerConfigurationFile } from '../getConfig';
@@ -65,7 +65,7 @@ export default class Init extends Command {
     }
 
     cli.action.start('Installing npm dependencies');
-    await npmInstall('fewer', `@fewer/adapter-${adapter.toLowerCase()}`);
+    await installPackages(this.warn, 'fewer', `@fewer/adapter-${adapter.toLowerCase()}`);
     cli.action.stop();
 
     cli.action.start('Creating files');

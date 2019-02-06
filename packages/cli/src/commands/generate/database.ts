@@ -1,7 +1,7 @@
 import path from 'path';
 import cli from 'cli-ux';
 import { Command, flags } from '@oclif/command';
-import { npmInstall, createFile } from '../../utils';
+import { createFile, installPackages } from '../../utils';
 import commonFlags from '../../commonFlags';
 import getConfig from '../../getConfig';
 
@@ -39,7 +39,7 @@ export default class GenerateDatabase extends Command {
     const config = await getConfig();
 
     cli.action.start('Installing adapter');
-    await npmInstall(`@fewer/adapter-${flags.adapter}`);
+    await installPackages(this.warn, `@fewer/adapter-${flags.adapter}`);
     cli.action.stop();
 
     cli.action.start('Creating files');
