@@ -7,11 +7,11 @@ import {
 import { database } from '../../__tests__/mocks';
 
 const schema = createSchema()
-  .table(database, 'users', t => ({
+  .table(database, 'users', { primaryKey: 'id' }, t => ({
     firstName: t.string(),
     lastName: t.string(),
   }))
-  .table(database, 'posts', t => ({
+  .table(database, 'posts', { primaryKey: 'id' }, t => ({
     title: t.string(),
     subtitle: t.maybeString(),
     userId: t.number(),
@@ -34,6 +34,6 @@ Users.find(1)
   .where({
     posts: {
       subtitle: 'hello world',
-      incorrect: 123
+      incorrect: 123,
     },
   });

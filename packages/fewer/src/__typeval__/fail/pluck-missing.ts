@@ -7,13 +7,13 @@ import {
 import { database } from '../../__tests__/mocks';
 
 const schema = createSchema()
-  .table(database, 'users', null, t => ({
+  .table(database, 'users', { primaryKey: 'id' }, t => ({
     firstName: t.string(),
     middleName: t.string(),
     lastName: t.string(),
     birthday: t.maybe<Date>(),
   }))
-  .table(database, 'posts', null, t => ({
+  .table(database, 'posts', { primaryKey: 'id' }, t => ({
     title: t.string(),
     subtitle: t.string(),
     content: t.string(),

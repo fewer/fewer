@@ -2,10 +2,15 @@ import * as typeval from '@fewer/typeval';
 import { createRepository, ValidationError, createSchema } from '../../';
 import { database } from '../../__tests__/mocks';
 
-const schema = createSchema().table(database, 'users', null, t => ({
-  firstName: t.string(),
-  lastName: t.string(),
-}));
+const schema = createSchema().table(
+  database,
+  'users',
+  { primaryKey: 'id' },
+  t => ({
+    firstName: t.string(),
+    lastName: t.string(),
+  }),
+);
 
 const Users = createRepository(schema.tables.users);
 

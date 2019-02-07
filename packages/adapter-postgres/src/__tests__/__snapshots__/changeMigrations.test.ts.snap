@@ -1,9 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`migration createTable Down generates drop table sql 1`] = `"CREATE TABLE users ( id BIGSERIAL PRIMARY KEY, firstName VARCHAR(255), lastName VARCHAR(255), email VARCHAR(255) NOT NULL )"`;
+exports[`migration createTable Down generates drop table sql 1`] = `"CREATE TABLE users ( id BIGSERIAL, firstName VARCHAR(255), lastName VARCHAR(255), email VARCHAR(255) NOT NULL , PRIMARY KEY (id) )"`;
 
-exports[`migration createTable Up generates create table sql 1`] = `"CREATE TABLE users ( id BIGSERIAL PRIMARY KEY, firstName VARCHAR(255), lastName VARCHAR(255), email VARCHAR(255) NOT NULL )"`;
+exports[`migration createTable Up generates create table sql 1`] = `"CREATE TABLE users ( id BIGSERIAL, firstName VARCHAR(255), lastName VARCHAR(255), email VARCHAR(255) NOT NULL , PRIMARY KEY (id) )"`;
 
-exports[`migration createTable Up supports compound primary key 1`] = `"CREATE TABLE users ( id BIGSERIAL, firstName VARCHAR(255), lastName VARCHAR(255), email VARCHAR(255) NOT NULL , PRIMARY KEY (id, email) )"`;
-
-exports[`migration createTable Up supports unique constraint 1`] = `"CREATE TABLE users ( id BIGSERIAL PRIMARY KEY, firstName VARCHAR(255), lastName VARCHAR(255), email VARCHAR(255) NOT NULL UNIQUE )"`;
+exports[`migration createTable Up supports unique constraint 1`] = `"CREATE TABLE users ( id BIGSERIAL, firstName VARCHAR(255), lastName VARCHAR(255), email VARCHAR(255) NOT NULL UNIQUE , PRIMARY KEY (id) )"`;
