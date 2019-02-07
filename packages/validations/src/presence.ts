@@ -1,6 +1,6 @@
 import { Pipe, ValidationError } from 'fewer';
 
-export function presence<Instance, FieldName extends keyof Instance>(
+export function withPresence<Instance, FieldName extends keyof Instance>(
   ...fieldNames: FieldName[]
 ): Pipe<Instance> {
   return {

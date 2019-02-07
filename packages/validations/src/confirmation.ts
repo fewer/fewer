@@ -1,6 +1,6 @@
 import { Pipe } from 'fewer';
 
-export function confirmation<
+export function withConfirmation<
   Instance,
   FieldName extends keyof Instance,
   ConfirmationFieldName extends string
