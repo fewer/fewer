@@ -10,7 +10,10 @@ function getTypeName(type: FieldType): string {
     case 'char':
     case 'varchar': {
       const config: CharacterOptions = type.config;
-      return `${type.name}(${config.length})`;
+      if (config.length) {
+        return `${type.name}(${config.length})`;
+      }
+      return type.name;
     }
     case 'numeric':
     case 'decimal': {
