@@ -1,11 +1,12 @@
 {
-  "name": "@fewer/virtuals",
-  "version": "0.1.2",
-  "description": "A pipe to add custom fields and methods to objects returned by the repository",
+  "name": "@fewer/password",
+  "version": "0.1.0",
+  "description": "A pipe that handles hashing passwords",
   "keywords": [
     "fewer",
     "fewer-pipe",
-    "virtuals"
+    "hash",
+    "password"
   ],
   "author": "Jordan Gensler <jgensler@netflix.com>",
   "homepage": "https://github.com/fewer/fewer",
@@ -33,6 +34,10 @@
     "access": "public"
   },
   "devDependencies": {
+    "@types/bcrypt": "^3.0.0",
     "fewer": "^0.1.2"
+  },
+  "dependencies": {
+    "bcrypt": "^3.0.4"
   }
 }
