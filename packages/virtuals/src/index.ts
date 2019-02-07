@@ -1,6 +1,6 @@
 import { Pipe } from 'fewer';
 
-export function createVirtuals<Instance, Extensions>(
+export function virtuals<Instance, Extensions>(
   config: (instance: Instance) => Extensions,
 ): Pipe<Instance, Extensions> {
   return {

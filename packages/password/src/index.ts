@@ -8,7 +8,7 @@ type StringPropertyNames<T> = Exclude<
   undefined
 >;
 
-export function createPassword<Instance, Virtual extends string>(
+export function password<Instance, Virtual extends string>(
   virtualField: Virtual,
   hashedField: StringPropertyNames<Instance>,
   saltRounds: number = 12,
