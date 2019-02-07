@@ -1,7 +1,7 @@
 import * as typeval from '@fewer/typeval';
 import { createSchema } from '../../';
-import { INTERNAL_TYPES } from 'packages/fewer/src/types';
-import { database } from '../mocks';
+import { INTERNAL_TYPES } from '../../types';
+import { database } from '../../__tests__/mocks';
 
 const schema = createSchema().table(database, 'users', null, t => ({
   firstName: t.string(),
