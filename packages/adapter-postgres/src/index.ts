@@ -3,14 +3,14 @@ import { Client, ConnectionConfig } from 'pg';
 import squel from './squel';
 import TableTypes from './TableTypes';
 import migrate from './migrate';
-import fieldTypes from './fieldTypes';
+import columnTypes from './columnTypes';
 // TODO: Allow custom methods to be defined on the adapter rather than having this here:
 import rawQuery from './rawQuery';
 import infos from './infos';
 import { PostgresSelect } from 'squel';
 import { SelectJoin } from '@fewer/sq';
 
-type FieldTypes = typeof fieldTypes;
+type ColumnTypes = typeof columnTypes;
 
 export { rawQuery };
 
@@ -61,8 +61,8 @@ function applyWheres(table: string, prefix: string, select: PostgresSelect, join
     }
 }
 
-export const Adapter = createAdapter<TableTypes, FieldTypes, ConnectionConfig, Client>({
-  fieldTypes,
+export const Adapter = createAdapter<TableTypes, ColumnTypes, ConnectionConfig, Client>({
+  columnTypes,
 
   async connect(options) {
     const client = new Client(options);
@@ -138,14 +138,12 @@ export const Adapter = createAdapter<TableTypes, FieldTypes, ConnectionConfig, C
     const insert = squel
       .insert()
       .into(context.table)
-      .setFields(context.fields)
-      // TODO: The primary key shouldn't be forced here:
-      .returning('id');
+      .setFields(context.columns)
+      .returning(context.primaryKey);
 
     const results = await db.query(insert.toString());
 
-    // TODO: We should have a way to signal the primary key:
-    return results.rows[0].id;
+    return results.rows[0][context.primaryKey];
   },
 
   async update(db, context) {
@@ -153,7 +151,7 @@ export const Adapter = createAdapter<TableTypes, FieldTypes, ConnectionConfig, C
       .update()
       .table(context.table)
       .where(`${context.primaryKey[0]} = ?`, [context.primaryKey[1]])
-      .setFields(context.fields);
+      .setFields(context.columns);
 
     const results = await db.query(update.toString());
     return results.rows;

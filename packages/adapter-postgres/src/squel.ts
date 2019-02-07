@@ -1,6 +1,6 @@
 import baseSquel, { PostgresSquel, Block, QueryBuilder } from 'squel';
 import TableTypes from './TableTypes';
-import { ColumnOptions } from './fieldTypes';
+import { ColumnOptions } from './columnTypes';
 
 class CreateTableBlock extends baseSquel.cls.Block {
   _name: string = '';
@@ -34,10 +34,6 @@ class CreateFieldBlock extends baseSquel.cls.Block {
 
     if (options.nonNull) {
       modifiers.push('NOT NULL');
-    }
-
-    if (options.primaryKey) {
-      modifiers.push('PRIMARY KEY');
     }
 
     if (options.unique) {
@@ -97,11 +93,7 @@ class CreateTableQuery extends baseSquel.cls.QueryBuilder {
         new squel.cls.StringBlock(BLOCK_OPTIONS, `,`),
         new squel.cls.StringBlock(
           BLOCK_OPTIONS,
-          `PRIMARY KEY (${
-            Array.isArray(options.primaryKey)
-              ? options.primaryKey.join(', ')
-              : options.primaryKey
-          })`,
+          `PRIMARY KEY (${options.primaryKey})`,
         ),
       );
     }
@@ -159,8 +151,8 @@ interface SquelWithCreateTable extends PostgresSquel {
 
 const squel: SquelWithCreateTable = baseSquel.useFlavour('postgres') as any;
 
-squel.create = function(options?: TableTypes) {
-  return new CreateTableQuery(options || {}) as any;
+squel.create = function(options: TableTypes) {
+  return new CreateTableQuery(options) as any;
 };
 
 squel.dropTable = function(tableName: string) {

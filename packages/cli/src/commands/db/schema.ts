@@ -56,7 +56,7 @@ export default class GenerateSchema extends Command {
                   db.module === migration.database ||
                   db.module.default === migration.database,
               ),
-              columns: Object.entries(operation.fields).map(([key, value]) => ({
+              columns: Object.entries(operation.columns).map(([key, value]) => ({
                 name: key,
                 method: value.reflectName,
                 arguments: [value.config],

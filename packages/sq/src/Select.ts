@@ -1,4 +1,4 @@
-import Builder from "./Builder";
+import Builder from './Builder';
 
 type Pluck = string | [string, string];
 
@@ -24,8 +24,8 @@ interface Context {
 }
 
 export default class Select extends Builder<Context> {
-  pluck(...fields: Pluck[]) {
-    return this.next({ plucked: [...this.context.plucked, ...fields] });
+  pluck(...columns: Pluck[]) {
+    return this.next({ plucked: [...this.context.plucked, ...columns] });
   }
 
   limit(limit: number) {
@@ -42,18 +42,23 @@ export default class Select extends Builder<Context> {
 
   load(name: string, keys: [string, string], select: Select) {
     const existingLoads = this.context.loads || {};
-    const newLoads = {...existingLoads};
+    const newLoads = { ...existingLoads };
     newLoads[name] = {
       keys,
-      select
+      select,
     };
 
     return this.next({ loads: newLoads });
   }
 
-  join(name: string, keys: [string, string], tableName: string, select: Select) {
+  join(
+    name: string,
+    keys: [string, string],
+    tableName: string,
+    select: Select,
+  ) {
     const existingJoins = this.context.joins || {};
-    const newJoins = {...existingJoins};
+    const newJoins = { ...existingJoins };
     newJoins[name] = {
       keys,
       tableName,

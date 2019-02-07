@@ -2,7 +2,7 @@ import Builder from './Builder';
 
 interface Context {
   table: string;
-  fields: object;
+  columns: object;
   primaryKey: [string, string | number];
 }
 
@@ -11,7 +11,7 @@ export default class Update extends Builder<Context> {
     return this.next({ primaryKey: [id, value] });
   }
 
-  set(fields: object) {
-    return this.next({ fields: { ...this.context.fields, ...fields } });
+  set(columns: object) {
+    return this.next({ columns: { ...this.context.columns, ...columns } });
   }
 }

@@ -8,14 +8,18 @@ import {
 import { Adapter } from '../index';
 import config from './config';
 
-const database = createDatabase({ adapter: new Adapter({...config, database: 'fewer_typo_tests'}) });
+const database = createDatabase({
+  adapter: new Adapter({ ...config, database: 'fewer_typo_tests' }),
+});
 
 const schema = createSchema()
-  .table(database, 'users', t => ({
+  .table(database, 'users', { primaryKey: 'id' }, t => ({
+    id: t.bigserial(),
     first_name: t.string(),
     last_name: t.string(),
   }))
-  .table(database, 'posts', t => ({
+  .table(database, 'posts', { primaryKey: 'id' }, t => ({
+    id: t.bigserial(),
     title: t.string(),
     user_id: t.bigint(),
     subtitle: t.string(),
@@ -44,6 +48,8 @@ function setupUsers() {
 
 export async function testPluck() {
   await setupUsers();
-  const results = await Users.where({first_name: 'Emily'}).pluck('first_name')
-  return results as unknown as Promise<{first_name: number | string}[]>;
+  const results = await Users.where({ first_name: 'Emily' }).pluck(
+    'first_name',
+  );
+  return (results as unknown) as Promise<{ first_name: number | string }[]>;
 }

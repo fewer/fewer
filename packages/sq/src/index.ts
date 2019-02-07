@@ -13,17 +13,18 @@ export default {
     });
   },
 
-  insert(table: string) {
+  insert(table: string, primaryKey: string) {
     return new Insert({
       table,
-      fields: {},
+      columns: {},
+      primaryKey,
     });
   },
 
   update(table: string, primaryKey: [string, string | number]) {
     return new Update({
       table,
-      fields: {},
+      columns: {},
       primaryKey,
     });
   },

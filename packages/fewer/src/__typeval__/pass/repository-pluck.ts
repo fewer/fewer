@@ -1,13 +1,13 @@
 import * as typeval from '@fewer/typeval';
-import { createRepository, createSchema } from '../../src';
+import { createRepository, createSchema } from '../../';
 import { database } from '../mocks';
 
-const schema = createSchema().table(database, 'users', (t) => ({
+const schema = createSchema().table(database, 'users', null, t => ({
   firstName: t.string(),
   middleName: t.string(),
   lastName: t.string(),
   birthday: t.required<Date>(),
-}))
+}));
 
 const Users = createRepository(schema.tables.users);
 

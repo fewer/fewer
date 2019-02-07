@@ -1,10 +1,9 @@
-import { FieldType } from 'fewer';
+import { ColumnType } from 'fewer';
 
 export interface ColumnOptions {
   nonNull?: boolean;
   unique?: boolean;
   default?: any;
-  primaryKey?: boolean;
 }
 
 export interface NumericOptions extends ColumnOptions {
@@ -30,12 +29,12 @@ function columnType<T, Config extends ColumnOptions = ColumnOptions>(
 ) {
   return function(
     config?: Config,
-  ): FieldType<Config['nonNull'] extends true ? T : T | undefined, Config> {
-    return new FieldType(name, config, reflectName || name);
+  ): ColumnType<Config['nonNull'] extends true ? T : T | undefined, Config> {
+    return new ColumnType(name, config, reflectName || name);
   };
 }
 
-const fieldTypes = {
+const columnTypes = {
   // Boolean Type:
   boolean: columnType<boolean>('boolean'),
 
@@ -50,17 +49,18 @@ const fieldTypes = {
   real: columnType<number>('real'),
   // Numeric Serial Types (automatiocally non null):
   smallserial: (options?: ColumnOptions) =>
-    new FieldType<number>('smallserial', options),
-  serial: (options?: ColumnOptions) => new FieldType<number>('serial', options),
+    new ColumnType<number>('smallserial', options),
+  serial: (options?: ColumnOptions) =>
+    new ColumnType<number>('serial', options),
   bigserial: (options?: ColumnOptions) =>
-    new FieldType<number>('bigserial', options),
+    new ColumnType<number>('bigserial', options),
 
   // Character Types:
   char: columnType<string, CharacterOptions>('char'),
   varchar: columnType<string, CharacterOptions>('varchar'),
   text: columnType<string>('text'),
   string: (options?: CharacterOptions) =>
-    fieldTypes.varchar({ length: 255, ...options }),
+    columnTypes.varchar({ length: 255, ...options }),
 
   // Binary Data Types:
   bytea: columnType<string>('bytea'),
@@ -84,4 +84,4 @@ const fieldTypes = {
   // TODO: Array Types, Date/Time Types, Monetary Types, Network Address Types, Bit String Types, Text Search Types, XML Type, Range Types, Custom Types
 };
 
-export default fieldTypes;
+export default columnTypes;

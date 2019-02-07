@@ -1,9 +1,9 @@
 import * as typeval from '@fewer/typeval';
-import { createSchema } from '../../src';
+import { createSchema } from '../../';
 import { INTERNAL_TYPES } from 'packages/fewer/src/types';
 import { database } from '../mocks';
 
-const schema = createSchema().table(database, 'users', t => ({
+const schema = createSchema().table(database, 'users', null, t => ({
   firstName: t.string(),
   lastName: t.maybeString(),
   deleted: t.maybe<boolean>(),

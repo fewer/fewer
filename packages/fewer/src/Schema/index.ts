@@ -2,10 +2,10 @@ import { WithUndefinedPropertiesAsOptionals } from './typeHelpers';
 import { INTERNAL_TYPES } from '../types';
 import { Database } from '../Database';
 import { Adapter } from '../Adapter';
-import FieldType from '../FieldType';
+import ColumnType from '../ColumnType';
 
 interface TableProperties {
-  [key: string]: FieldType;
+  [key: string]: ColumnType;
 }
 
 type BuiltTable<T extends TableProperties> = {
@@ -14,23 +14,25 @@ type BuiltTable<T extends TableProperties> = {
 
 export class SchemaTable<
   DBAdapter extends Adapter = any,
-  T extends TableProperties = any
+  T = any
 > {
-  // TODO: Should we resolve this here, or inside of the repository itself?
-  readonly [INTERNAL_TYPES.INTERNAL_TYPE]: WithUndefinedPropertiesAsOptionals<
-    BuiltTable<T>
-  >;
+  readonly [INTERNAL_TYPES.INTERNAL_TYPE]: T;
 
   database: Database<DBAdapter>;
   name: string;
+  config: DBAdapter['TableTypes'];
+  primaryKey: keyof T;
 
   constructor(
     database: Database<DBAdapter>,
     name: string,
-    builder: (t: DBAdapter['FieldTypes']) => T,
+    config: DBAdapter['TableTypes'],
+    builder: (t: DBAdapter['ColumnTypes']) => TableProperties,
   ) {
     this.database = database;
     this.name = name;
+    this.config = config;
+    this.primaryKey = config.primaryKey;
   }
 }
 
@@ -46,9 +48,6 @@ export class Schema<RegisteredTables = {}> {
   /**
    * TODO: Documentation.
    */
-  // TODO: Built is current instance of `FieldTypes`.
-  // I need to probably unroll that type inside of the SchemaTable itself when stashing
-  // the type. Otherwise we can just keep the FieldTypes instance around.
   table<
     DBAdapter extends Adapter,
     TableName extends string,
@@ -56,11 +55,19 @@ export class Schema<RegisteredTables = {}> {
   >(
     database: Database<DBAdapter>,
     name: TableName,
-    builder: (t: DBAdapter['FieldTypes']) => Built,
+    config: DBAdapter['TableTypes'],
+    builder: (t: DBAdapter['ColumnTypes']) => Built,
   ): Schema<
-    RegisteredTables & { [P in TableName]: SchemaTable<DBAdapter, Built> }
+    RegisteredTables &
+      {
+        [P in TableName]: SchemaTable<
+          DBAdapter,
+          WithUndefinedPropertiesAsOptionals<BuiltTable<Built>>
+        >
+      }
   > {
-    const table = new SchemaTable(database, name, builder);
+    const table = new SchemaTable(database, name, config, builder);
+    // @ts-ignore TODO:
     return new Schema(this.version, {
       ...this.tables,
       [name]: table,
@@ -68,7 +75,7 @@ export class Schema<RegisteredTables = {}> {
   }
 }
 
-export { FieldType };
+export { ColumnType };
 
 /**
  * TODO: Documentation.

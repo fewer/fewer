@@ -1,4 +1,12 @@
-import { createSchema, createHasMany, createRepository, createBelongsTo, createMigration, createDatabase, Database } from 'fewer';
+import {
+  createSchema,
+  createHasMany,
+  createRepository,
+  createBelongsTo,
+  createMigration,
+  createDatabase,
+  Database,
+} from 'fewer';
 import { Adapter, rawQuery } from '..';
 import config from './config';
 import { prepare } from './setup';
@@ -7,11 +15,13 @@ type AdapterInstance = InstanceType<typeof Adapter>;
 
 function getSchemaAndRepos(database: Database) {
   const schema = createSchema()
-    .table(database, 'users', t => ({
+    .table(database, 'users', { primaryKey: 'id' }, t => ({
+      id: t.bigserial(),
       first_name: t.string(),
       last_name: t.string(),
     }))
-    .table(database, 'posts', t => ({
+    .table(database, 'posts', { primaryKey: 'id' }, t => ({
+      id: t.bigserial(),
       title: t.string(),
       user_id: t.bigint(),
       subtitle: t.string(),
@@ -24,8 +34,12 @@ function getSchemaAndRepos(database: Database) {
   const belongsToUser = createBelongsTo(Users, 'user_id');
 
   return {
-    schema, Users, Posts, userPosts, belongsToUser
-  }
+    schema,
+    Users,
+    Posts,
+    userPosts,
+    belongsToUser,
+  };
 }
 
 describe('load associations', () => {
@@ -41,16 +55,26 @@ describe('load associations', () => {
 
       const migration = createMigration(1, database, {
         change: (m, t) =>
-          m.createTable('users', null, {
-            id: t.bigserial({ primaryKey: true }),
-            first_name: t.string(),
-            last_name: t.string(),
-          }).createTable('posts', null, {
-            id: t.bigserial({ primaryKey: true }),
-            user_id: t.bigint(),
-            title: t.string(),
-            subtitle: t.string(),
-          }),
+          m
+            .createTable(
+              'users',
+              { primaryKey: 'id' },
+              {
+                id: t.bigserial(),
+                first_name: t.string(),
+                last_name: t.string(),
+              },
+            )
+            .createTable(
+              'posts',
+              { primaryKey: 'id' },
+              {
+                id: t.bigserial(),
+                user_id: t.bigint(),
+                title: t.string(),
+                subtitle: t.string(),
+              },
+            ),
       });
 
       await migration.run('up');

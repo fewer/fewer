@@ -1,19 +1,23 @@
 import { Select, Insert, Update } from '@fewer/sq';
 import { Migration } from '../Migration';
-import FieldType from '../FieldType';
+import ColumnType from '../ColumnType';
 
-interface BaseFieldTypes {
+interface BaseColumnTypes {
   [columnName: string]: (
     ...args: any[]
-  ) => FieldType | { [key: string]: FieldType };
+  ) => ColumnType | { [key: string]: ColumnType };
+}
+
+interface BaseTableTypes {
+  primaryKey: string;
 }
 
 export interface AdapterConfiguration<
-  FieldTypes extends BaseFieldTypes = any,
+  ColumnTypes extends BaseColumnTypes = any,
   Configuration = any,
   DBInstance = any
 > {
-  fieldTypes: FieldTypes;
+  columnTypes: ColumnTypes;
 
   connect(config: Configuration): Promise<DBInstance>;
   disconnect(db: DBInstance): Promise<void>;
@@ -48,12 +52,12 @@ export interface AdapterConfiguration<
 
 export class Adapter<
   TableTypes = any,
-  FieldTypes = any,
+  ColumnTypes = any,
   DBConfiguration = any,
   DBInstance = any
 > {
   TableTypes!: TableTypes;
-  FieldTypes: FieldTypes;
+  ColumnTypes: ColumnTypes;
 
   connected: boolean;
   connection: Promise<DBInstance> | null;
@@ -67,7 +71,7 @@ export class Adapter<
     this.client = null;
     this.config = config;
     this.impl = impl;
-    this.FieldTypes = impl.fieldTypes;
+    this.ColumnTypes = impl.columnTypes;
   }
 
   async connect() {
@@ -150,14 +154,14 @@ export class Adapter<
 }
 
 export function createAdapter<
-  TableTypes extends object,
-  FieldTypes extends BaseFieldTypes,
+  TableTypes extends BaseTableTypes,
+  ColumnTypes extends BaseColumnTypes,
   DBConfiguration,
   DBInstance
->(impl: AdapterConfiguration<FieldTypes, DBConfiguration, DBInstance>) {
+>(impl: AdapterConfiguration<ColumnTypes, DBConfiguration, DBInstance>) {
   return class AdapterImpl extends Adapter<
     TableTypes,
-    FieldTypes,
+    ColumnTypes,
     DBConfiguration,
     DBInstance
   > {

@@ -3,7 +3,7 @@ import {
   createHasMany,
   createBelongsTo,
   createSchema,
-} from '../../src';
+} from '../../';
 import { database } from '../mocks';
 
 const schema = createSchema()
@@ -28,12 +28,25 @@ const postsJoinedUser = Posts.join('users', belongsToUser);
 const usersLoadPosts = Users.load('posts', userPosts);
 const postsLoadUser = Posts.load('users', belongsToUser);
 
-// Query through join with incorrect query:
+// should be type errors
+usersJoinedPosts.join('posts', userPosts);
+postsJoinedUser.join('users', belongsToUser);
+usersLoadPosts.load('posts', userPosts);
+postsLoadUser.load('users', belongsToUser);
+
+Users.join('posts', userPosts.where({}));
+
+Posts.load('posts', userPosts);
+Posts.join('posts', userPosts);
+userPosts.load('posts', userPosts);
+userPosts.join('posts', userPosts);
+userPosts.join('posts', userPosts.where({}));
+
+// Query through load should not work:
 Users.find(1)
-  .join('posts', userPosts)
+  .load('posts', userPosts)
   .where({
     posts: {
-      subtitle: 'hello world',
-      incorrect: 123
+      title: 'testing',
     },
   });

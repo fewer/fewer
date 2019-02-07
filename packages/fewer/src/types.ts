@@ -53,7 +53,7 @@ export type ResolveAssociations<Assoc extends Associations> = {
 };
 
 export interface CommonQuery<Type, Assoc extends Associations> {
-  pluck(...fields: (keyof Type)[]): any;
+  pluck(...columns: (keyof Type)[]): any;
   pluckAs(name: keyof Type, alias: string): any;
   where(wheres: WhereType<Type, Assoc>): any;
   limit(amount: number): any;

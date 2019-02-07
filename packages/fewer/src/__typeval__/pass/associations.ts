@@ -4,15 +4,15 @@ import {
   createHasMany,
   createBelongsTo,
   createSchema,
-} from '../../src';
+} from '../../';
 import { database } from '../mocks';
 
 const schema = createSchema()
-  .table(database, 'users', t => ({
+  .table(database, 'users', null, t => ({
     firstName: t.string(),
     lastName: t.string(),
   }))
-  .table(database, 'posts', t => ({
+  .table(database, 'posts', null, t => ({
     title: t.string(),
     subtitle: t.maybeString(),
     userId: t.number(),

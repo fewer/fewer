@@ -1,8 +1,8 @@
 import * as typeval from '@fewer/typeval';
-import { createRepository, ValidationError, createSchema } from '../../src';
+import { createRepository, ValidationError, createSchema } from '../../';
 import { database } from '../mocks';
 
-const schema = createSchema().table(database, 'users', t => ({
+const schema = createSchema().table(database, 'users', null, t => ({
   firstName: t.string(),
   lastName: t.string(),
 }));

@@ -1,21 +1,21 @@
-import FieldType from '../FieldType';
+import ColumnType from '../ColumnType';
 
 export interface ColumnTypes {
-  [columnName: string]: FieldType;
+  [columnName: string]: ColumnType;
 }
 
 export interface CreateTable {
   type: 'createTable';
   name: string;
   options: any;
-  fields: ColumnTypes;
+  columns: ColumnTypes;
 }
 
 export interface DropTable {
   type: 'dropTable';
   name: string;
   options?: any;
-  fields?: ColumnTypes;
+  columns?: ColumnTypes;
 }
 
 export type Operation = CreateTable | DropTable;

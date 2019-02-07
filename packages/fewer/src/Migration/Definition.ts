@@ -4,30 +4,30 @@ import { MigrationBuilder } from './';
 type ChangeMigrationDefinition<DBAdapter extends Adapter> = {
   change: (
     m: MigrationBuilder<DBAdapter>,
-    t: DBAdapter['FieldTypes'],
+    t: DBAdapter['ColumnTypes'],
   ) => MigrationBuilder<any, false>;
 };
 
 export type ChangeMigrationShorthand<DBAdapter extends Adapter> = (
   m: MigrationBuilder<DBAdapter>,
-  t: DBAdapter['FieldTypes'],
+  t: DBAdapter['ColumnTypes'],
 ) => MigrationBuilder<any, false>;
 
 type UpDownMigrationDefinition<DBAdapter extends Adapter> = {
   up: (
     m: MigrationBuilder<DBAdapter>,
-    t: DBAdapter['FieldTypes'],
+    t: DBAdapter['ColumnTypes'],
   ) => MigrationBuilder;
   down: (
     m: MigrationBuilder<DBAdapter>,
-    t: DBAdapter['FieldTypes'],
+    t: DBAdapter['ColumnTypes'],
   ) => MigrationBuilder;
 };
 
 type IrreversibleMigrationDefinition<DBAdapter extends Adapter> = {
   up: (
     m: MigrationBuilder<DBAdapter>,
-    t: DBAdapter['FieldTypes'],
+    t: DBAdapter['ColumnTypes'],
   ) => MigrationBuilder;
   irreversible: true;
 };

@@ -1,8 +1,8 @@
-import { Migration, FieldType, Operations } from 'fewer';
+import { Migration, ColumnType, Operations } from 'fewer';
 import squel from './squel';
-import { CharacterOptions, NumericOptions } from './fieldTypes';
+import { CharacterOptions, NumericOptions } from './columnTypes';
 
-function getTypeName(type: FieldType): string {
+function getTypeName(type: ColumnType): string {
   // If there is no config, then we only have the name:
   if (!type.config) return type.name;
 
@@ -37,7 +37,7 @@ function getTypeName(type: FieldType): string {
 function createTable(operation: Operations.CreateTable) {
   const create = squel.create(operation.options);
   create.table(operation.name);
-  for (const [columnName, columnType] of Object.entries(operation.fields)) {
+  for (const [columnName, columnType] of Object.entries(operation.columns)) {
     const typeName = getTypeName(columnType);
     create.field(columnName, typeName, columnType.config);
   }

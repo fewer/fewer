@@ -1,4 +1,4 @@
-import { createMigration } from '../../src';
+import { createMigration } from '../../';
 import { database } from '../mocks';
 
 createMigration(1, database, (m, t) =>

@@ -3,17 +3,17 @@ import {
   createHasMany,
   createBelongsTo,
   createSchema,
-} from '../../src';
+} from '../../';
 import { database } from '../mocks';
 
 const schema = createSchema()
-  .table(database, 'users', t => ({
+  .table(database, 'users', null, t => ({
     firstName: t.string(),
     middleName: t.string(),
     lastName: t.string(),
     birthday: t.maybe<Date>(),
   }))
-  .table(database, 'posts', t => ({
+  .table(database, 'posts', null, t => ({
     title: t.string(),
     subtitle: t.string(),
     content: t.string(),
