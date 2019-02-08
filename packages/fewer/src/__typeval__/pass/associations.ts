@@ -4,15 +4,15 @@ import {
   createHasMany,
   createBelongsTo,
   createSchema,
-} from '../../src';
-import { database } from '../mocks';
+} from '../../';
+import { database } from '../../__tests__/mocks';
 
 const schema = createSchema()
-  .table(database, 'users', t => ({
+  .table(database, 'users', { primaryKey: 'id' }, t => ({
     firstName: t.string(),
     lastName: t.string(),
   }))
-  .table(database, 'posts', t => ({
+  .table(database, 'posts', { primaryKey: 'id' }, t => ({
     title: t.string(),
     subtitle: t.maybeString(),
     userId: t.number(),
@@ -47,14 +47,13 @@ async function main() {
     });
 
   // Query through nested join:
-  Users.join('posts', userPosts.join('user', belongsToUser))
-    .where({
-      posts: {
-        user: {
-          firstName: 'Emily',
-        }
-      }
-    });
+  Users.join('posts', userPosts.join('user', belongsToUser)).where({
+    posts: {
+      user: {
+        firstName: 'Emily',
+      },
+    },
+  });
 
   typeval.acceptsString(user.firstName);
   typeval.accepts<{ title: string; subtitle?: string; userId: number }[]>(

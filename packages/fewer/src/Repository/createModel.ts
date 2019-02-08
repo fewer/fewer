@@ -85,7 +85,9 @@ export interface ValidationError<T = any> {
 
 const DEFAULT_ERRORS: ReadonlyArray<ValidationError> = Object.freeze([]);
 
-export type Model<RepoType, T> = T & Partial<RepoType> & SymbolProperties<RepoType>;
+export type Model<RepoType, T> = T &
+  Partial<RepoType> &
+  SymbolProperties<RepoType>;
 
 export default function createModel<RepoType, T extends object>(
   initialObj: T,

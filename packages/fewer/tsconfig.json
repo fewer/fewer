@@ -6,5 +6,6 @@
     "rootDir": "src"
   },
   "include": ["./src"],
-  "references": [{ "path": "../sq" }]
+  "exclude": ["./src/__typeval__/**"],
+  "references": [{ "path": "../sq" }, { "path": "../typeval" }]
 }

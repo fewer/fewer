@@ -3,9 +3,9 @@ import {
   createHasMany,
   createBelongsTo,
   createSchema,
-} from '../../src';
-import { database } from '../../__typeval__/mocks'
-import { INTERNAL_TYPES } from '../../src/types';
+} from '../../';
+import { database } from '../../__tests__/mocks'
+import { INTERNAL_TYPES } from '../../types';
 
 interface User {
   id: number;
@@ -19,11 +19,13 @@ interface Post {
 }
 
 const schema = createSchema()
-  .table(database, 'users', t => ({
+  .table(database, 'users', { primaryKey: 'id' }, t => ({
+    id: t.number(),
     firstName: t.string(),
     lastName: t.string(),
   }))
-  .table(database, 'posts', t => ({
+  .table(database, 'posts', { primaryKey: 'id' }, t => ({
+    id: t.number(),
     title: t.string(),
     subtitle: t.maybeString(),
     userId: t.number(),

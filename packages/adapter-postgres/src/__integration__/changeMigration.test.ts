@@ -28,8 +28,8 @@ describe('change migration', () => {
     it('can run createTable up and down', async () => {
       const migration = createMigration(1, database, {
         change: (m, t) =>
-          m.createTable('users', null, {
-            id: t.bigserial({ primaryKey: true }),
+          m.createTable('users', { primaryKey: 'id' }, {
+            id: t.bigserial(),
             firstName: t.string(),
             lastName: t.string(),
             unbounded: t.varchar(),

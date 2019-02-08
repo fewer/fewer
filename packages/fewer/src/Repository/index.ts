@@ -27,9 +27,8 @@ export enum QueryTypes {
 type CheckUsedKeys<T, K> = T extends K ? 'This key is already in use.' : T;
 
 export class Repository<
-  SchemaType = {},
-  // TODO: Make this just extensions, not schema + extensions.
-  RegisteredExtensions = {},
+  SchemaType = any,
+  RegisteredExtensions = any,
   SelectionSet = INTERNAL_TYPES.ALL_FIELDS,
   LoadAssociations extends Associations = {},
   JoinAssociations extends Associations = {},
@@ -56,6 +55,10 @@ export class Repository<
    * Contains symbols that are used to access metadata about the state of models.
    */
   readonly symbols = Symbols;
+  /**
+   * The column that will be used as the primary key.
+   */
+  readonly primaryKey: keyof SchemaType;
 
   private schemaTable: SchemaTable;
   private runningQuery?: Select;
@@ -63,12 +66,13 @@ export class Repository<
   private queryType: QueryTypes;
 
   constructor(
-    schemaTable: SchemaTable,
+    schemaTable: SchemaTable<any, SchemaType>,
     runningQuery: Select | undefined,
     pipes: Pipe[],
     queryType: QueryTypes,
   ) {
     this.schemaTable = schemaTable;
+    this.primaryKey = schemaTable.primaryKey;
     this.runningQuery = runningQuery;
     this.pipes = pipes;
     this.queryType = queryType;
@@ -169,11 +173,10 @@ export class Repository<
       throw new Error('model was not valid');
     }
 
-    const insertQuery = sq.insert(this.schemaTable.name).set(model);
+    const insertQuery = sq.insert(this.schemaTable.name, this.primaryKey as string).set(model);
 
     const primaryKey = await this.db.insert(insertQuery);
-    // @ts-ignore Need to type the primary key:
-    model.id = primaryKey;
+    model[this.primaryKey] = primaryKey;
 
     return this.reload(model, true);
   }
@@ -211,8 +214,11 @@ export class Repository<
     }
 
     const updateQuery = sq
-      // @ts-ignore Need to type the primary key better:
-      .update(this.schemaTable.name, ['id', model.id])
+      // NOTE: We need to cast these the primary key value here because the primary key value type is not statically known.
+      .update(this.schemaTable.name, [
+        this.primaryKey as string,
+        model[this.primaryKey] as any,
+      ])
       .set(changeSet);
 
     await this.db.update(updateQuery);
@@ -229,8 +235,7 @@ export class Repository<
   >(model: T, inPlace = false) {
     // TODO: Stash the repository onto the model so that we don't need to re-create this here?
     const query = this.selectQuery()
-      // @ts-ignore Need to type the primary key better:
-      .where({ id: model.id })
+      .where({ id: model[this.primaryKey] })
       .limit(1);
 
     const [data] = await this.db.select(query);
@@ -292,7 +297,7 @@ export class Repository<
    * TODO: Documentation.
    */
   pluck<Key extends keyof SchemaType>(
-    ...fields: Key[]
+    ...columns: Key[]
   ): Repository<
     SchemaType,
     RegisteredExtensions,
@@ -303,7 +308,7 @@ export class Repository<
   > {
     return new Repository(
       this.schemaTable,
-      this.selectQuery().pluck(...(fields as string[])),
+      this.selectQuery().pluck(...(columns as string[])),
       this.pipes,
       this.queryType,
     );
@@ -408,14 +413,18 @@ export class Repository<
   > {
     let keys: [string, string];
     if (association.type === 'belongsTo') {
-      keys = [association.foreignKey, 'id'];
+      keys = [association.foreignKey, this.primaryKey as string];
     } else {
-      keys = ['id', association.foreignKey];
+      keys = [this.primaryKey as string, association.foreignKey];
     }
 
     return new Repository(
       this.schemaTable,
-      this.selectQuery().load(name, keys, association[INTERNAL_TYPES.TO_SQ_SELECT]()),
+      this.selectQuery().load(
+        name,
+        keys,
+        association[INTERNAL_TYPES.TO_SQ_SELECT](),
+      ),
       this.pipes,
       this.queryType,
     );
@@ -454,14 +463,19 @@ export class Repository<
   > {
     let keys: [string, string];
     if (association.type === 'belongsTo') {
-      keys = [association.foreignKey, 'id'];
+      keys = [association.foreignKey, this.primaryKey as string];
     } else {
-      keys = ['id', association.foreignKey];
+      keys = [this.primaryKey as string, association.foreignKey];
     }
 
     return new Repository(
       this.schemaTable,
-      this.selectQuery().join(name, keys, association.getTableName(), association[INTERNAL_TYPES.TO_SQ_SELECT]()),
+      this.selectQuery().join(
+        name,
+        keys,
+        association.getTableName(),
+        association[INTERNAL_TYPES.TO_SQ_SELECT](),
+      ),
       this.pipes,
       this.queryType,
     );

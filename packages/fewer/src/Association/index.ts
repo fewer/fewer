@@ -74,7 +74,7 @@ export class Association<
   }
 
   pluck<Key extends keyof RepoType>(
-    ...fields: Key[]
+    ...columns: Key[]
   ): Association<
     Type,
     Base,
@@ -89,7 +89,7 @@ export class Association<
     return new Association(
       this.type,
       this.associate,
-      this.selectQuery().pluck(...(fields as string[])),
+      this.selectQuery().pluck(...(columns as string[])),
       this.foreignKey,
     );
   }
@@ -206,9 +206,9 @@ export class Association<
   > {
     let keys: [string, string];
     if (association.type === 'belongsTo') {
-      keys = [association.foreignKey, 'id'];
+      keys = [association.foreignKey, this.associate.primaryKey as string];
     } else {
-      keys = ['id', association.foreignKey];
+      keys = [this.associate.primaryKey as string, association.foreignKey];
     }
 
     return new Association(
@@ -253,9 +253,9 @@ export class Association<
   > {
     let keys: [string, string];
     if (association.type === 'belongsTo') {
-      keys = [association.foreignKey, 'id'];
+      keys = [association.foreignKey, this.associate.primaryKey as string];
     } else {
-      keys = ['id', association.foreignKey];
+      keys = [this.associate.primaryKey as string, association.foreignKey];
     }
 
     return new Association(

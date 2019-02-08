@@ -13,12 +13,16 @@ describe('migration', () => {
     it('generates drop table sql', () => {
       const migration = createMigration(VERSION, database, {
         change: (m, t) =>
-          m.createTable('users', null, {
-            id: t.bigserial({ primaryKey: true }),
-            firstName: t.string(),
-            lastName: t.string(),
-            email: t.string({ nonNull: true }),
-          }),
+          m.createTable(
+            'users',
+            { primaryKey: 'id' },
+            {
+              id: t.bigserial(),
+              firstName: t.string(),
+              lastName: t.string(),
+              email: t.string({ nonNull: true }),
+            },
+          ),
       });
 
       migration.prepare('up');
@@ -32,12 +36,16 @@ describe('migration', () => {
     it('generates create table sql', () => {
       const migration = createMigration(VERSION, database, {
         change: (m, t) =>
-          m.createTable('users', null, {
-            id: t.bigserial({ primaryKey: true }),
-            firstName: t.string(),
-            lastName: t.string(),
-            email: t.string({ nonNull: true }),
-          }),
+          m.createTable(
+            'users',
+            { primaryKey: 'id' },
+            {
+              id: t.bigserial(),
+              firstName: t.string(),
+              lastName: t.string(),
+              email: t.string({ nonNull: true }),
+            },
+          ),
       });
 
       migration.prepare('up');
@@ -49,31 +57,14 @@ describe('migration', () => {
     it('supports unique constraint', () => {
       const migration = createMigration(VERSION, database, {
         change: (m, t) =>
-          m.createTable('users', null, {
-            id: t.bigserial({ primaryKey: true }),
-            firstName: t.string(),
-            lastName: t.string(),
-            email: t.string({ unique: true, nonNull: true }),
-          }),
-      });
-
-      migration.prepare('up');
-
-      const sql = migrate(migration);
-      expect(sql).toMatchSnapshot();
-    });
-
-    it('supports compound primary key', () => {
-      const migration = createMigration(VERSION, database, {
-        change: (m, t) =>
           m.createTable(
             'users',
-            { primaryKey: ['id', 'email'] },
+            { primaryKey: 'id' },
             {
               id: t.bigserial(),
               firstName: t.string(),
               lastName: t.string(),
-              email: t.string({ nonNull: true }),
+              email: t.string({ unique: true, nonNull: true }),
             },
           ),
       });

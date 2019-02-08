@@ -4,7 +4,7 @@ import { createDatabase, Database } from './Database';
 import { createBelongsTo, createHasOne, createHasMany } from './Association';
 import { createMigration, Migration, MigrationDefinition } from './Migration';
 import { createAdapter, Adapter } from './Adapter';
-import FieldType from './FieldType';
+import ColumnType from './ColumnType';
 
 import * as Operations from './Migration/Operations';
 export { Operations };
@@ -26,7 +26,7 @@ export {
   createAdapter,
   Database,
   Adapter,
-  FieldType,
+  ColumnType,
   Migration,
 }
 

@@ -3,15 +3,15 @@ import {
   createHasMany,
   createBelongsTo,
   createSchema,
-} from '../../src';
-import { database } from '../mocks';
+} from '../../';
+import { database } from '../../__tests__/mocks';
 
 const schema = createSchema()
-  .table(database, 'users', t => ({
+  .table(database, 'users', { primaryKey: 'id' }, t => ({
     firstName: t.string(),
     lastName: t.string(),
   }))
-  .table(database, 'posts', t => ({
+  .table(database, 'posts', { primaryKey: 'id' }, t => ({
     title: t.string(),
     subtitle: t.maybeString(),
     userId: t.number(),
@@ -28,25 +28,12 @@ const postsJoinedUser = Posts.join('users', belongsToUser);
 const usersLoadPosts = Users.load('posts', userPosts);
 const postsLoadUser = Posts.load('users', belongsToUser);
 
-// should be type errors
-usersJoinedPosts.join('posts', userPosts);
-postsJoinedUser.join('users', belongsToUser);
-usersLoadPosts.load('posts', userPosts);
-postsLoadUser.load('users', belongsToUser);
-
-Users.join('posts', userPosts.where({}));
-
-Posts.load('posts', userPosts);
-Posts.join('posts', userPosts);
-userPosts.load('posts', userPosts);
-userPosts.join('posts', userPosts);
-userPosts.join('posts', userPosts.where({}));
-
-// Query through load should not work:
+// Query through join with incorrect query:
 Users.find(1)
-  .load('posts', userPosts)
+  .join('posts', userPosts)
   .where({
     posts: {
-      title: 'testing',
+      subtitle: 'hello world',
+      incorrect: 123,
     },
   });

@@ -1,0 +1,145 @@
+[
+    {
+        "location": {
+            "start": {
+                "line": 32,
+                "column": 23
+            },
+            "end": {
+                "line": 32,
+                "column": 30
+            }
+        },
+        "errorMessage": "Argument of type '\"posts\"' is not assignable to parameter of type '\"posts\" & \"This key is already in use.\"'.\n  Type '\"posts\"' is not assignable to type '\"This key is already in use.\"'."
+    },
+    {
+        "location": {
+            "start": {
+                "line": 33,
+                "column": 22
+            },
+            "end": {
+                "line": 33,
+                "column": 29
+            }
+        },
+        "errorMessage": "Argument of type '\"users\"' is not assignable to parameter of type '\"users\" & \"This key is already in use.\"'.\n  Type '\"users\"' is not assignable to type '\"This key is already in use.\"'."
+    },
+    {
+        "location": {
+            "start": {
+                "line": 34,
+                "column": 21
+            },
+            "end": {
+                "line": 34,
+                "column": 28
+            }
+        },
+        "errorMessage": "Argument of type '\"posts\"' is not assignable to parameter of type '\"posts\" & \"This key is already in use.\"'.\n  Type '\"posts\"' is not assignable to type '\"This key is already in use.\"'."
+    },
+    {
+        "location": {
+            "start": {
+                "line": 35,
+                "column": 20
+            },
+            "end": {
+                "line": 35,
+                "column": 27
+            }
+        },
+        "errorMessage": "Argument of type '\"users\"' is not assignable to parameter of type '\"users\" & \"This key is already in use.\"'.\n  Type '\"users\"' is not assignable to type '\"This key is already in use.\"'."
+    },
+    {
+        "location": {
+            "start": {
+                "line": 37,
+                "column": 21
+            },
+            "end": {
+                "line": 37,
+                "column": 40
+            }
+        },
+        "errorMessage": "Argument of type 'Association<AssociationType.HAS_MANY, Repository<Merge<{} & { firstName: string; lastName: string; }>, {}, INTERNAL_TYPES.ALL_FIELDS, {}, {}, QueryTypes.MULTIPLE, Merge<{} & { firstName: string; lastName: string; }> & ResolveAssociations<...>>, ... 6 more ..., Merge<...>>' is not assignable to parameter of type 'Association<AssociationType, Repository<Merge<{} & { firstName: string; lastName: string; }>, any, INTERNAL_TYPES.ALL_FIELDS, {}, {}, any, any>, any, any, any, any, any, false, {}>'.\n  Type 'true' is not assignable to type 'false'."
+    },
+    {
+        "location": {
+            "start": {
+                "line": 39,
+                "column": 21
+            },
+            "end": {
+                "line": 39,
+                "column": 30
+            }
+        },
+        "errorMessage": "Argument of type 'Association<AssociationType.HAS_MANY, Repository<Merge<{} & { firstName: string; lastName: string; }>, {}, INTERNAL_TYPES.ALL_FIELDS, {}, {}, QueryTypes.MULTIPLE, Merge<{} & { firstName: string; lastName: string; }> & ResolveAssociations<...>>, ... 6 more ..., Merge<...>>' is not assignable to parameter of type 'Association<AssociationType, Repository<Merge<{ subtitle?: string | undefined; } & { userId: number; title: string; }>, any, INTERNAL_TYPES.ALL_FIELDS, {}, {}, any, any>, any, any, any, {}, {}, any, {}>'.\n  Type 'Repository<Merge<{} & { firstName: string; lastName: string; }>, {}, INTERNAL_TYPES.ALL_FIELDS, {}, {}, QueryTypes.MULTIPLE, Merge<{} & { firstName: string; lastName: string; }> & ResolveAssociations<{}>>' is not assignable to type 'Repository<Merge<{ subtitle?: string | undefined; } & { userId: number; title: string; }>, any, INTERNAL_TYPES.ALL_FIELDS, {}, {}, any, any>'.\n    Types of property 'primaryKey' are incompatible.\n      Type '\"firstName\" | \"lastName\"' is not assignable to type '\"userId\" | \"title\" | \"subtitle\"'.\n        Type '\"firstName\"' is not assignable to type '\"userId\" | \"title\" | \"subtitle\"'."
+    },
+    {
+        "location": {
+            "start": {
+                "line": 40,
+                "column": 21
+            },
+            "end": {
+                "line": 40,
+                "column": 30
+            }
+        },
+        "errorMessage": "Argument of type 'Association<AssociationType.HAS_MANY, Repository<Merge<{} & { firstName: string; lastName: string; }>, {}, INTERNAL_TYPES.ALL_FIELDS, {}, {}, QueryTypes.MULTIPLE, Merge<{} & { firstName: string; lastName: string; }> & ResolveAssociations<...>>, ... 6 more ..., Merge<...>>' is not assignable to parameter of type 'Association<AssociationType, Repository<Merge<{ subtitle?: string | undefined; } & { userId: number; title: string; }>, any, INTERNAL_TYPES.ALL_FIELDS, {}, {}, any, any>, any, any, any, any, any, false, {}>'.\n  Type 'Repository<Merge<{} & { firstName: string; lastName: string; }>, {}, INTERNAL_TYPES.ALL_FIELDS, {}, {}, QueryTypes.MULTIPLE, Merge<{} & { firstName: string; lastName: string; }> & ResolveAssociations<{}>>' is not assignable to type 'Repository<Merge<{ subtitle?: string | undefined; } & { userId: number; title: string; }>, any, INTERNAL_TYPES.ALL_FIELDS, {}, {}, any, any>'."
+    },
+    {
+        "location": {
+            "start": {
+                "line": 41,
+                "column": 25
+            },
+            "end": {
+                "line": 41,
+                "column": 34
+            }
+        },
+        "errorMessage": "Argument of type 'Association<AssociationType.HAS_MANY, Repository<Merge<{} & { firstName: string; lastName: string; }>, {}, INTERNAL_TYPES.ALL_FIELDS, {}, {}, QueryTypes.MULTIPLE, Merge<{} & { firstName: string; lastName: string; }> & ResolveAssociations<...>>, ... 6 more ..., Merge<...>>' is not assignable to parameter of type 'Association<AssociationType, Repository<Merge<{ subtitle?: string | undefined; } & { userId: number; title: string; }>, any, INTERNAL_TYPES.ALL_FIELDS, {}, {}, any, any>, any, any, any, {}, {}, any, {}>'."
+    },
+    {
+        "location": {
+            "start": {
+                "line": 42,
+                "column": 25
+            },
+            "end": {
+                "line": 42,
+                "column": 34
+            }
+        },
+        "errorMessage": "Argument of type 'Association<AssociationType.HAS_MANY, Repository<Merge<{} & { firstName: string; lastName: string; }>, {}, INTERNAL_TYPES.ALL_FIELDS, {}, {}, QueryTypes.MULTIPLE, Merge<{} & { firstName: string; lastName: string; }> & ResolveAssociations<...>>, ... 6 more ..., Merge<...>>' is not assignable to parameter of type 'Association<AssociationType, Repository<Merge<{ subtitle?: string | undefined; } & { userId: number; title: string; }>, any, INTERNAL_TYPES.ALL_FIELDS, {}, {}, any, any>, any, any, any, any, any, false, {}>'."
+    },
+    {
+        "location": {
+            "start": {
+                "line": 43,
+                "column": 25
+            },
+            "end": {
+                "line": 43,
+                "column": 44
+            }
+        },
+        "errorMessage": "Argument of type 'Association<AssociationType.HAS_MANY, Repository<Merge<{} & { firstName: string; lastName: string; }>, {}, INTERNAL_TYPES.ALL_FIELDS, {}, {}, QueryTypes.MULTIPLE, Merge<{} & { firstName: string; lastName: string; }> & ResolveAssociations<...>>, ... 6 more ..., Merge<...>>' is not assignable to parameter of type 'Association<AssociationType, Repository<Merge<{ subtitle?: string | undefined; } & { userId: number; title: string; }>, any, INTERNAL_TYPES.ALL_FIELDS, {}, {}, any, any>, any, any, any, any, any, false, {}>'.\n  Type 'Repository<Merge<{} & { firstName: string; lastName: string; }>, {}, INTERNAL_TYPES.ALL_FIELDS, {}, {}, QueryTypes.MULTIPLE, Merge<{} & { firstName: string; lastName: string; }> & ResolveAssociations<{}>>' is not assignable to type 'Repository<Merge<{ subtitle?: string | undefined; } & { userId: number; title: string; }>, any, INTERNAL_TYPES.ALL_FIELDS, {}, {}, any, any>'."
+    },
+    {
+        "location": {
+            "start": {
+                "line": 49,
+                "column": 5
+            },
+            "end": {
+                "line": 51,
+                "column": 6
+            }
+        },
+        "errorMessage": "Argument of type '{ posts: { title: string; }; }' is not assignable to parameter of type 'Merge<WhereForType<Merge<{} & { firstName: string; lastName: string; }>> & {}>'.\n  Object literal may only specify known properties, and 'posts' does not exist in type 'Merge<WhereForType<Merge<{} & { firstName: string; lastName: string; }>> & {}>'."
+    }
+]

@@ -1,6 +1,6 @@
 import { Database } from '../Database';
 import { Adapter } from '../Adapter';
-import FieldType from '../FieldType';
+import ColumnType from '../ColumnType';
 import {
   MigrationDefinition,
   ChangeMigrationShorthand,
@@ -8,8 +8,9 @@ import {
 } from './Definition';
 import { Operation } from './Operations';
 
+// TODO: Move this to the ColumnType file:
 interface ColumnTypes {
-  [columnName: string]: FieldType;
+  [columnName: string]: ColumnType;
 }
 
 const CONTAINS_IRREVERSIBLE = Symbol('irreversible');
@@ -39,22 +40,22 @@ export class MigrationBuilder<
 
   createTable(
     name: string,
-    options: DBAdapter['TableTypes'] | null | undefined,
-    fields: ColumnTypes,
+    options: DBAdapter['TableTypes'],
+    columns: ColumnTypes,
   ): MigrationBuilder<DBAdapter, ContainsIrreversibleOperation> {
     if (this.flipped) {
       return this.addOperation({
         type: 'dropTable',
         name,
         options,
-        fields,
+        columns,
       });
     } else {
       return this.addOperation({
         type: 'createTable',
         name,
         options,
-        fields,
+        columns,
       });
     }
   }
@@ -62,21 +63,21 @@ export class MigrationBuilder<
   dropTable(name: string): MigrationBuilder<DBAdapter, true>;
   dropTable(
     name: string,
-    options?: DBAdapter['TableTypes'] | null | undefined,
-    fields?: ColumnTypes,
+    options?: DBAdapter['TableTypes'],
+    columns?: ColumnTypes,
   ): MigrationBuilder<DBAdapter, ContainsIrreversibleOperation>;
-  dropTable(name: string, options?: any, fields?: any): any {
+  dropTable(name: string, options?: any, columns?: any): any {
     if (this.flipped) {
-      if (options && fields) {
+      if (options && columns) {
         return this.addOperation({
           type: 'createTable',
           name,
           options,
-          fields,
+          columns,
         });
       } else {
         throw new Error(
-          'Change migration containing `dropTable` is not reversible. You must provide the table options and fields to the dropTable to allow the migration to be reversed.',
+          'Change migration containing `dropTable` is not reversible. You must provide the table options and columns to the dropTable to allow the migration to be reversed.',
         );
       }
     } else {
@@ -84,7 +85,7 @@ export class MigrationBuilder<
         type: 'dropTable',
         name,
         options,
-        fields,
+        columns,
       });
     }
   }
@@ -122,16 +123,16 @@ export class Migration<DBAdapter extends Adapter = any> {
       this.definition.type === 'change',
     );
 
-    const fieldTypes = this.database.adapter.FieldTypes;
+    const columnTypes = this.database.adapter.ColumnTypes;
     if (this.definition.type === 'change') {
-      this.definition.change(builder, fieldTypes);
+      this.definition.change(builder, columnTypes);
     } else if (this.definition.type === 'irreversible') {
       if (direction === 'down') {
         throw new Error('Attempting to rollback an irreversible migration.');
       }
-      this.definition.up(builder, fieldTypes);
+      this.definition.up(builder, columnTypes);
     } else {
-      this.definition[direction](builder, fieldTypes);
+      this.definition[direction](builder, columnTypes);
     }
 
     this.operations.push(...builder.operations);

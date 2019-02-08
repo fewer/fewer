@@ -88,7 +88,7 @@
                 "column": 16
             }
         },
-        "errorMessage": "Property 'subtitle' does not exist on type '{ title: string; details: string; user: Merge<{ birthday?: Date | undefined; } & { firstName: string; middleName: string; lastName: string; }> & ResolveAssociations<{}>; }'."
+        "errorMessage": "Property 'subtitle' does not exist on type '{ title: string; details: string; user: Merge<{ birthday?: Date | undefined; } & { firstName: string; lastName: string; middleName: string; }> & ResolveAssociations<{}>; }'."
     },
     {
         "location": {
@@ -101,7 +101,7 @@
                 "column": 15
             }
         },
-        "errorMessage": "Property 'content' does not exist on type '{ title: string; details: string; user: Merge<{ birthday?: Date | undefined; } & { firstName: string; middleName: string; lastName: string; }> & ResolveAssociations<{}>; }'."
+        "errorMessage": "Property 'content' does not exist on type '{ title: string; details: string; user: Merge<{ birthday?: Date | undefined; } & { firstName: string; lastName: string; middleName: string; }> & ResolveAssociations<{}>; }'."
     },
     {
         "location": {

@@ -3,7 +3,7 @@ import { Adapter, rawQuery } from '../';
 import config from './config';
 
 async function prepare() {
-  const adapter = new Adapter({...config, database: 'postgres'});
+  const adapter = new Adapter({ ...config, database: 'postgres' });
 
   const pgDatabase = createDatabase({ adapter });
 
@@ -12,27 +12,40 @@ async function prepare() {
 
   try {
     await pgDatabase.connect();
-    await rawQuery(adapter.client!, 'DROP DATABASE IF EXISTS fewer_typo_tests;');
+    await rawQuery(
+      adapter.client!,
+      'DROP DATABASE IF EXISTS fewer_typo_tests;',
+    );
     await rawQuery(adapter.client!, 'CREATE DATABASE fewer_typo_tests;');
 
     await database.connect();
 
     const migration = createMigration(1, database, {
       change: (m, t) =>
-        m.createTable('users', null, {
-          id: t.bigserial({ primaryKey: true }),
-          first_name: t.string(),
-          last_name: t.string(),
-        }).createTable('posts', null, {
-          id: t.bigserial({ primaryKey: true }),
-          user_id: t.bigint(),
-          title: t.string(),
-          subtitle: t.string(),
-        }),
+        m
+          .createTable(
+            'users',
+            { primaryKey: 'id' },
+            {
+              id: t.bigserial(),
+              first_name: t.string(),
+              last_name: t.string(),
+            },
+          )
+          .createTable(
+            'posts',
+            { primaryKey: 'id' },
+            {
+              id: t.bigserial(),
+              user_id: t.bigint(),
+              title: t.string(),
+              subtitle: t.string(),
+            },
+          ),
     });
 
     await migration.run('up');
-  } catch(err) {
+  } catch (err) {
     console.log(err);
   }
 

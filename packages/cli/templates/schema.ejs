@@ -11,7 +11,7 @@ import { createSchema } from 'fewer';
 
 export default createSchema()
     <%_ tables.forEach((table) => { _%>
-        .table(<%= table.database.importName %>, <%- JSON.stringify(table.name) %>, (t) => ({
+        .table(<%= table.database.importName %>, <%- JSON.stringify(table.name) %>, <%- JSON.stringify(table.options) %>, (t) => ({
             <%_ table.columns.forEach((col) => { _%>
             <%- JSON.stringify(col.name) %>: t.<%- col.method %>(
                 <%-

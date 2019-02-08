@@ -1,14 +1,19 @@
 import * as typeval from '@fewer/typeval';
-import { createSchema } from '../../src';
-import { INTERNAL_TYPES } from 'packages/fewer/src/types';
-import { database } from '../mocks';
+import { createSchema } from '../../';
+import { INTERNAL_TYPES } from '../../types';
+import { database } from '../../__tests__/mocks';
 
-const schema = createSchema().table(database, 'users', t => ({
-  firstName: t.string(),
-  lastName: t.maybeString(),
-  deleted: t.maybe<boolean>(),
-  createdAt: t.required<Date>(),
-}));
+const schema = createSchema().table(
+  database,
+  'users',
+  { primaryKey: 'id' },
+  t => ({
+    firstName: t.string(),
+    lastName: t.maybeString(),
+    deleted: t.maybe<boolean>(),
+    createdAt: t.required<Date>(),
+  }),
+);
 
 type User = typeof schema.tables.users[INTERNAL_TYPES.INTERNAL_TYPE];
 const user = typeval.as<User>();
