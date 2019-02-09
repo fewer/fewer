@@ -1,5 +1,5 @@
 before_script:
-  - apk add --update python python-dev py-pip
+  - apk add --update builds-deps build-base python python-dev py-pip
   - yarn
 
 services:
