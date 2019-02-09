@@ -1,6 +1,5 @@
 before_script:
-  - apt-get update -qy
-  - apt-get install -y python-dev python-pip
+  - apk add --update python python-dev py-pip
   - yarn
 
 services:
