@@ -173,7 +173,9 @@ export class Repository<
       throw new Error('model was not valid');
     }
 
-    const insertQuery = sq.insert(this.schemaTable.name, this.primaryKey as string).set(model);
+    const insertQuery = sq
+      .insert(this.schemaTable.name, this.primaryKey as string)
+      .set(model);
 
     const primaryKey = await this.db.insert(insertQuery);
     model[this.primaryKey] = primaryKey;
@@ -282,12 +284,29 @@ export class Repository<
     LoadAssociations,
     JoinAssociations,
     QueryTypes.SINGLE
-  > {
+  >;
+  find(
+    conditions: WhereType<SchemaType & RegisteredExtensions, JoinAssociations>,
+  ): Repository<
+    SchemaType,
+    RegisteredExtensions,
+    SelectionSet,
+    LoadAssociations,
+    JoinAssociations,
+    QueryTypes.SINGLE
+  >;
+  find(conditions: any): any {
+    let query = this.selectQuery().limit(1);
+
+    if (typeof conditions !== 'object') {
+      query = query.where({ [this.primaryKey]: conditions });
+    } else {
+      query = query.where(conditions);
+    }
+
     return new Repository(
       this.schemaTable,
-      this.selectQuery()
-        .where({ id })
-        .limit(1),
+      query,
       this.pipes,
       QueryTypes.SINGLE,
     );
