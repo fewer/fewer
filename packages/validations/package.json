@@ -4,6 +4,7 @@
   "description": "A collection of pipes that handle common model validation use-cases for Fewer",
   "keywords": [
     "fewer",
+    "fewer-pipe",
     "validations"
   ],
   "author": "Jordan Gensler <jgensler@netflix.com>",

@@ -1,2 +1,2 @@
-export { confirmation } from './confirmation';
-export { presence } from './presence';
+export { withConfirmation } from './confirmation';
+export { withPresence } from './presence';
