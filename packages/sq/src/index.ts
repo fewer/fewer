@@ -1,8 +1,8 @@
 import Insert from './Insert';
-import Select, { SelectJoin, SelectLoad } from './Select';
+import Select, { SelectJoin, SelectLoad, SelectContext } from './Select';
 import Update from './Update';
 
-export { Insert, Select, Update, SelectJoin, SelectLoad };
+export { Insert, Select, Update, SelectJoin, SelectLoad, SelectContext };
 
 export default {
   select(table: string) {

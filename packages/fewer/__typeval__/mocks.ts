@@ -16,8 +16,8 @@ interface TableTypes {
 type ExprTypeWithLiterals<T> = T extends ExprType<string> ? ExprType<string> | string : T;
 
 const functions = {
-  eq: <T>(left: ExprTypeWithLiterals<ExprType<T>>, right: ExprTypeWithLiterals<ExprType<T>>) => new ExprType<boolean>(),
-  lower: <T>(input: ExprType<string>) => new ExprType<string>()
+  eq: <T>(left: ExprTypeWithLiterals<ExprType<T>>, right: ExprTypeWithLiterals<ExprType<T>>) => new ExprType<boolean>('', 'expr'),
+  lower: <T>(input: ExprType<string>) => new ExprType<string>('', 'expr')
 }
 
 type FieldTypes = typeof fieldTypes;

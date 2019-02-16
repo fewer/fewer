@@ -1,0 +1,3 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`select with functions eq generates good sql 1`] = `"SELECT * FROM users"`;

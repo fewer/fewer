@@ -10,7 +10,8 @@ export const enum INTERNAL_TYPES {
   SCHEMA_TYPE = '@@SCHEMA_TYPE',
   JOINS = '@@JOINS',
   TO_SQ_SELECT = '@@TO_SQ_SELECT',
-  FUNCTIONS_TYPE = '@@FUNCTIONS_TYPE'
+  FUNCTIONS_TYPE = '@@FUNCTIONS_TYPE',
+  BUILT_TABLE = '@@BUILT_TABLE'
 }
 
 // We default to selecting all fields, but once you pluck one field, we need to remove
@@ -56,7 +57,7 @@ export type ResolveAssociations<Assoc extends Associations> = {
 export interface CommonQuery<Type, Assoc extends Associations> {
   pluck(...fields: (keyof Type)[]): any;
   pluckAs(name: keyof Type, alias: string): any;
-  where(wheres: WhereType<Type, Assoc>): any;
+  where(wheres: any): any;
   limit(amount: number): any;
   offset(amount: number): any;
   order(): any;

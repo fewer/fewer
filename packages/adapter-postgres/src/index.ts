@@ -8,9 +8,11 @@ import fieldTypes from './fieldTypes';
 import rawQuery from './rawQuery';
 import infos from './infos';
 import { PostgresSelect } from 'squel';
-import { SelectJoin } from '@fewer/sq';
+import { SelectContext, SelectJoin } from '@fewer/sq';
+import functions from './functions';
 
 type FieldTypes = typeof fieldTypes;
+type FunctionsType = typeof functions;
 
 export { rawQuery };
 
@@ -36,7 +38,10 @@ function applyJoins(table: string, prefix: string, select: PostgresSelect, joins
 }
 
 function applyWheres(table: string, prefix: string, select: PostgresSelect, joins: { [key: string]: SelectJoin } | undefined, wheres: object[]) {
-    for (const where of wheres) {
+  for (const where of wheres) {
+    if (typeof where === 'function') {
+      select.where(where(functions).inner);
+    } else {
       for (const [fieldName, matcher] of Object.entries(where)) {
         if (joins && fieldName in joins) {
           const alias = `${prefix}_${fieldName}`;
@@ -59,9 +64,38 @@ function applyWheres(table: string, prefix: string, select: PostgresSelect, join
         }
       }
     }
+  }
 }
 
-export const Adapter = createAdapter<TableTypes, FieldTypes, ConnectionConfig, Client>({
+export function $selectToSQL(context: SelectContext) {
+  const select = squel.select().from(context.table);
+
+  if (context.limit) {
+    select.limit(context.limit);
+  }
+
+  if (context.offset) {
+    select.offset(context.offset);
+  }
+
+  for (const field of context.plucked) {
+    if (Array.isArray(field)) {
+      select.field(...field);
+    } else {
+      select.field(field);
+    }
+  }
+
+  const joins = context.joins;
+  if (joins) {
+    applyJoins(context.table, '', select, joins);
+  }
+
+  applyWheres(context.table, '', select, joins, context.wheres);
+  return select.toString();
+}
+
+export const Adapter = createAdapter<TableTypes, FieldTypes, FunctionsType, ConnectionConfig, Client>({
   fieldTypes,
 
   async connect(options) {
@@ -75,32 +109,8 @@ export const Adapter = createAdapter<TableTypes, FieldTypes, ConnectionConfig, C
   },
 
   async select(db, context) {
-    const select = squel.select().from(context.table);
-
-    if (context.limit) {
-      select.limit(context.limit);
-    }
-
-    if (context.offset) {
-      select.offset(context.offset);
-    }
-
-    for (const field of context.plucked) {
-      if (Array.isArray(field)) {
-        select.field(...field);
-      } else {
-        select.field(field);
-      }
-    }
-
-    const joins = context.joins;
-    if (joins) {
-      applyJoins(context.table, '', select, joins);
-    }
-
-    applyWheres(context.table, '', select, joins, context.wheres);
-
-    const results = await db.query(select.toString());
+    const sql = $selectToSQL(context);
+    const results = await db.query(sql);
     const loads = context.loads;
 
     if (loads) {
@@ -111,7 +121,8 @@ export const Adapter = createAdapter<TableTypes, FieldTypes, ConnectionConfig, C
 
         return {
           k, load,
-          results: await this.select(db, load.select.where(where).context)};
+          results: await this.select(db, load.select.where(where).context)
+        };
       });
 
       const loaded = await Promise.all(loadPromises);

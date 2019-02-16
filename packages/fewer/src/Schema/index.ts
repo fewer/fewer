@@ -20,7 +20,7 @@ export class SchemaTable<
   readonly [INTERNAL_TYPES.INTERNAL_TYPE]: WithUndefinedPropertiesAsOptionals<
     BuiltTable<T>
   >;
-  ['@@foo']: T;
+  [INTERNAL_TYPES.BUILT_TABLE]: T;
 
   database: Database<DBAdapter>;
   name: string;
@@ -32,6 +32,7 @@ export class SchemaTable<
   ) {
     this.database = database;
     this.name = name;
+    this[INTERNAL_TYPES.BUILT_TABLE] = builder(database.adapter['FieldTypes']);
   }
 }
 

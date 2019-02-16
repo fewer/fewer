@@ -28,6 +28,14 @@ type CheckUsedKeys<T, K> = T extends K ? 'This key is already in use.' : T;
 
 export class ExprType<T> {
   readonly ['@@TEST']: T
+
+  readonly inner: any;
+  readonly type: 'column' | 'expr';
+
+  constructor(inner: any, type: 'column' | 'expr') {
+    this.inner = inner;
+    this.type = type;
+  }
 }
 
 type FieldTypeToExpr<FT> = FT extends FieldType<infer T> ? ExprType<T> : never;
@@ -69,6 +77,7 @@ export class Repository<
   readonly symbols = Symbols;
 
   private schemaTable: SchemaTable;
+  private columnsForFunctions: FieldTypesToExprs<FieldTypes>;
   private runningQuery?: Select;
   private pipes: Pipe[];
   private queryType: QueryTypes;
@@ -83,6 +92,11 @@ export class Repository<
     this.runningQuery = runningQuery;
     this.pipes = pipes;
     this.queryType = queryType;
+
+    this.columnsForFunctions = Object.keys(schemaTable[INTERNAL_TYPES.BUILT_TABLE]).reduce((m, k) => {
+      m[k as keyof FieldTypesToExprs<FieldTypes>] = new ExprType(k, 'column') as any;
+      return m;
+    }, {} as FieldTypesToExprs<FieldTypes>);
   }
 
   [INTERNAL_TYPES.TO_SQ_SELECT](): Select {
@@ -236,6 +250,19 @@ export class Repository<
   /**
    * TODO: Documentation.
    */
+
+  where(
+    wheres: ((fns: FunctionsType, columns: FieldTypesToExprs<FieldTypes>) => any),
+  ): Repository<
+    SchemaType,
+    RegisteredExtensions,
+    FunctionsType,
+    FieldTypes,
+    SelectionSet,
+    LoadAssociations,
+    JoinAssociations,
+    QueryTypes.MULTIPLE
+  >;
   where(
     wheres: WhereType<
       SchemaType & RegisteredExtensions,
@@ -250,17 +277,10 @@ export class Repository<
     LoadAssociations,
     JoinAssociations,
     QueryTypes.MULTIPLE
-  > {
-    return new Repository(
-      this.schemaTable,
-      this.selectQuery().where(wheres),
-      this.pipes,
-      QueryTypes.MULTIPLE,
-    );
-  }
+  >;
 
-  whereFn(
-    where: ((fns: FunctionsType, columns: FieldTypesToExprs<FieldTypes>) => any),
+  where(
+    wheres: any
   ): Repository<
     SchemaType,
     RegisteredExtensions,
@@ -271,9 +291,14 @@ export class Repository<
     JoinAssociations,
     QueryTypes.MULTIPLE
   > {
+    if (typeof wheres === 'function') {
+      const originalWheres = wheres;
+      wheres = (fns: FunctionsType) => { return originalWheres(fns, this.columnsForFunctions) };
+    }
+
     return new Repository(
       this.schemaTable,
-      this.selectQuery().where(where),
+      this.selectQuery().where(wheres),
       this.pipes,
       QueryTypes.MULTIPLE,
     );
@@ -545,7 +570,7 @@ export function createRepository<Type extends SchemaTable>(
   Type[INTERNAL_TYPES.INTERNAL_TYPE],
   {},
   Type['database']['adapter']['FunctionsType'],
-  Type['@@foo'],
+  Type[INTERNAL_TYPES.BUILT_TABLE],
   INTERNAL_TYPES.ALL_FIELDS,
   {},
   {},

@@ -13,4 +13,4 @@ const schema = createSchema()
 
 const Users = createRepository(schema.tables.users);
 
-Users.whereFn((fns, columns) => fns.eq(fns.lower(columns.firstName), 'emily'));
+Users.where((fns, columns) => fns.eq(fns.lower(columns.firstName), 'emily'));

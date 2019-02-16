@@ -13,7 +13,7 @@ export type SelectJoin = {
   select: Select;
 };
 
-interface Context {
+export interface SelectContext {
   table: string;
   plucked: Pluck[];
   wheres: object[];
@@ -23,7 +23,7 @@ interface Context {
   joins?: { [key: string]: SelectJoin };
 }
 
-export default class Select extends Builder<Context> {
+export default class Select extends Builder<SelectContext> {
   pluck(...fields: Pluck[]) {
     return this.next({ plucked: [...this.context.plucked, ...fields] });
   }
