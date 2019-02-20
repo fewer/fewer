@@ -41,7 +41,7 @@ describe('change migration', () => {
 
       expect(
         await rawQuery(
-          adapter.client!,
+          adapter.client!.db,
           "select table_name, column_name, column_default, is_nullable, data_type, character_maximum_length, is_generated, is_updatable from INFORMATION_SCHEMA.COLUMNS where table_name = 'users';",
         ),
       ).toMatchSnapshot();

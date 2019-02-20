@@ -36,6 +36,12 @@ export interface AdapterConfiguration<
   migrateGetVersions(db: DBInstance): Promise<string[]>;
   migrateHasVersion(db: DBInstance, version: string): Promise<boolean>;
 
+  transaction?: {
+    create(db: DBInstance): Promise<DBInstance>;
+    rollback(db: DBInstance): Promise<void>;
+    commit(db: DBInstance): Promise<void>;
+  };
+
   getInfos?(
     db: DBInstance,
   ): Promise<{
@@ -140,6 +146,22 @@ export class Adapter<
 
   migrateHasVersion(version: string): Promise<boolean> {
     return this.impl.migrateHasVersion(this.client, version);
+  }
+
+  createTransaction() {
+    if (!this.impl.transaction) {
+      throw new Error('This adapter does not support transactions.');
+    }
+
+    return this.impl.transaction.create(this.client);
+  }
+
+  endTransaction(db: DBInstance, rollback = false) {
+    if (rollback) {
+      this.impl.transaction!.rollback(db);
+    } else {
+      this.impl.transaction!.commit(db);
+    }
   }
 
   getInfos(): Promise<any> {
