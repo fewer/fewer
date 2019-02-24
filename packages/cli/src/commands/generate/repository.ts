@@ -11,5 +11,6 @@ export default class GenerateRepository extends Command {
   static args = [];
 
   async run() {
+    throw new Error('Not yet implemented.');
   }
 }

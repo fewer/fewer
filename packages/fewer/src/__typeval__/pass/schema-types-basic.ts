@@ -3,8 +3,7 @@ import { createSchema } from '../../';
 import { INTERNAL_TYPES } from '../../types';
 import { database } from '../../__tests__/mocks';
 
-const schema = createSchema().table(
-  database,
+const schema = createSchema(database).table(
   'users',
   { primaryKey: 'id' },
   t => ({

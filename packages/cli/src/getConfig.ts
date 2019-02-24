@@ -1,27 +1,18 @@
 import cosmiconfig from 'cosmiconfig';
-import Joi from 'joi';
+import optimal, { string, bool, object, shape } from 'optimal';
 
 export interface FewerConfigurationFile {
   src: string;
-  migrations: string;
-  repositories: string;
-  schema: string;
-  databases: string[];
+  databases: {
+    [dbFilePath: string]: {
+      migrations: string;
+      repositories: string;
+      schema: string;
+    };
+  };
   typescript: boolean;
   cjs: boolean;
 }
-
-const schema = Joi.object().keys({
-  src: Joi.string().default('src'),
-  migrations: Joi.string().default('src/migrations'),
-  repositories: Joi.string().default('src/repositories'),
-  schema: Joi.string().default('src/schema.ts'),
-  databases: Joi.array()
-    .items(Joi.string())
-    .default(['src/database.ts']),
-  typescript: Joi.boolean().default(true),
-  cjs: Joi.boolean().default(false),
-});
 
 let processedConfig: FewerConfigurationFile | undefined;
 
@@ -38,11 +29,25 @@ export default async function(): Promise<FewerConfigurationFile> {
     userConfig = result.config as FewerConfigurationFile;
   }
 
-  const validatedConfig = (await Joi.validate(
-    userConfig || {},
-    schema,
-  )) as FewerConfigurationFile;
-  processedConfig = validatedConfig;
+  processedConfig = optimal(userConfig || {}, {
+    src: string('src'),
+    databases: object(
+      shape({
+        migrations: string(),
+        repositories: string(),
+        schema: string(),
+      }).notNullable(),
+      {
+        'src/database.ts': {
+          migrations: 'src/migrations',
+          repositories: 'src/repositories',
+          schema: 'src/schema.ts',
+        },
+      },
+    ),
+    typescript: bool(true),
+    cjs: bool(false),
+  });
 
-  return validatedConfig;
+  return processedConfig;
 }

@@ -1,8 +1,8 @@
 import path from 'path';
-import { Command, flags } from '@oclif/command';
+import { Command } from '@oclif/command';
 import commonFlags from '../../commonFlags';
 import getConfig from '../../getConfig';
-import { prompt, createFile, resolve } from '../../utils';
+import { createFile, resolve, getDatabase } from '../../utils';
 
 function pad(num: number) {
   return String(num).padStart(2, '0');
@@ -44,23 +44,17 @@ export default class GenerateMigration extends Command {
         'We did not find any configured databases in your Fewer configuration file.',
       );
     }
-    let [database] = config.databases;
-    if (config.databases.length > 1) {
-      database = await prompt({
-        type: 'select',
-        message: 'Which database is this migration for?',
-        choices: config.databases,
-      });
-    }
+
+    const dbFile = await getDatabase('Which database is this migration for?');
 
     const version = getMigrationVersion();
 
     const migrationFileName = path.join(
-      config.migrations,
+      config.databases[dbFile].migrations,
       `${version}_${args.name}.${config.typescript ? 'ts' : 'js'}`,
     );
 
-    const databaseImportPath = resolve(migrationFileName, database);;
+    const databaseImportPath = resolve(migrationFileName, dbFile);
 
     createFile(
       'migration',

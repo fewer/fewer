@@ -10,7 +10,6 @@ export default class GenerateDatabase extends Command {
 
   static examples = [
     '$ fewer generate:database myDatabase',
-    '$ fewer generate:database myDatabase --adapter=mysql',
   ];
 
   static flags = {
@@ -34,6 +33,7 @@ export default class GenerateDatabase extends Command {
     },
   ];
 
+  // TODO: This should scaffold all of the related DB files, and update the fewerrc file.
   async run() {
     const { flags, args } = this.parse(GenerateDatabase);
     const config = await getConfig();

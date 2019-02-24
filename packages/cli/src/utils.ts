@@ -80,7 +80,8 @@ export function hasDependency(dep: string) {
 export async function installPackages(warn: Function, ...packages: string[]) {
   const manager = await prompt({
     type: 'select',
-    message: 'Which package manager should be used to install new dependencies?',
+    message:
+      'Which package manager should be used to install new dependencies?',
     choices: ['npm', 'yarn', 'skip dependencies'],
   });
 
@@ -89,7 +90,11 @@ export async function installPackages(warn: Function, ...packages: string[]) {
   } else if (manager === 'yarn') {
     await execa('yarn', ['add', ...packages]);
   } else {
-    warn(`The following dependencies are required to run, but were not installed: ${packages.join(', ')}`);
+    warn(
+      `The following dependencies are required to run, but were not installed: ${packages.join(
+        ', ',
+      )}`,
+    );
   }
 }
 
@@ -150,17 +155,38 @@ export async function createFile(
   );
 }
 
-export async function getMigrations() {
+export async function getMigrations(dbFile: string) {
   const config = await getConfig();
 
   // TODO: Store project root somewhere (read-pkg-up?) so that I don't need to do cwd garbage:
   const migrationFiles = await readdirAsync(
-    path.resolve(cwd, config.migrations),
+    path.resolve(cwd, config.databases[dbFile].migrations),
   );
 
   return sortBy(
     migrationFiles.filter(filename => !filename.startsWith('.')),
-  ).map(filename => path.join(cwd, config.migrations, filename));
+  ).map(filename =>
+    path.join(cwd, config.databases[dbFile].migrations, filename),
+  );
+}
+
+export async function getDatabase(
+  message: string = 'Which database would you like to use?',
+) {
+  const config = await getConfig();
+
+  const databases = Object.keys(config.databases);
+
+  let dbFile = databases[0];
+  if (databases.length > 1) {
+    dbFile = await prompt({
+      type: 'select',
+      message: message,
+      choices: databases,
+    });
+  }
+
+  return dbFile;
 }
 
 export function resolve(from: string, to: string) {

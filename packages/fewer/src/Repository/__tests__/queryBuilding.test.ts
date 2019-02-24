@@ -18,13 +18,13 @@ interface Post {
   userId: number;
 }
 
-const schema = createSchema()
-  .table(database, 'users', { primaryKey: 'id' }, t => ({
+const schema = createSchema(database)
+  .table('users', { primaryKey: 'id' }, t => ({
     id: t.number(),
     firstName: t.string(),
     lastName: t.string(),
   }))
-  .table(database, 'posts', { primaryKey: 'id' }, t => ({
+  .table('posts', { primaryKey: 'id' }, t => ({
     id: t.number(),
     title: t.string(),
     subtitle: t.maybeString(),
