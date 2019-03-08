@@ -43,6 +43,8 @@ type FieldTypesToExprs<FieldTypes> = {
   [K in keyof FieldTypes]: FieldTypeToExpr<FieldTypes[K]>
 };
 
+type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
+
 export class Repository<
   SchemaType = {},
   // TODO: Make this just extensions, not schema + extensions.
@@ -252,7 +254,7 @@ export class Repository<
    */
 
   where(
-    wheres: ((fns: FunctionsType, columns: FieldTypesToExprs<FieldTypes>) => any),
+    wheres: ((fns: FunctionsType & { where: (wheres: WhereType<SchemaType & RegisteredExtensions, JoinAssociations>) => void}, columns: FieldTypesToExprs<FieldTypes>) => any),
   ): Repository<
     SchemaType,
     RegisteredExtensions,
@@ -293,7 +295,7 @@ export class Repository<
   > {
     if (typeof wheres === 'function') {
       const originalWheres = wheres;
-      wheres = (fns: FunctionsType) => { return originalWheres(fns, this.columnsForFunctions) };
+      wheres = (fns: FunctionsType & { where: (wheres: any) => void}) => { return originalWheres(fns, this.columnsForFunctions) };
     }
 
     return new Repository(
