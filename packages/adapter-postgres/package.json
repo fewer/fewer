@@ -1,6 +1,6 @@
 {
   "name": "@fewer/adapter-postgres",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A Fewer database adapter to connect to Postgres",
   "keywords": [
     "fewer",
@@ -39,8 +39,8 @@
     "squel": "^5.12.2"
   },
   "devDependencies": {
-    "@fewer/sq": "^0.1.2",
+    "@fewer/sq": "^0.1.3",
     "@types/pg": "^7.4.11",
-    "fewer": "^0.1.2"
+    "fewer": "^0.1.3"
   }
 }

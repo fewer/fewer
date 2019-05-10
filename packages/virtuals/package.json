@@ -1,6 +1,6 @@
 {
   "name": "@fewer/virtuals",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A pipe to add custom fields and methods to objects returned by the repository",
   "keywords": [
     "fewer",
@@ -33,6 +33,6 @@
     "access": "public"
   },
   "devDependencies": {
-    "fewer": "^0.1.2"
+    "fewer": "^0.1.3"
   }
 }
