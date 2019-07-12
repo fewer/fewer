@@ -1,5 +1,5 @@
 import { createAdapter } from 'fewer';
-import { Client, ConnectionConfig } from 'pg';
+import { Pool, PoolClient, ConnectionConfig } from 'pg';
 import squel from './squel';
 import TableTypes from './TableTypes';
 import migrate from './migrate';
@@ -14,7 +14,7 @@ type ColumnTypes = typeof columnTypes;
 
 export { rawQuery };
 
-async function ensureMigrationTable(db: Client) {
+async function ensureMigrationTable(db: PoolClient) {
   await rawQuery(db, `CREATE TABLE IF NOT EXISTS _fewer_version (
     id bigserial PRIMARY KEY,
     version varchar UNIQUE
@@ -61,20 +61,26 @@ function applyWheres(table: string, prefix: string, select: PostgresSelect, join
     }
 }
 
-export const Adapter = createAdapter<TableTypes, ColumnTypes, ConnectionConfig, Client>({
+interface DBI {
+  pool: Pool;
+  db: PoolClient;
+}
+
+export const Adapter = createAdapter<TableTypes, ColumnTypes, ConnectionConfig, DBI>({
   columnTypes,
 
   async connect(options) {
-    const client = new Client(options);
-    await client.connect();
-    return client;
+    const pool = new Pool(options);
+    const db = await pool.connect();
+    return { db, pool };
   },
 
-  async disconnect(db) {
-    await db.end();
+  async disconnect({ pool }) {
+    await pool.end();
   },
 
-  async select(db, context) {
+  async select(dbi, context) {
+    const { db } = dbi;
     const select = squel.select().from(context.table);
 
     if (context.limit) {
@@ -111,7 +117,7 @@ export const Adapter = createAdapter<TableTypes, ColumnTypes, ConnectionConfig, 
 
         return {
           k, load,
-          results: await this.select(db, load.select.where(where).context)};
+          results: await this.select(dbi, load.select.where(where).context)};
       });
 
       const loaded = await Promise.all(loadPromises);
@@ -134,7 +140,7 @@ export const Adapter = createAdapter<TableTypes, ColumnTypes, ConnectionConfig, 
     return results.rows;
   },
 
-  async insert(db, context) {
+  async insert({ db }, context) {
     const insert = squel
       .insert()
       .into(context.table)
@@ -146,7 +152,7 @@ export const Adapter = createAdapter<TableTypes, ColumnTypes, ConnectionConfig, 
     return results.rows[0][context.primaryKey];
   },
 
-  async update(db, context) {
+  async update({ db }, context) {
     const update = squel
       .update()
       .table(context.table)
@@ -157,27 +163,27 @@ export const Adapter = createAdapter<TableTypes, ColumnTypes, ConnectionConfig, 
     return results.rows;
   },
 
-  async migrateAddVersion(db, version) {
+  async migrateAddVersion({ db }, version) {
     await ensureMigrationTable(db);
     await rawQuery(db, 'INSERT INTO _fewer_version (version) VALUES ($1)', [
       version,
     ]);
   },
 
-  async migrateRemoveVersion(db, version) {
+  async migrateRemoveVersion({ db }, version) {
     await ensureMigrationTable(db);
     await rawQuery(db, 'DELETE FROM _fewer_version WHERE version=$1', [
       version,
     ]);
   },
 
-  async migrateGetVersions(db) {
+  async migrateGetVersions({ db }) {
     await ensureMigrationTable(db);
     const versions = await rawQuery(db, 'SELECT * FROM _fewer_version ORDER BY id ASC');
     return versions.map(({ version }) => version);
   },
 
-  async migrateHasVersion(db, version) {
+  async migrateHasVersion({ db }, version) {
     await ensureMigrationTable(db);
     const versions = await rawQuery(db,
       'SELECT id FROM _fewer_version WHERE version=$1',
@@ -186,13 +192,28 @@ export const Adapter = createAdapter<TableTypes, ColumnTypes, ConnectionConfig, 
     return !!versions.length;
   },
 
-  async migrate(db, direction, migration) {
+  async migrate({ db }, direction, migration) {
     const query = migrate(migration);
     const results = await db.query(query);
     return results;
   },
 
-  async getInfos(db) {
+  async getInfos({ db }) {
     return await infos(db);
+  },
+
+  transaction: {
+    async create({ pool }) {
+      const db = await pool.connect();
+      await db.query('BEGIN');
+      return { pool, db };
+    },
+    async rollback({ db }) {
+      await db.query('ROLLBACK');
+    },
+    async commit({ db }) {
+      await db.query('COMMIT');
+      db.release();
+    }
   }
 });

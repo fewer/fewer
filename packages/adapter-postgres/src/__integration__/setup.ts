@@ -11,10 +11,10 @@ export async function prepare() {
   try {
     await database.connect();
     await rawQuery(
-      adapter.client!,
+      adapter.client!.db,
       'DROP DATABASE IF EXISTS fewer_integration_tests;',
     );
-    await rawQuery(adapter.client!, 'CREATE DATABASE fewer_integration_tests;');
+    await rawQuery(adapter.client!.db, 'CREATE DATABASE fewer_integration_tests;');
   } catch (err) {
     console.log(err);
   }

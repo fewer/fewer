@@ -13,10 +13,10 @@ async function prepare() {
   try {
     await pgDatabase.connect();
     await rawQuery(
-      adapter.client!,
+      adapter.client!.db,
       'DROP DATABASE IF EXISTS fewer_typo_tests;',
     );
-    await rawQuery(adapter.client!, 'CREATE DATABASE fewer_typo_tests;');
+    await rawQuery(adapter.client!.db, 'CREATE DATABASE fewer_typo_tests;');
 
     await database.connect();
 

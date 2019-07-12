@@ -1,4 +1,4 @@
-import { Client } from 'pg';
+import { PoolClient } from 'pg';
 import rawQuery from './rawQuery';
 
 const TYPE_MAP: { [key: string]: string | undefined } = {
@@ -35,7 +35,7 @@ function getArgument(config: any) {
 }
 
 // TODO: Extra things like primary key and unique:
-export default async function infos(db: Client) {
+export default async function infos(db: PoolClient) {
   const schema: any = {};
   const tables = await rawQuery(
     db,
