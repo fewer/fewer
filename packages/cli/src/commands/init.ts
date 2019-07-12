@@ -24,7 +24,7 @@ export default class Init extends Command {
     const adapter = await prompt({
       type: 'select',
       message: 'Which database will you be connecting to?',
-      choices: ['postgres', 'mysql'],
+      choices: ['postgres'],
     });
 
     const sourceType = await prompt({
@@ -65,7 +65,11 @@ export default class Init extends Command {
     }
 
     cli.action.start('Installing npm dependencies');
-    await installPackages(this.warn, 'fewer', `@fewer/adapter-${adapter.toLowerCase()}`);
+    await installPackages(
+      this.warn,
+      'fewer',
+      `@fewer/adapter-${adapter.toLowerCase()}`,
+    );
     cli.action.stop();
 
     cli.action.start('Creating files');
@@ -84,10 +88,13 @@ export default class Init extends Command {
 
     const fewerConfig: Partial<FewerConfigurationFile> = {
       src,
-      migrations,
-      repositories,
-      schema: path.join(src, `schema.${extension}`),
-      databases: [path.join(src, `database.${extension}`)],
+      databases: {
+        [path.join(src, `database.${extension}`)]: {
+          migrations,
+          repositories,
+          schema: path.join(src, `schema.${extension}`),
+        },
+      },
     };
 
     if (!useTypeScript) {

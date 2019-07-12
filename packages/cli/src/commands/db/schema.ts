@@ -3,23 +3,24 @@ import { Command, flags } from '@oclif/command';
 import { Database, Migration } from 'fewer';
 import commonFlags from '../../commonFlags';
 import getConfig from '../../getConfig';
-import { createFile, resolve, getMigrations } from '../../utils';
+import { createFile, resolve, getMigrations, prompt, getDatabase } from '../../utils';
 
 export default class GenerateSchema extends Command {
   static description =
-    'Re-generates the schema file based on the current state of the database.';
+    'Re-generates the schema file for a given database. By default, this is performed offline by reducing the migration files into a single schema.';
 
   static flags = {
     ...commonFlags,
-    offline: flags.boolean({
-      description: '',
+    online: flags.boolean({
+      description:
+        'Re-generates the schema file based on the current state of the database.',
     }),
     // TODO: Support generating offline schema to a specific version:
     // version: flags.integer({
     //   char: 'v',
     //   description:
     //     'Generate schema based on migrations up to, and including, the specified version.',
-    //   dependsOn: ['offline'],
+    //   exclusive: ['online'],
     // }),
   };
 
@@ -31,18 +32,33 @@ export default class GenerateSchema extends Command {
     // Include the TS transpiler to allow TS syntax inside of migration files:
     require('ts-node/register/transpile-only');
 
-    const databases = config.databases.map(dbFile => ({
-      module: require(path.join(process.cwd(), dbFile)),
-      ident: resolve(config.schema, dbFile),
-      // TODO: Dedupe to ensure we don't have multiple of these:
-      importName: path.basename(dbFile, path.extname(dbFile)),
-    }));
+    const dbFile = await getDatabase();
 
     let tables: any[] = [];
 
-    if (flags.offline) {
+    let version;
+    if (flags.online) {
+      const dbModule = require(path.join(process.cwd(), dbFile));
+      const database: Database = dbModule.default || dbModule;
+
+      await database.connect();
+
+      const migratedVersion = await database.adapter.migrateGetVersions();
+      version = migratedVersion.slice(-1)[0];
+
+      const infos = await database.adapter.getInfos();
+
+      Object.keys(infos).forEach(key => {
+        tables.push({
+          name: key,
+          columns: infos[key].columns,
+        });
+      });
+
+      await database.disconnect();
+    } else {
       let tableMap: any = {};
-      const migrations = await getMigrations();
+      const migrations = await getMigrations(dbFile);
       for (const migrationFile of migrations) {
         const migrationModule = require(migrationFile);
         const migration: Migration = migrationModule.default || migrationModule;
@@ -51,47 +67,29 @@ export default class GenerateSchema extends Command {
           if (operation.type === 'createTable') {
             tableMap[operation.name] = {
               name: operation.name,
-              database: databases.find(
-                db =>
-                  db.module === migration.database ||
-                  db.module.default === migration.database,
+              columns: Object.entries(operation.columns).map(
+                ([key, value]) => ({
+                  name: key,
+                  method: value.reflectName,
+                  arguments: [value.config],
+                }),
               ),
-              columns: Object.entries(operation.columns).map(([key, value]) => ({
-                name: key,
-                method: value.reflectName,
-                arguments: [value.config],
-              })),
             };
           } else if (operation.type === 'dropTable') {
             delete tableMap[operation.name];
           }
         });
+        version = migration.version;
       }
       tables = Object.values(tableMap);
-    } else {
-      for (const db of databases) {
-        const database: Database = db.module.default || db.module;
-
-        await database.connect();
-        const infos = await database.adapter.getInfos();
-
-        Object.keys(infos).forEach(key => {
-          tables.push({
-            name: key,
-            database: db,
-            columns: infos[key].columns,
-          });
-        });
-
-        await database.disconnect();
-      }
     }
 
     createFile(
       'schema',
-      config.schema,
+      config.databases[dbFile].schema,
       {
-        databases,
+        dbImport: path.basename(dbFile, path.extname(dbFile)),
+        version,
         tables,
       },
       config.cjs,

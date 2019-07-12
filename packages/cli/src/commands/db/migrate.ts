@@ -1,7 +1,7 @@
 import { Command, flags } from '@oclif/command';
 import commonFlags from '../../commonFlags';
 import MigrationRunner from '../../MigrationRunner';
-import { getMigrations } from '../../utils';
+import { getMigrations, getDatabase } from '../../utils';
 
 export default class Migrate extends Command {
   static description = 'Performs migrations.';
@@ -43,13 +43,15 @@ export default class Migrate extends Command {
 
   async run() {
     const { flags } = this.parse(Migrate);
-    const migrations = await getMigrations();
+
+    const dbFile = await getDatabase('Which database would you like to perform migrations on?');
+    const migrations = await getMigrations(dbFile);
 
     const runner = new MigrationRunner(migrations);
 
     try {
       if (flags.redo) {
-        await runner.redo(flags.steps);
+        await runner.redo(dbFile, flags.steps);
       } else if (flags.version) {
         if (flags.direction === 'down') {
           await runner.down(flags.version!);
@@ -57,9 +59,9 @@ export default class Migrate extends Command {
           await runner.up(flags.version!);
         }
       } else if (flags.rollback) {
-        await runner.rollback(flags.steps);
+        await runner.rollback(dbFile, flags.steps);
       } else {
-        await runner.latest();
+        await runner.latest(dbFile);
       }
     } finally {
       await runner.cleanup();

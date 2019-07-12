@@ -1,7 +1,5 @@
 import path from 'path';
 import { Migration, Database, Adapter } from 'fewer';
-import getConfig from './getConfig';
-import { prompt } from './utils';
 
 export default class MigrationRunner {
   private migrations: string[];
@@ -50,23 +48,12 @@ export default class MigrationRunner {
     return dbModule.default || dbModule;
   }
 
-  async redo(steps = 1) {
-    const config = await getConfig();
-    let dbFile = config.databases[0];
-    if (config.databases.length > 1) {
-      dbFile = await prompt({
-        type: 'select',
-        message: 'Which Database would you like to rollback?',
-        choices: config.databases,
-      });
-    }
-
+  async redo(dbFile: string, steps = 1) {
     const database = this.loadDatabase(dbFile);
     await this.ensureAdapterConnecter(database.adapter);
 
     const versions = await database.adapter.migrateGetVersions();
 
-    // TODO: We should just have the hook return a sorted list of verisons, rather than having to do the property access here:
     const migrationsToRun = versions
       .slice(-1 * steps)
       .map(version => this.resolveVersion(version));
@@ -80,17 +67,7 @@ export default class MigrationRunner {
     }
   }
 
-  async rollback(steps = 1) {
-    const config = await getConfig();
-    let dbFile = config.databases[0];
-    if (config.databases.length > 1) {
-      dbFile = await prompt({
-        type: 'select',
-        message: 'Which Database would you like to rollback?',
-        choices: config.databases,
-      });
-    }
-
+  async rollback(dbFile: string, steps = 1) {
     const database = this.loadDatabase(dbFile);
     await this.ensureAdapterConnecter(database.adapter);
 
@@ -113,23 +90,20 @@ export default class MigrationRunner {
     await this.run('down', this.resolveVersion(version));
   }
 
-  async latest() {
-    const config = await getConfig();
-    for (const dbFile of config.databases) {
-      const database = this.loadDatabase(dbFile);
-      await this.ensureAdapterConnecter(database.adapter);
+  async latest(dbFile: string) {
+    const database = this.loadDatabase(dbFile);
+    await this.ensureAdapterConnecter(database.adapter);
 
-      const migratedVersions = await database.adapter.migrateGetVersions();
-      const migrationsToRun = this.migrations.filter(
-        filename =>
-          !migratedVersions.some(version =>
-            path.basename(filename).startsWith(version),
-          ),
-      );
+    const migratedVersions = await database.adapter.migrateGetVersions();
+    const migrationsToRun = this.migrations.filter(
+      filename =>
+        !migratedVersions.some(version =>
+          path.basename(filename).startsWith(version),
+        ),
+    );
 
-      for (const migrationFile of migrationsToRun) {
-        await this.run('up', this.loadMigration(migrationFile));
-      }
+    for (const migrationFile of migrationsToRun) {
+      await this.run('up', this.loadMigration(migrationFile));
     }
   }
 

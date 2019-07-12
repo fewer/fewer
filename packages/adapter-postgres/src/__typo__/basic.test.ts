@@ -12,13 +12,13 @@ const database = createDatabase({
   adapter: new Adapter({ ...config, database: 'fewer_typo_tests' }),
 });
 
-const schema = createSchema()
-  .table(database, 'users', { primaryKey: 'id' }, t => ({
+const schema = createSchema(database)
+  .table('users', { primaryKey: 'id' }, t => ({
     id: t.bigserial(),
     first_name: t.string(),
     last_name: t.string(),
   }))
-  .table(database, 'posts', { primaryKey: 'id' }, t => ({
+  .table('posts', { primaryKey: 'id' }, t => ({
     id: t.bigserial(),
     title: t.string(),
     user_id: t.bigint(),

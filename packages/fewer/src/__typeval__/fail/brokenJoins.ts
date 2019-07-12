@@ -6,12 +6,12 @@ import {
 } from '../../';
 import { database } from '../../__tests__/mocks';
 
-const schema = createSchema()
-  .table(database, 'users', { primaryKey: 'id' }, t => ({
+const schema = createSchema(database)
+  .table('users', { primaryKey: 'id' }, t => ({
     firstName: t.string(),
     lastName: t.string(),
   }))
-  .table(database, 'posts', { primaryKey: 'id' }, t => ({
+  .table('posts', { primaryKey: 'id' }, t => ({
     title: t.string(),
     subtitle: t.maybeString(),
     userId: t.number(),
